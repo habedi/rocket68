@@ -31,7 +31,7 @@ DOC_DIR   := docs
 BINARY_NAME   := main
 BINARY        := $(BIN_DIR)/$(BINARY_NAME)
 TEST_BINARY   := $(BIN_DIR)/test_$(BINARY_NAME)
-SRC_FILES     := $(wildcard $(SRC_DIR)/*.c)
+SRC_FILES     := $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/m68k/*.c)
 OBJ_FILES     := $(patsubst $(SRC_DIR)/%.c, $(TARGET_DIR)/%.o, $(SRC_FILES))
 DEP_FILES     := $(OBJ_FILES:.o=.d)
 TEST_FILES    := $(wildcard $(TEST_DIR)/*.c)
@@ -70,7 +70,8 @@ $(BINARY): $(OBJ_FILES) | $(BIN_DIR)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(LIBS)
 
 # Build object files with dependency generation
-$(TARGET_DIR)/%.o: $(SRC_DIR)/%.c | $(TARGET_DIR)
+$(TARGET_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: rebuild
