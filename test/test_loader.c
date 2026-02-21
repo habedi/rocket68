@@ -119,7 +119,7 @@ void test_disasm_full() {
     assert(strstr(buf, "D0"));
 
     // 2. MOVE.W (A0), (A1)+
-    m68k_write_16(&cpu, 6, 0x32D0); // 00 11 001 011 010 000
+    m68k_write_16(&cpu, 6, 0x32D0);  // 00 11 001 011 010 000
     m68k_disasm(&cpu, 6, buf, sizeof(buf));
     printf("Disasm MOVE.W: %s\n", buf);
     assert(strstr(buf, "MOVE.W"));
@@ -155,7 +155,6 @@ void test_disasm_full() {
     m68k_disasm(&cpu, 14, buf, sizeof(buf));
     printf("Disasm CHK: %s\n", buf);
     assert(strstr(buf, "CHK"));
-
 }
 
 void test_io() {

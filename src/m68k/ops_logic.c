@@ -418,3 +418,225 @@ void m68k_exec_shift(M68kCpu* cpu, u16 opcode) {
         cpu->d_regs[opcode & 0x7] = (reg_val & ~mask) | (result & mask);
     }
 }
+
+// -----------------------------------------------------------------------------
+// Immediate Logic (ANDI, ORI, EORI) — includes to-CCR and to-SR
+// -----------------------------------------------------------------------------
+
+// Helper to swap USP/SSP when S bit changes
+void m68k_swap_sp(M68kCpu* cpu, bool new_supervisor) {
+    bool old_supervisor = (cpu->sr & M68K_SR_S) != 0;
+    if (old_supervisor != new_supervisor) {
+        if (new_supervisor) {
+            // Going to supervisor: save USP, load SSP
+            cpu->usp = cpu->a_regs[7];
+            // SSP would need to be stored somewhere — for 68000 we use the vector
+        } else {
+            // Going to user: save SSP, load USP
+            // SSP stays in a_regs[7] implicitly
+            u32 ssp = cpu->a_regs[7];
+            cpu->a_regs[7] = cpu->usp;
+            cpu->usp = ssp;
+        }
+    }
+}
+
+void m68k_exec_andi(M68kCpu* cpu, u16 opcode) {
+    int size_bits = (opcode >> 6) & 0x3;
+
+    // ANDI to CCR: 0000 0010 0011 1100 (0x023C)
+    if (opcode == 0x023C) {
+        u16 imm = m68k_fetch(cpu) & 0xFF;
+        cpu->sr = (cpu->sr & 0xFF00) | ((cpu->sr & 0x00FF) & imm);
+        return;
+    }
+    // ANDI to SR: 0000 0010 0111 1100 (0x027C)
+    if (opcode == 0x027C) {
+        if (!(cpu->sr & M68K_SR_S)) {
+            m68k_exception(cpu, 8);
+            return;
+        }
+        u16 imm = m68k_fetch(cpu);
+        u16 new_sr = cpu->sr & imm;
+        m68k_swap_sp(cpu, (new_sr & M68K_SR_S) != 0);
+        cpu->sr = new_sr;
+        return;
+    }
+
+    M68kSize size;
+    switch (size_bits) {
+        case 0:
+            size = SIZE_BYTE;
+            break;
+        case 1:
+            size = SIZE_WORD;
+            break;
+        case 2:
+            size = SIZE_LONG;
+            break;
+        default:
+            return;
+    }
+
+    u32 imm;
+    if (size == SIZE_BYTE)
+        imm = m68k_fetch(cpu) & 0xFF;
+    else if (size == SIZE_WORD)
+        imm = m68k_fetch(cpu);
+    else
+        imm = ((u32)m68k_fetch(cpu) << 16) | m68k_fetch(cpu);
+
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+    M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
+    u32 result = ea.value & imm;
+
+    if (ea.is_reg && !ea.is_addr) {
+        u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
+        cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & ~mask) | (result & mask);
+    } else {
+        m68k_write_size(cpu, ea.address, result, size);
+    }
+    update_flags_logic(cpu, result, size);
+}
+
+void m68k_exec_ori(M68kCpu* cpu, u16 opcode) {
+    int size_bits = (opcode >> 6) & 0x3;
+
+    // ORI to CCR: 0000 0000 0011 1100 (0x003C)
+    if (opcode == 0x003C) {
+        u16 imm = m68k_fetch(cpu) & 0xFF;
+        cpu->sr = (cpu->sr & 0xFF00) | ((cpu->sr & 0x00FF) | imm);
+        return;
+    }
+    // ORI to SR: 0000 0000 0111 1100 (0x007C)
+    if (opcode == 0x007C) {
+        if (!(cpu->sr & M68K_SR_S)) {
+            m68k_exception(cpu, 8);
+            return;
+        }
+        u16 imm = m68k_fetch(cpu);
+        u16 new_sr = cpu->sr | imm;
+        m68k_swap_sp(cpu, (new_sr & M68K_SR_S) != 0);
+        cpu->sr = new_sr;
+        return;
+    }
+
+    M68kSize size;
+    switch (size_bits) {
+        case 0:
+            size = SIZE_BYTE;
+            break;
+        case 1:
+            size = SIZE_WORD;
+            break;
+        case 2:
+            size = SIZE_LONG;
+            break;
+        default:
+            return;
+    }
+
+    u32 imm;
+    if (size == SIZE_BYTE)
+        imm = m68k_fetch(cpu) & 0xFF;
+    else if (size == SIZE_WORD)
+        imm = m68k_fetch(cpu);
+    else
+        imm = ((u32)m68k_fetch(cpu) << 16) | m68k_fetch(cpu);
+
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+    M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
+    u32 result = ea.value | imm;
+
+    if (ea.is_reg && !ea.is_addr) {
+        u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
+        cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & ~mask) | (result & mask);
+    } else {
+        m68k_write_size(cpu, ea.address, result, size);
+    }
+    update_flags_logic(cpu, result, size);
+}
+
+void m68k_exec_eori(M68kCpu* cpu, u16 opcode) {
+    int size_bits = (opcode >> 6) & 0x3;
+
+    // EORI to CCR: 0000 1010 0011 1100 (0x0A3C)
+    if (opcode == 0x0A3C) {
+        u16 imm = m68k_fetch(cpu) & 0xFF;
+        cpu->sr = (cpu->sr & 0xFF00) | ((cpu->sr & 0x00FF) ^ imm);
+        return;
+    }
+    // EORI to SR: 0000 1010 0111 1100 (0x0A7C)
+    if (opcode == 0x0A7C) {
+        if (!(cpu->sr & M68K_SR_S)) {
+            m68k_exception(cpu, 8);
+            return;
+        }
+        u16 imm = m68k_fetch(cpu);
+        u16 new_sr = cpu->sr ^ imm;
+        m68k_swap_sp(cpu, (new_sr & M68K_SR_S) != 0);
+        cpu->sr = new_sr;
+        return;
+    }
+
+    M68kSize size;
+    switch (size_bits) {
+        case 0:
+            size = SIZE_BYTE;
+            break;
+        case 1:
+            size = SIZE_WORD;
+            break;
+        case 2:
+            size = SIZE_LONG;
+            break;
+        default:
+            return;
+    }
+
+    u32 imm;
+    if (size == SIZE_BYTE)
+        imm = m68k_fetch(cpu) & 0xFF;
+    else if (size == SIZE_WORD)
+        imm = m68k_fetch(cpu);
+    else
+        imm = ((u32)m68k_fetch(cpu) << 16) | m68k_fetch(cpu);
+
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+    M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
+    u32 result = ea.value ^ imm;
+
+    if (ea.is_reg && !ea.is_addr) {
+        u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
+        cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & ~mask) | (result & mask);
+    } else {
+        m68k_write_size(cpu, ea.address, result, size);
+    }
+    update_flags_logic(cpu, result, size);
+}
+
+// -----------------------------------------------------------------------------
+// TAS — Test and Set (read-modify-write atomic byte)
+// -----------------------------------------------------------------------------
+
+void m68k_exec_tas(M68kCpu* cpu, u16 opcode) {
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+    M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_BYTE);
+    u8 data = ea.value & 0xFF;
+
+    // Set flags based on original value
+    update_flags_logic(cpu, data, SIZE_BYTE);
+
+    // Set the MSB of the byte
+    u8 result = data | 0x80;
+
+    if (ea.is_reg && !ea.is_addr) {
+        cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & 0xFFFFFF00) | result;
+    } else {
+        m68k_write_8(cpu, ea.address, result);
+    }
+}

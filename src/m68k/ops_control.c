@@ -179,16 +179,14 @@ void m68k_exec_stop(M68kCpu* cpu, u16 opcode) {
     (void)opcode;
 
     if (!(cpu->sr & M68K_SR_S)) {
-        // Privilege Violation — don't consume the immediate word
         m68k_exception(cpu, 8);
         return;
     }
 
     u16 imm = m68k_fetch(cpu);
+    m68k_swap_sp(cpu, (imm & M68K_SR_S) != 0);
     cpu->sr = imm;
-    // CPU should stop until interrupt/reset.
-    // Emulation of "stopped" state is not fully implemented in this loop model yet.
-    // For now, it just sets SR. A real run loop would check a 'stopped' flag.
+    cpu->stopped = true;
 }
 
 void m68k_exec_reset(M68kCpu* cpu, u16 opcode) {
@@ -200,4 +198,80 @@ void m68k_exec_reset(M68kCpu* cpu, u16 opcode) {
 
     // Asserts RESET line. In emulation, usually resets external devices.
     // No-op for now unless we have devices.
+}
+
+// -----------------------------------------------------------------------------
+// 68010+ Instructions
+// -----------------------------------------------------------------------------
+
+// MOVEC — Move to/from Control Register (68010+)
+void m68k_exec_movec(M68kCpu* cpu, u16 opcode) {
+    (void)opcode;
+    if (!(cpu->sr & M68K_SR_S)) {
+        m68k_exception(cpu, 8);  // Privilege violation
+        return;
+    }
+
+    u16 ext = m68k_fetch(cpu);
+    bool is_addr = (ext >> 15) & 1;
+    int reg_num = (ext >> 12) & 0x7;
+    int ctrl_reg = ext & 0xFFF;
+
+    // Get pointer to general register
+    u32* gpr = is_addr ? &cpu->a_regs[reg_num] : &cpu->d_regs[reg_num];
+
+    bool to_ctrl = (opcode & 1) != 0;  // 0x4E7A = from ctrl, 0x4E7B = to ctrl
+
+    if (to_ctrl) {
+        switch (ctrl_reg) {
+            case 0x000:
+                cpu->sfc = *gpr;
+                break;  // SFC
+            case 0x001:
+                cpu->dfc = *gpr;
+                break;  // DFC
+            case 0x800:
+                cpu->usp = *gpr;
+                break;  // USP
+            case 0x801:
+                cpu->vbr = *gpr;
+                break;  // VBR
+            default:
+                break;
+        }
+    } else {
+        switch (ctrl_reg) {
+            case 0x000:
+                *gpr = cpu->sfc;
+                break;
+            case 0x001:
+                *gpr = cpu->dfc;
+                break;
+            case 0x800:
+                *gpr = cpu->usp;
+                break;
+            case 0x801:
+                *gpr = cpu->vbr;
+                break;
+            default:
+                *gpr = 0;
+                break;
+        }
+    }
+}
+
+// RTD — Return and Deallocate (68010+)
+void m68k_exec_rtd(M68kCpu* cpu, u16 opcode) {
+    (void)opcode;
+    u32 ret_addr = m68k_pop_32(cpu);
+    s16 disp = (s16)m68k_fetch(cpu);
+    cpu->a_regs[7] += disp;
+    cpu->pc = ret_addr;
+}
+
+// BKPT — Breakpoint (68010+)
+void m68k_exec_bkpt(M68kCpu* cpu, u16 opcode) {
+    (void)opcode;
+    // On 68010+, BKPT triggers an illegal instruction exception
+    m68k_exception(cpu, 4);
 }

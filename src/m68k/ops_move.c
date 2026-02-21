@@ -225,3 +225,121 @@ void m68k_exec_move_sr(M68kCpu* cpu, u16 opcode) {
         }
     }
 }
+
+// -----------------------------------------------------------------------------
+// MOVEP — Move Peripheral Data (alternating bytes in memory)
+// -----------------------------------------------------------------------------
+
+void m68k_exec_movep(M68kCpu* cpu, u16 opcode) {
+    int data_reg = (opcode >> 9) & 0x7;
+    int addr_reg = opcode & 0x7;
+    int opmode = (opcode >> 6) & 0x7;
+
+    s16 disp = (s16)m68k_fetch(cpu);
+    u32 addr = cpu->a_regs[addr_reg] + disp;
+
+    switch (opmode) {
+        case 4:  // MOVEP.W (d16,An), Dn — memory to register, word
+            cpu->d_regs[data_reg] = (cpu->d_regs[data_reg] & 0xFFFF0000) |
+                                    ((u32)m68k_read_8(cpu, addr) << 8) | m68k_read_8(cpu, addr + 2);
+            break;
+        case 5:  // MOVEP.L (d16,An), Dn — memory to register, long
+            cpu->d_regs[data_reg] =
+                ((u32)m68k_read_8(cpu, addr) << 24) | ((u32)m68k_read_8(cpu, addr + 2) << 16) |
+                ((u32)m68k_read_8(cpu, addr + 4) << 8) | m68k_read_8(cpu, addr + 6);
+            break;
+        case 6:  // MOVEP.W Dn, (d16,An) — register to memory, word
+            m68k_write_8(cpu, addr, (cpu->d_regs[data_reg] >> 8) & 0xFF);
+            m68k_write_8(cpu, addr + 2, cpu->d_regs[data_reg] & 0xFF);
+            break;
+        case 7:  // MOVEP.L Dn, (d16,An) — register to memory, long
+            m68k_write_8(cpu, addr, (cpu->d_regs[data_reg] >> 24) & 0xFF);
+            m68k_write_8(cpu, addr + 2, (cpu->d_regs[data_reg] >> 16) & 0xFF);
+            m68k_write_8(cpu, addr + 4, (cpu->d_regs[data_reg] >> 8) & 0xFF);
+            m68k_write_8(cpu, addr + 6, cpu->d_regs[data_reg] & 0xFF);
+            break;
+        default:
+            break;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// MOVE USP — Move to/from User Stack Pointer (supervisor only)
+// -----------------------------------------------------------------------------
+
+void m68k_exec_move_usp(M68kCpu* cpu, u16 opcode) {
+    if (!(cpu->sr & M68K_SR_S)) {
+        m68k_exception(cpu, 8);  // Privilege violation
+        return;
+    }
+
+    int reg = opcode & 0x7;
+    bool to_usp = (opcode & 0x8) == 0;  // Bit 3: 0 = An->USP, 1 = USP->An
+
+    if (to_usp) {
+        cpu->usp = cpu->a_regs[reg];
+    } else {
+        cpu->a_regs[reg] = cpu->usp;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// MOVE to CCR — MOVE <ea>, CCR (writes lower byte of SR only)
+// -----------------------------------------------------------------------------
+
+void m68k_exec_move_ccr(M68kCpu* cpu, u16 opcode) {
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+    M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_WORD);
+    u16 data = ea.value & 0x1F;  // Only CCR bits (lower 5 bits)
+    cpu->sr = (cpu->sr & 0xFF00) | data;
+}
+
+// -----------------------------------------------------------------------------
+// MOVES — Move to/from Address Space (68010+, supervisor only)
+// -----------------------------------------------------------------------------
+
+void m68k_exec_moves(M68kCpu* cpu, u16 opcode) {
+    if (!(cpu->sr & M68K_SR_S)) {
+        m68k_exception(cpu, 8);  // Privilege violation
+        return;
+    }
+
+    int size_bits = (opcode >> 6) & 0x3;
+    M68kSize size;
+    switch (size_bits) {
+        case 0:
+            size = SIZE_BYTE;
+            break;
+        case 1:
+            size = SIZE_WORD;
+            break;
+        case 2:
+            size = SIZE_LONG;
+            break;
+        default:
+            return;
+    }
+
+    u16 ext = m68k_fetch(cpu);
+    bool is_addr = (ext >> 15) & 1;
+    int reg_num = (ext >> 12) & 0x7;
+    bool to_ea = (ext >> 11) & 1;
+
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+    M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
+
+    if (to_ea) {
+        u32 val = is_addr ? cpu->a_regs[reg_num] : cpu->d_regs[reg_num];
+        m68k_write_size(cpu, ea.address, val, size);
+    } else {
+        u32 val = m68k_read_size(cpu, ea.address, size);
+        if (is_addr) {
+            cpu->a_regs[reg_num] = val;
+        } else {
+            u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
+            cpu->d_regs[reg_num] = (cpu->d_regs[reg_num] & ~mask) | (val & mask);
+        }
+    }
+}

@@ -292,7 +292,7 @@ void m68k_exec_addx(M68kCpu* cpu, u16 opcode) {
     if ((result & value_mask) != 0) {
         cpu->sr &= ~M68K_SR_Z;  // Clear Z if result is non-zero
     } else if (old_z) {
-        cpu->sr |= M68K_SR_Z;   // Preserve Z if result is zero and Z was set
+        cpu->sr |= M68K_SR_Z;  // Preserve Z if result is zero and Z was set
     } else {
         cpu->sr &= ~M68K_SR_Z;  // Z was clear before, keep it clear
     }
@@ -753,4 +753,153 @@ void m68k_exec_nbcd(M68kCpu* cpu, u16 opcode) {
             m68k_write_8(cpu, ea.address, 0);
         }
     }
+}
+
+// -----------------------------------------------------------------------------
+// Immediate Arithmetic (ADDI, SUBI)
+// -----------------------------------------------------------------------------
+
+void m68k_exec_addi(M68kCpu* cpu, u16 opcode) {
+    int size_bits = (opcode >> 6) & 0x3;
+    M68kSize size;
+    switch (size_bits) {
+        case 0:
+            size = SIZE_BYTE;
+            break;
+        case 1:
+            size = SIZE_WORD;
+            break;
+        case 2:
+            size = SIZE_LONG;
+            break;
+        default:
+            return;
+    }
+
+    // Fetch immediate value
+    u32 imm;
+    if (size == SIZE_BYTE) {
+        imm = m68k_fetch(cpu) & 0xFF;
+    } else if (size == SIZE_WORD) {
+        imm = m68k_fetch(cpu);
+    } else {
+        imm = ((u32)m68k_fetch(cpu) << 16) | m68k_fetch(cpu);
+    }
+
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+    M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
+    u32 dest = ea.value;
+    u32 result = dest + imm;
+
+    if (ea.is_reg && !ea.is_addr) {
+        u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
+        cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & ~mask) | (result & mask);
+    } else {
+        m68k_write_size(cpu, ea.address, result, size);
+    }
+
+    update_flags_add(cpu, imm, dest, result, size);
+}
+
+void m68k_exec_subi(M68kCpu* cpu, u16 opcode) {
+    int size_bits = (opcode >> 6) & 0x3;
+    M68kSize size;
+    switch (size_bits) {
+        case 0:
+            size = SIZE_BYTE;
+            break;
+        case 1:
+            size = SIZE_WORD;
+            break;
+        case 2:
+            size = SIZE_LONG;
+            break;
+        default:
+            return;
+    }
+
+    u32 imm;
+    if (size == SIZE_BYTE) {
+        imm = m68k_fetch(cpu) & 0xFF;
+    } else if (size == SIZE_WORD) {
+        imm = m68k_fetch(cpu);
+    } else {
+        imm = ((u32)m68k_fetch(cpu) << 16) | m68k_fetch(cpu);
+    }
+
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+    M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
+    u32 dest = ea.value;
+    u32 result = dest - imm;
+
+    if (ea.is_reg && !ea.is_addr) {
+        u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
+        cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & ~mask) | (result & mask);
+    } else {
+        m68k_write_size(cpu, ea.address, result, size);
+    }
+
+    update_flags_sub(cpu, imm, dest, result, size);
+}
+
+// -----------------------------------------------------------------------------
+// NEGX — Negate with Extend
+// -----------------------------------------------------------------------------
+
+void m68k_exec_negx(M68kCpu* cpu, u16 opcode) {
+    int size_bits = (opcode >> 6) & 0x3;
+    M68kSize size;
+    switch (size_bits) {
+        case 0:
+            size = SIZE_BYTE;
+            break;
+        case 1:
+            size = SIZE_WORD;
+            break;
+        case 2:
+            size = SIZE_LONG;
+            break;
+        default:
+            return;
+    }
+
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+    M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
+    u32 src = ea.value;
+    u32 x = (cpu->sr & M68K_SR_X) ? 1 : 0;
+    u32 result = 0 - src - x;
+
+    if (ea.is_reg && !ea.is_addr) {
+        u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
+        cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & ~mask) | (result & mask);
+    } else {
+        m68k_write_size(cpu, ea.address, result, size);
+    }
+
+    // Flags: same as SUB but Z is "cleared if non-zero, unchanged otherwise"
+    bool old_z = (cpu->sr & M68K_SR_Z) != 0;
+    update_flags_sub(cpu, src, 0, result, size);
+
+    u32 value_mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
+    if ((result & value_mask) != 0) {
+        cpu->sr &= ~M68K_SR_Z;
+    } else if (old_z) {
+        cpu->sr |= M68K_SR_Z;
+    } else {
+        cpu->sr &= ~M68K_SR_Z;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// EXTB — Extend Byte to Long (68020+)
+// -----------------------------------------------------------------------------
+
+void m68k_exec_extb(M68kCpu* cpu, u16 opcode) {
+    int reg = opcode & 0x7;
+    s8 byte_val = (s8)(cpu->d_regs[reg] & 0xFF);
+    cpu->d_regs[reg] = (u32)(s32)byte_val;
+    update_flags_logic(cpu, cpu->d_regs[reg], SIZE_LONG);
 }

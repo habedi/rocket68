@@ -39,13 +39,19 @@ typedef struct {
     u16 sr;         // Status Register
 
     // Memory interface
-    // For now, we'll use a simple byte array for memory
-    // In a real system, this would be a bus interface
     u8* memory;
     u32 memory_size;
 
     // Internal state
-    int irq_level;  // Current pending IRQ level (0-7)
+    int irq_level;       // Current pending IRQ level (0-7)
+    u32 usp;             // User Stack Pointer (stored when in supervisor mode)
+    bool stopped;        // CPU halted by STOP instruction
+    bool trace_pending;  // Trace exception pending after current instruction
+
+    // 68010+ control registers
+    u32 vbr;  // Vector Base Register (68010+)
+    u32 sfc;  // Source Function Code (68010+)
+    u32 dfc;  // Destination Function Code (68010+)
 } M68kCpu;
 
 // Status Register Flags
