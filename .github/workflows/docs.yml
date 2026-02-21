@@ -18,9 +18,12 @@ permissions:
 jobs:
   deploy-docs:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+            submodules: recursive
 
       - name: Install Zig
         uses: goto-bus-stop/setup-zig@v2

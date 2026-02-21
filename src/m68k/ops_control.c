@@ -132,12 +132,16 @@ void m68k_exec_trap(M68kCpu* cpu, u16 opcode) {
 void m68k_exec_rte(M68kCpu* cpu, u16 opcode) {
     (void)opcode;
     if (!(cpu->sr & M68K_SR_S)) {
-        // Privilege Violation! (Not implemented efficiently yet, just return)
+        // Privilege Violation
+        cpu->pc -= 2;
+        m68k_exception(cpu, 8);
         return;
     }
 
-    cpu->sr = m68k_pop_16(cpu);
-    cpu->pc = m68k_pop_32(cpu);
+    u16 new_sr = m68k_pop_16(cpu);
+    u32 new_pc = m68k_pop_32(cpu);
+    m68k_set_sr(cpu, new_sr);
+    cpu->pc = new_pc;
 }
 
 void m68k_exec_chk(M68kCpu* cpu, u16 opcode) {
@@ -146,16 +150,23 @@ void m68k_exec_chk(M68kCpu* cpu, u16 opcode) {
     int reg = opcode & 0x7;
 
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_WORD);
-    s16 src = (s16)ea.value;
-    s16 dest = (s16)cpu->d_regs[reg_idx];
+    s16 src = (s16)(cpu->d_regs[reg_idx] & 0xFFFF);
+    s16 bound = (s16)ea.value;
 
-    if (dest < 0) {
+    // Undocumented M68000 CHK flag behavior: evaluates N/Z on src, clears V/C
+    cpu->sr &= ~(M68K_SR_N | M68K_SR_Z | M68K_SR_V | M68K_SR_C);
+    if (src < 0)
         cpu->sr |= M68K_SR_N;
-        m68k_exception(cpu, 6);  // CHK instruction vector
-    } else if (dest > src) {
-        cpu->sr &= ~M68K_SR_N;
-        m68k_exception(cpu, 6);
+    else if (src == 0)
+        cpu->sr |= M68K_SR_Z;
+
+    // In-bounds: no exception
+    if (src >= 0 && src <= bound) {
+        return;
     }
+
+    // Out-of-bounds: trap
+    m68k_exception(cpu, 6);  // CHK instruction vector
 }
 
 void m68k_exec_trapv(M68kCpu* cpu, u16 opcode) {
@@ -171,7 +182,7 @@ void m68k_exec_rtr(M68kCpu* cpu, u16 opcode) {
     u32 return_pc = m68k_pop_32(cpu);
 
     // Restore only CCR (low byte of SR), preserve high byte
-    cpu->sr = (cpu->sr & 0xFF00) | (ccr & 0xFF);
+    cpu->sr = (cpu->sr & 0xFF00) | (ccr & 0x1F);
     cpu->pc = return_pc;
 }
 
@@ -179,20 +190,23 @@ void m68k_exec_stop(M68kCpu* cpu, u16 opcode) {
     (void)opcode;
 
     if (!(cpu->sr & M68K_SR_S)) {
+        cpu->pc -= 2;
         m68k_exception(cpu, 8);
         return;
     }
 
     u16 imm = m68k_fetch(cpu);
-    m68k_swap_sp(cpu, (imm & M68K_SR_S) != 0);
-    cpu->sr = imm;
+    m68k_set_sr(cpu, imm);
     cpu->stopped = true;
+    cpu->pc -= 4;  // STOP: PC should point at the STOP instruction itself
 }
 
 void m68k_exec_reset(M68kCpu* cpu, u16 opcode) {
     (void)opcode;
     if (!(cpu->sr & M68K_SR_S)) {
         // Privilege Violation
+        cpu->pc -= 2;
+        m68k_exception(cpu, 8);
         return;
     }
 
@@ -208,6 +222,7 @@ void m68k_exec_reset(M68kCpu* cpu, u16 opcode) {
 void m68k_exec_movec(M68kCpu* cpu, u16 opcode) {
     (void)opcode;
     if (!(cpu->sr & M68K_SR_S)) {
+        cpu->pc -= 2;
         m68k_exception(cpu, 8);  // Privilege violation
         return;
     }

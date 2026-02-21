@@ -135,6 +135,11 @@ u16 m68k_read_16(M68kCpu* cpu, u32 address) {
     if (is_valid_address(cpu, address) && is_valid_address(cpu, address + 1)) {
         return (cpu->memory[address] << 8) | cpu->memory[address + 1];
     }
+    if (!in_bus_error) {
+        in_bus_error = true;
+        m68k_exception(cpu, 2);
+        in_bus_error = false;
+    }
     return 0;
 }
 
@@ -148,6 +153,11 @@ u32 m68k_read_32(M68kCpu* cpu, u32 address) {
     if (is_valid_address(cpu, address) && is_valid_address(cpu, address + 3)) {
         return (cpu->memory[address] << 24) | (cpu->memory[address + 1] << 16) |
                (cpu->memory[address + 2] << 8) | cpu->memory[address + 3];
+    }
+    if (!in_bus_error) {
+        in_bus_error = true;
+        m68k_exception(cpu, 2);
+        in_bus_error = false;
     }
     return 0;
 }
@@ -175,6 +185,10 @@ void m68k_write_16(M68kCpu* cpu, u32 address, u16 value) {
     if (is_valid_address(cpu, address) && is_valid_address(cpu, address + 1)) {
         cpu->memory[address] = (value >> 8) & 0xFF;
         cpu->memory[address + 1] = value & 0xFF;
+    } else if (!in_bus_error) {
+        in_bus_error = true;
+        m68k_exception(cpu, 2);
+        in_bus_error = false;
     }
 }
 
@@ -190,6 +204,10 @@ void m68k_write_32(M68kCpu* cpu, u32 address, u32 value) {
         cpu->memory[address + 1] = (value >> 16) & 0xFF;
         cpu->memory[address + 2] = (value >> 8) & 0xFF;
         cpu->memory[address + 3] = value & 0xFF;
+    } else if (!in_bus_error) {
+        in_bus_error = true;
+        m68k_exception(cpu, 2);
+        in_bus_error = false;
     }
 }
 
@@ -376,6 +394,28 @@ void update_flags_sub(M68kCpu* cpu, u32 src, u32 dest, u32 result, M68kSize size
     }
 }
 
+// CMP variant: identical to update_flags_sub but does NOT modify X flag
+void update_flags_cmp(M68kCpu* cpu, u32 src, u32 dest, u32 result, M68kSize size) {
+    cpu->sr &= ~(M68K_SR_N | M68K_SR_Z | M68K_SR_V | M68K_SR_C);
+
+    u32 msb_mask = (size == SIZE_BYTE) ? 0x80 : (size == SIZE_WORD) ? 0x8000 : 0x80000000;
+    u32 value_mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
+
+    if (result & msb_mask) cpu->sr |= M68K_SR_N;
+
+    if ((result & value_mask) == 0) cpu->sr |= M68K_SR_Z;
+
+    bool sm = (src & msb_mask) != 0;
+    bool dm = (dest & msb_mask) != 0;
+    bool rm = (result & msb_mask) != 0;
+
+    if ((!sm && dm && !rm) || (sm && !dm && rm)) cpu->sr |= M68K_SR_V;
+
+    if ((sm && !dm) || (rm && !dm) || (sm && rm)) {
+        cpu->sr |= M68K_SR_C;
+    }
+}
+
 void update_flags_logic(M68kCpu* cpu, u32 result, M68kSize size) {
     cpu->sr &= ~(M68K_SR_N | M68K_SR_Z | M68K_SR_V | M68K_SR_C);
 
@@ -416,13 +456,34 @@ u16 m68k_pop_16(M68kCpu* cpu) {
 // Exception Handling
 // -----------------------------------------------------------------------------
 
+void m68k_set_sr(M68kCpu* cpu, u16 new_sr) {
+    new_sr &= 0xA71F;  // 68000 only supports T, S, I2, I1, I0, X, N, Z, V, C
+    bool old_s = (cpu->sr & M68K_SR_S) != 0;
+    bool new_s = (new_sr & M68K_SR_S) != 0;
+
+    if (old_s != new_s) {
+        if (new_s) {
+            // User to Supervisor
+            cpu->usp = cpu->a_regs[7];
+            cpu->a_regs[7] = cpu->ssp;
+        } else {
+            // Supervisor to User
+            cpu->ssp = cpu->a_regs[7];
+            cpu->a_regs[7] = cpu->usp;
+        }
+    }
+    cpu->sr = new_sr;
+}
+
 void m68k_exception(M68kCpu* cpu, int vector) {
+    if (cpu->exception_thrown == 0) {
+        cpu->exception_thrown = vector;
+    }
     u16 old_sr = cpu->sr;
 
     // 1. Make temporary copy of SR
-    // 2. Set S-bit (Supervisor Mode)
-    // 3. Clear T-bit (Trace) - Not implemented yet
-    cpu->sr |= M68K_SR_S;
+    // 2. Set S-bit (Supervisor Mode), Clear T-bit (Trace)
+    m68k_set_sr(cpu, (cpu->sr | M68K_SR_S) & ~0x8000);
 
     // 4. Push PC
     m68k_push_32(cpu, cpu->pc);
@@ -467,7 +528,7 @@ static bool check_interrupts(M68kCpu* cpu) {
 // Main Dispatch Loop
 // -----------------------------------------------------------------------------
 
-int m68k_step(M68kCpu* cpu) {
+int m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
     // Stopped state: return immediately until an interrupt arrives
     if (cpu->stopped) {
         if (cpu->irq_level > 0) {
@@ -477,8 +538,8 @@ int m68k_step(M68kCpu* cpu) {
         }
     }
 
-    // Check for interrupts before fetching
-    if (check_interrupts(cpu)) {
+    // Check for interrupts before fetching if enabled
+    if (check_exceptions && check_interrupts(cpu)) {
         return 44;
     }
 
@@ -955,11 +1016,22 @@ int m68k_step(M68kCpu* cpu) {
     cycles = 34;
 
 done:
-    // Trace mode: if T bit was set before execution, fire trace exception
-    if (trace_active) {
-        m68k_exception(cpu, 9);  // Trace vector
-        cycles += 34;
+    if ((cpu->pc & 1) && !in_address_error) {
+        // debug trace
+        if ((cpu->pc & 1) && cpu->exception_thrown == 0) {
+            printf(
+                "WARNING: PC is odd %X, about to throw exception 3! exception_thrown=%d, "
+                "in_address_error=%d\n",
+                cpu->pc, cpu->exception_thrown, in_address_error);
+        }
+        m68k_exception(cpu, 3);
     }
 
+    // Trace mode: if T bit was set before execution, fire trace exception
+    if (check_exceptions && trace_active && !cpu->stopped) {
+        m68k_exception(cpu, 9);
+    }
     return cycles;
 }
+
+int m68k_step(M68kCpu* cpu) { return m68k_step_ex(cpu, true); }

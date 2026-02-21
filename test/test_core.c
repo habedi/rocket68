@@ -184,6 +184,7 @@ void test_interrupts() {
     // 1. Setup
     cpu.pc = 0x100;
     cpu.a_regs[7] = 0x400;  // SP
+    cpu.ssp = 0x400;        // SSP must match since IRQ switches to supervisor mode
     cpu.sr = 0x0000;        // User mode, IRQ mask 0 (Enable all)
 
     // 2. Setup Auto-Vector for Level 4

@@ -113,9 +113,9 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
 
     M68kEA ea;
     u32 addr = 0;
+    int count = 0;
 
     if (mode == 4) {  // -(An)
-        int count = 0;
         for (int i = 0; i < 16; i++)
             if (mask & (1 << i)) count++;
         cpu->a_regs[reg] -= count * step;
@@ -131,10 +131,11 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
                 u32 val = m68k_read_size(cpu, addr, size);
                 if (!size_long) val = (s32)(s16)val;
 
-                if (i < 8)
+                if (i < 8) {
                     cpu->d_regs[i] = val;
-                else
+                } else {
                     cpu->a_regs[i - 8] = val;
+                }
 
                 addr += step;
             }
@@ -146,7 +147,15 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
             for (int i = 15; i >= 0; i--) {
                 if (mask & (1 << i)) {
                     int reg_idx = 15 - i;
-                    u32 val = (reg_idx < 8) ? cpu->d_regs[reg_idx] : cpu->a_regs[reg_idx - 8];
+                    u32 val;
+                    if (reg_idx < 8) {
+                        val = cpu->d_regs[reg_idx];
+                    } else if (reg_idx - 8 == reg) {
+                        // The initial address register value is written
+                        val = cpu->a_regs[reg] + count * step;
+                    } else {
+                        val = cpu->a_regs[reg_idx - 8];
+                    }
                     if (!size_long) val &= 0xFFFF;
                     m68k_write_size(cpu, addr, val, size);
                     addr += step;
@@ -203,12 +212,14 @@ void m68k_exec_move_sr(M68kCpu* cpu, u16 opcode) {
     // MOVE <ea>, SR: 0100 0110 11 ... (0x46C0)
     if ((opcode & 0xFFC0) == 0x46C0) {
         if (!(cpu->sr & M68K_SR_S)) {
+            cpu->pc -= 2;
+            m68k_exception(cpu, 8);
             return;
         }
         int mode = (opcode >> 3) & 0x7;
         int reg = opcode & 0x7;
         M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_WORD);
-        cpu->sr = ea.value;
+        m68k_set_sr(cpu, ea.value);
         return;
     }
 
@@ -269,6 +280,7 @@ void m68k_exec_movep(M68kCpu* cpu, u16 opcode) {
 
 void m68k_exec_move_usp(M68kCpu* cpu, u16 opcode) {
     if (!(cpu->sr & M68K_SR_S)) {
+        cpu->pc -= 2;
         m68k_exception(cpu, 8);  // Privilege violation
         return;
     }
@@ -301,6 +313,7 @@ void m68k_exec_move_ccr(M68kCpu* cpu, u16 opcode) {
 
 void m68k_exec_moves(M68kCpu* cpu, u16 opcode) {
     if (!(cpu->sr & M68K_SR_S)) {
+        cpu->pc -= 2;
         m68k_exception(cpu, 8);  // Privilege violation
         return;
     }

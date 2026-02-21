@@ -139,4 +139,5 @@ poetry.lock
 # Additional files and directories to ignore (put below)
 docs/html
 docs/latex
-target
+target/
+tmp_test/

@@ -93,6 +93,7 @@ void test_disasm() {
 
     char buf[64];
     int len = m68k_disasm(&cpu, 0, buf, sizeof(buf));
+    (void)len;
     printf("Disasm 0: %s\n", buf);
     assert(strstr(buf, "ADD"));
 

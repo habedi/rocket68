@@ -56,6 +56,7 @@ void m68k_exception(M68kCpu *cpu, int vector);
 void update_flags_logic(M68kCpu *cpu, u32 result, M68kSize size);
 void update_flags_add(M68kCpu *cpu, u32 src, u32 dest, u32 result, M68kSize size);
 void update_flags_sub(M68kCpu *cpu, u32 src, u32 dest, u32 result, M68kSize size);
+void update_flags_cmp(M68kCpu *cpu, u32 src, u32 dest, u32 result, M68kSize size);
 
 // -----------------------------------------------------------------------------
 // Instruction Implementation Prototypes

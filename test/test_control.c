@@ -191,6 +191,7 @@ void test_exceptions() {
     // 1. Initial State
     // Set Stack Pointer slightly high
     cpu.a_regs[7] = 0x1000;
+    cpu.ssp = 0x1000;  // SSP must match since TRAP switches to supervisor mode
     cpu.pc = 0x200;
     cpu.sr = 0;  // User mode
 

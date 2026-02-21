@@ -312,6 +312,8 @@ void m68k_exec_shift(M68kCpu* cpu, u16 opcode) {
         cpu->sr &= ~(M68K_SR_N | M68K_SR_Z | M68K_SR_V | M68K_SR_C);
         if (result & msb) cpu->sr |= M68K_SR_N;
         if (result == 0) cpu->sr |= M68K_SR_Z;
+        // For ROX, C = X when count is 0
+        if (type == 2 && extend) cpu->sr |= M68K_SR_C;
         return;
     }
 
@@ -453,13 +455,12 @@ void m68k_exec_andi(M68kCpu* cpu, u16 opcode) {
     // ANDI to SR: 0000 0010 0111 1100 (0x027C)
     if (opcode == 0x027C) {
         if (!(cpu->sr & M68K_SR_S)) {
+            cpu->pc -= 2;
             m68k_exception(cpu, 8);
             return;
         }
         u16 imm = m68k_fetch(cpu);
-        u16 new_sr = cpu->sr & imm;
-        m68k_swap_sp(cpu, (new_sr & M68K_SR_S) != 0);
-        cpu->sr = new_sr;
+        m68k_set_sr(cpu, cpu->sr & imm);
         return;
     }
 
@@ -506,19 +507,18 @@ void m68k_exec_ori(M68kCpu* cpu, u16 opcode) {
     // ORI to CCR: 0000 0000 0011 1100 (0x003C)
     if (opcode == 0x003C) {
         u16 imm = m68k_fetch(cpu) & 0xFF;
-        cpu->sr = (cpu->sr & 0xFF00) | ((cpu->sr & 0x00FF) | imm);
+        cpu->sr = (cpu->sr & 0xFF00) | (((cpu->sr & 0x00FF) | imm) & 0x1F);
         return;
     }
     // ORI to SR: 0000 0000 0111 1100 (0x007C)
     if (opcode == 0x007C) {
         if (!(cpu->sr & M68K_SR_S)) {
+            cpu->pc -= 2;
             m68k_exception(cpu, 8);
             return;
         }
         u16 imm = m68k_fetch(cpu);
-        u16 new_sr = cpu->sr | imm;
-        m68k_swap_sp(cpu, (new_sr & M68K_SR_S) != 0);
-        cpu->sr = new_sr;
+        m68k_set_sr(cpu, cpu->sr | imm);
         return;
     }
 
@@ -565,19 +565,18 @@ void m68k_exec_eori(M68kCpu* cpu, u16 opcode) {
     // EORI to CCR: 0000 1010 0011 1100 (0x0A3C)
     if (opcode == 0x0A3C) {
         u16 imm = m68k_fetch(cpu) & 0xFF;
-        cpu->sr = (cpu->sr & 0xFF00) | ((cpu->sr & 0x00FF) ^ imm);
+        cpu->sr = (cpu->sr & 0xFF00) | (((cpu->sr & 0x00FF) ^ imm) & 0x1F);
         return;
     }
     // EORI to SR: 0000 1010 0111 1100 (0x0A7C)
     if (opcode == 0x0A7C) {
         if (!(cpu->sr & M68K_SR_S)) {
+            cpu->pc -= 2;
             m68k_exception(cpu, 8);
             return;
         }
         u16 imm = m68k_fetch(cpu);
-        u16 new_sr = cpu->sr ^ imm;
-        m68k_swap_sp(cpu, (new_sr & M68K_SR_S) != 0);
-        cpu->sr = new_sr;
+        m68k_set_sr(cpu, cpu->sr ^ imm);
         return;
     }
 

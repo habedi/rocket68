@@ -395,48 +395,60 @@ void m68k_exec_div(M68kCpu* cpu, u16 opcode) {
     M68kSize size = SIZE_WORD;
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
 
-    u32 divisor = ea.value & 0xFFFF;
+    u32 divisor_raw = ea.value & 0xFFFF;
     u32 dividend = cpu->d_regs[reg_idx];
 
-    if (divisor == 0) {
+    if (divisor_raw == 0) {
         m68k_exception(cpu, 5);  // Zero Divide exception
         return;
     }
 
-    u32 quotient, remainder;
-
     if (is_signed) {
+        s16 s_divisor = (s16)divisor_raw;
+
+        // Special case: 0x80000000 / -1 (C undefined behavior)
+        if (dividend == 0x80000000 && s_divisor == -1) {
+            cpu->sr &= ~(M68K_SR_N | M68K_SR_V | M68K_SR_C);
+            cpu->sr |= M68K_SR_Z;
+            cpu->d_regs[reg_idx] = 0;
+            return;
+        }
+
         s32 s_dividend = (s32)dividend;
-        s16 s_divisor = (s16)divisor;
         s32 s_quot = s_dividend / s_divisor;
         s32 s_rem = s_dividend % s_divisor;
 
-        if (s_quot > 32767 || s_quot < -32768) {
-            cpu->sr |= M68K_SR_V;
+        if (s_quot != (s32)(s16)s_quot) {
+            // Overflow: unconditionally N=1, V=1, Z=0, C=0 (matches MAME/hardware tests)
+            cpu->sr &= ~(M68K_SR_Z | M68K_SR_C);
+            cpu->sr |= (M68K_SR_N | M68K_SR_V);
             return;
         }
 
-        quotient = s_quot & 0xFFFF;
-        remainder = s_rem & 0xFFFF;
+        u32 quotient = (u32)s_quot & 0xFFFF;
+        u32 remainder = (u32)s_rem & 0xFFFF;
+        cpu->d_regs[reg_idx] = (remainder << 16) | quotient;
+
+        cpu->sr &= ~(M68K_SR_N | M68K_SR_Z | M68K_SR_V | M68K_SR_C);
+        if (quotient & 0x8000) cpu->sr |= M68K_SR_N;
+        if (quotient == 0) cpu->sr |= M68K_SR_Z;
     } else {
-        quotient = dividend / divisor;
-        remainder = dividend % divisor;
+        u32 quotient = dividend / divisor_raw;
+        u32 remainder = dividend % divisor_raw;
 
         if (quotient > 0xFFFF) {
-            cpu->sr |= M68K_SR_V;
+            // Overflow: unconditionally N=1, V=1, Z=0, C=0 (matches MAME/hardware tests)
+            cpu->sr &= ~(M68K_SR_Z | M68K_SR_C);
+            cpu->sr |= (M68K_SR_N | M68K_SR_V);
             return;
         }
-    }
 
-    cpu->d_regs[reg_idx] = (remainder << 16) | quotient;
+        cpu->d_regs[reg_idx] = (remainder << 16) | (quotient & 0xFFFF);
 
-    cpu->sr &= ~(M68K_SR_N | M68K_SR_Z | M68K_SR_V | M68K_SR_C);
-    if (is_signed) {
-        if ((s16)quotient < 0) cpu->sr |= M68K_SR_N;
-    } else {
-        if ((quotient & 0x8000)) cpu->sr |= M68K_SR_N;
+        cpu->sr &= ~(M68K_SR_N | M68K_SR_Z | M68K_SR_V | M68K_SR_C);
+        if (quotient & 0x8000) cpu->sr |= M68K_SR_N;
+        if (quotient == 0) cpu->sr |= M68K_SR_Z;
     }
-    if (quotient == 0) cpu->sr |= M68K_SR_Z;
 }
 
 void m68k_exec_cmp(M68kCpu* cpu, u16 opcode) {
@@ -465,24 +477,18 @@ void m68k_exec_cmp(M68kCpu* cpu, u16 opcode) {
         else
             size = SIZE_LONG;
 
-        u32 src_addr = cpu->a_regs[reg];
-        u32 dest_addr = cpu->a_regs[reg_idx];
-
-        u32 src_val = m68k_read_size(cpu, src_addr, size);
-        u32 dest_val = m68k_read_size(cpu, dest_addr, size);
-
         int step = (size == SIZE_BYTE) ? 1 : (size == SIZE_WORD) ? 2 : 4;
-        if (reg == 7 && size == SIZE_BYTE)
-            cpu->a_regs[reg] += 2;
-        else
-            cpu->a_regs[reg] += step;
-        if (reg_idx == 7 && size == SIZE_BYTE)
-            cpu->a_regs[reg_idx] += 2;
-        else
-            cpu->a_regs[reg_idx] += step;
+
+        u32 src_addr = cpu->a_regs[reg];
+        u32 src_val = m68k_read_size(cpu, src_addr, size);
+        cpu->a_regs[reg] += (reg == 7 && size == SIZE_BYTE) ? 2 : step;
+
+        u32 dest_addr = cpu->a_regs[reg_idx];
+        u32 dest_val = m68k_read_size(cpu, dest_addr, size);
+        cpu->a_regs[reg_idx] += (reg_idx == 7 && size == SIZE_BYTE) ? 2 : step;
 
         u32 result = dest_val - src_val;
-        update_flags_sub(cpu, src_val, dest_val, result, size);
+        update_flags_cmp(cpu, src_val, dest_val, result, size);
         return;
     } else {
         return;
@@ -497,7 +503,7 @@ void m68k_exec_cmp(M68kCpu* cpu, u16 opcode) {
         dest = cpu->a_regs[reg_idx];
         if (size == SIZE_WORD) src = (s32)(s16)src;
         u32 result = dest - src;
-        update_flags_sub(cpu, src, dest, result, SIZE_LONG);
+        update_flags_cmp(cpu, src, dest, result, SIZE_LONG);
     } else {
         // CMP
         dest = cpu->d_regs[reg_idx];
@@ -510,7 +516,7 @@ void m68k_exec_cmp(M68kCpu* cpu, u16 opcode) {
         }
 
         u32 result = dest - src;
-        update_flags_sub(cpu, src, dest, result, size);
+        update_flags_cmp(cpu, src, dest, result, size);
     }
 }
 
@@ -544,7 +550,7 @@ void m68k_exec_cmpi(M68kCpu* cpu, u16 opcode) {
     u32 dest = ea.value;
 
     u32 result = dest - src;
-    update_flags_sub(cpu, src, dest, result, size);
+    update_flags_cmp(cpu, src, dest, result, size);
 }
 
 void m68k_exec_neg(M68kCpu* cpu, u16 opcode) {
@@ -638,33 +644,32 @@ void m68k_exec_abcd(M68kCpu* cpu, u16 opcode) {
         dest = cpu->d_regs[rx] & 0xFF;
     }
 
-    // Musashi-verified ABCD algorithm
     u32 x = (cpu->sr & M68K_SR_X) ? 1 : 0;
-    u32 res = (dest & 0x0F) + (src & 0x0F) + x;
+    u32 src_total = (src & 0xFF) + x;
+    u32 raw_res = (dest & 0xFF) + src_total;
+    u32 res = (src & 0x0F) + (dest & 0x0F) + x;
 
     if (res > 9) res += 6;
-    res += (dest & 0xF0) + (src & 0xF0);
+    res += (src & 0xF0) + (dest & 0xF0);
 
-    bool c = (res > 0x99);
-    if (c) res -= 0xA0;
+    bool c_flag = (res > 0x99);
+    if (c_flag) res -= 0xA0;
 
-    u8 result = res & 0xFF;
+    u8 result = (u8)res;
+    bool v_flag = ((~((dest & 0xFF) ^ src_total) & ((dest & 0xFF) ^ raw_res)) & 0x80) != 0;
+
+    cpu->sr &= ~(M68K_SR_N | M68K_SR_V | M68K_SR_C | M68K_SR_X);
+    if (result & 0x80) cpu->sr |= M68K_SR_N;
+    if (v_flag) cpu->sr |= M68K_SR_V;
+    if (c_flag) cpu->sr |= M68K_SR_C | M68K_SR_X;
+
+    if (result != 0) cpu->sr &= ~M68K_SR_Z;
 
     if (rm) {
         m68k_write_8(cpu, cpu->a_regs[rx], result);
     } else {
         cpu->d_regs[rx] = (cpu->d_regs[rx] & 0xFFFFFF00) | result;
     }
-
-    // Flags: C/X set if carry, Z cleared if non-zero (unchanged otherwise)
-    cpu->sr &= ~(M68K_SR_C | M68K_SR_X);
-    if (result != 0) cpu->sr &= ~M68K_SR_Z;
-
-    if (c) {
-        cpu->sr |= M68K_SR_C;
-        cpu->sr |= M68K_SR_X;
-    }
-    // N and V are undefined
 }
 
 void m68k_exec_sbcd(M68kCpu* cpu, u16 opcode) {
@@ -672,7 +677,7 @@ void m68k_exec_sbcd(M68kCpu* cpu, u16 opcode) {
     int rm = (opcode >> 3) & 0x1;
     int ry = opcode & 0x7;
 
-    u32 src, dest;
+    u32 src, dst;
 
     if (rm) {  // -(An)
         cpu->a_regs[ry]--;
@@ -681,36 +686,37 @@ void m68k_exec_sbcd(M68kCpu* cpu, u16 opcode) {
 
         cpu->a_regs[rx]--;
         if (rx == 7) cpu->a_regs[rx]--;
-        dest = m68k_read_8(cpu, cpu->a_regs[rx]);
+        dst = m68k_read_8(cpu, cpu->a_regs[rx]);
     } else {  // Dn
         src = cpu->d_regs[ry] & 0xFF;
-        dest = cpu->d_regs[rx] & 0xFF;
+        dst = cpu->d_regs[rx] & 0xFF;
     }
 
-    // Musashi-verified SBCD algorithm
     u32 x = (cpu->sr & M68K_SR_X) ? 1 : 0;
-    u32 res = (dest & 0x0F) - (src & 0x0F) - x;
+    u32 src_total = (src & 0xFF) + x;
+    u32 raw_res = (dst & 0xFF) - src_total;
+    u32 res = (dst & 0x0F) - (src & 0x0F) - x;
 
     if (res > 9) res -= 6;
-    res += (dest & 0xF0) - (src & 0xF0);
+    res += (dst & 0xF0) - (src & 0xF0);
 
-    bool c = (res > 0x99);
-    if (c) res += 0xA0;
+    bool c_flag = (res > 0x99);
+    if (c_flag) res += 0xA0;
 
-    u8 result = res & 0xFF;
+    u8 result = (u8)res;
+    bool v_flag = ((((dst & 0xFF) ^ src_total) & ((dst & 0xFF) ^ raw_res)) & 0x80) != 0;
+
+    cpu->sr &= ~(M68K_SR_N | M68K_SR_V | M68K_SR_C | M68K_SR_X);
+    if (result & 0x80) cpu->sr |= M68K_SR_N;
+    if (v_flag) cpu->sr |= M68K_SR_V;
+    if (c_flag) cpu->sr |= M68K_SR_C | M68K_SR_X;
+
+    if (result != 0) cpu->sr &= ~M68K_SR_Z;
 
     if (rm) {
         m68k_write_8(cpu, cpu->a_regs[rx], result);
     } else {
         cpu->d_regs[rx] = (cpu->d_regs[rx] & 0xFFFFFF00) | result;
-    }
-
-    cpu->sr &= ~(M68K_SR_C | M68K_SR_X);
-    if (result != 0) cpu->sr &= ~M68K_SR_Z;
-
-    if (c) {
-        cpu->sr |= M68K_SR_C;
-        cpu->sr |= M68K_SR_X;
     }
 }
 
@@ -722,36 +728,24 @@ void m68k_exec_nbcd(M68kCpu* cpu, u16 opcode) {
     u32 dest = ea.value & 0xFF;
     u32 x = (cpu->sr & M68K_SR_X) ? 1 : 0;
 
-    // Musashi-verified NBCD algorithm: 0x9A - dest - X
-    u32 res = (0x9A - dest - x) & 0xFF;
+    u32 zResult = 0 - dest - x;
+    u32 res = zResult;
 
-    if (res != 0x9A) {
-        // Adjust low nibble
-        if ((res & 0x0F) == 0x0A) {
-            res = (res & 0xF0) + 0x10;
-        }
-        res &= 0xFF;
+    if ((0) - (dest & 0x0F) - x > 9) res -= 6;
+    if (res > 0x99) res -= 0x60;
 
-        if (ea.is_reg && !ea.is_addr) {
-            cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & 0xFFFFFF00) | res;
-        } else {
-            m68k_write_8(cpu, ea.address, res);
-        }
+    cpu->sr &= ~(M68K_SR_N | M68K_SR_V | M68K_SR_C | M68K_SR_X);
+    if (res & 0x80) cpu->sr |= M68K_SR_N;
+    if ((zResult & ~res) & 0x80) cpu->sr |= M68K_SR_V;
+    if (res > 0xFF) cpu->sr |= M68K_SR_C | M68K_SR_X;
 
-        // Z cleared if non-zero, unchanged otherwise
-        if (res != 0) cpu->sr &= ~M68K_SR_Z;
+    u8 result = res & 0xFF;
+    if (result != 0) cpu->sr &= ~M68K_SR_Z;
 
-        cpu->sr |= M68K_SR_C;
-        cpu->sr |= M68K_SR_X;
+    if (ea.is_reg && !ea.is_addr) {
+        cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & 0xFFFFFF00) | result;
     } else {
-        cpu->sr &= ~(M68K_SR_C | M68K_SR_X);
-        // Result is zero (0x9A masked to byte would have been written as dest)
-        // Don't change Z or the destination (result of 0 - 0 - 0 = 0)
-        if (ea.is_reg && !ea.is_addr) {
-            cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & 0xFFFFFF00);
-        } else {
-            m68k_write_8(cpu, ea.address, 0);
-        }
+        m68k_write_8(cpu, ea.address, result);
     }
 }
 

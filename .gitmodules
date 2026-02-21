@@ -1,0 +1,3 @@
+[submodule "external/m68000-json-tests"]
+	path = external/m68000-json-tests
+	url = https://github.com/habedi/m68000-json-tests

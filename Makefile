@@ -35,6 +35,8 @@ SRC_FILES     := $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/m68k/*.c)
 OBJ_FILES     := $(patsubst $(SRC_DIR)/%.c, $(TARGET_DIR)/%.o, $(SRC_FILES))
 DEP_FILES     := $(OBJ_FILES:.o=.d)
 TEST_FILES    := $(wildcard $(TEST_DIR)/*.c)
+# Unit test files exclude test_json.c which has its own main()
+UNIT_TEST_FILES := $(filter-out $(TEST_DIR)/test_json.c, $(TEST_FILES))
 STATIC_LIB    := $(LIB_DIR)/libproject.a
 SHARED_LIB    := $(LIB_DIR)/libproject.so
 
@@ -88,9 +90,17 @@ test: $(TEST_BINARY) ## Run the tests
 	@echo "Running tests..."
 	./$(TEST_BINARY)
 
-$(TEST_BINARY): $(TEST_FILES) $(filter-out $(TARGET_DIR)/main.o, $(OBJ_FILES)) | $(BIN_DIR)
+$(TEST_BINARY): $(UNIT_TEST_FILES) $(filter-out $(TARGET_DIR)/main.o, $(OBJ_FILES)) | $(BIN_DIR)
 	@echo "Building test binary..."
-	$(CC) $(CFLAGS) $(TEST_FILES) $(filter-out $(TARGET_DIR)/main.o, $(OBJ_FILES)) -o $@
+	$(CC) $(CFLAGS) $(UNIT_TEST_FILES) $(filter-out $(TARGET_DIR)/main.o, $(OBJ_FILES)) -o $@
+
+.PHONY: test-json
+test-json: $(BIN_DIR)/test_json ## Run the JSON test
+	./$(BIN_DIR)/test_json external/m68000-json-tests/v1
+
+$(BIN_DIR)/test_json: $(TEST_DIR)/test_json.c $(filter-out $(TARGET_DIR)/main.o, $(OBJ_FILES)) | $(BIN_DIR)
+	@mkdir -p $(BIN_DIR)
+	$(CC) $(CFLAGS) $^ -o $@
 
 .PHONY: test-valgrind
 test-valgrind: $(TEST_BINARY) ## Run tests with Valgrind using suppressions

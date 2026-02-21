@@ -43,10 +43,12 @@ typedef struct {
     u32 memory_size;
 
     // Internal state
-    int irq_level;       // Current pending IRQ level (0-7)
-    u32 usp;             // User Stack Pointer (stored when in supervisor mode)
-    bool stopped;        // CPU halted by STOP instruction
-    bool trace_pending;  // Trace exception pending after current instruction
+    int irq_level;         // Current pending IRQ level (0-7)
+    u32 usp;               // User Stack Pointer
+    u32 ssp;               // Supervisor Stack Pointer
+    bool stopped;          // CPU halted by STOP instruction
+    bool trace_pending;    // Trace exception pending after current instruction
+    int exception_thrown;  // Tracks if an exception occurred during execution
 
     // 68010+ control registers
     u32 vbr;  // Vector Base Register (68010+)
@@ -74,7 +76,11 @@ u32 m68k_get_ar(M68kCpu* cpu, int reg);              // Get Address Register
 
 // Execution
 // Executes one instruction. Returns cycles consumed (stub for now)
+int m68k_step_ex(M68kCpu* cpu, bool check_exceptions);
 int m68k_step(M68kCpu* cpu);
+
+// Status Register
+void m68k_set_sr(M68kCpu* cpu, u16 new_sr);
 
 // Interrupts
 // Sets the current interrupt level (0-7). 0 means no interrupt.
