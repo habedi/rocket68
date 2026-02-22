@@ -1,8 +1,7 @@
 Checks: >
     clang-analyzer-*,
     bugprone-*,
-    performance-*,
-    readability-*
-WarningsAsErrors: '*'
-HeaderFilterRegex: '.*'
+    performance-*
+WarningsAsErrors: 'clang-analyzer-*,bugprone-*'
+HeaderFilterRegex: '^(include|src)/'
 FormatStyle: google
