@@ -1,3 +1,14 @@
 [submodule "external/m68000-json-tests"]
 	path = external/m68000-json-tests
-	url = https://github.com/habedi/m68000-json-tests
+	url = https://github.com/habedi/m68000-json-tests.git
+	branch = main
+
+[submodule "external/musashi"]
+	path = external/musashi
+	url = https://github.com/kstenerud/Musashi.git
+	branch = master
+
+[submodule "external/bcd-test-rom"]
+	path = external/bcd-test-rom
+	url = https://github.com/habedi/bcd-test-rom.git
+	branch = master

@@ -60,3 +60,20 @@ This project is licensed under the MIT License ([LICENSE](LICENSE)).
 - The logo is from [SVG Repo](https://www.svgrepo.com/svg/142843/cpu) with some modifications.
 - Information from [M68000 Family Programmer's Reference Manual](https://www.nxp.com/docs/en/reference-manual/M68000PRM.pdf)
   and [Motorola 68000 Opcodes](http://goldencrystal.free.fr/M68kOpcodes.pdf) are used in this project.
+
+### Musashi Tests (Optional)
+
+This project can optionally use Musashi as a git submodule to run Musashi's own test suite
+as a reference point.
+
+Setup and run:
+
+```bash
+git submodule update --init --recursive
+make test-musashi
+```
+
+Notes:
+- The Musashi tests require an m68k cross-assembler/linker to rebuild binaries.
+- The `test-musashi` target runs Musashi's own test harness and does not validate this
+  emulator directly.

@@ -31,6 +31,7 @@ DOC_DIR   := docs
 BINARY_NAME   := main
 BINARY        := $(BIN_DIR)/$(BINARY_NAME)
 TEST_BINARY   := $(BIN_DIR)/test_$(BINARY_NAME)
+BCD_TEST_BINARY := $(BIN_DIR)/test_bcd
 SRC_FILES     := $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/m68k/*.c)
 OBJ_FILES     := $(patsubst $(SRC_DIR)/%.c, $(TARGET_DIR)/%.o, $(SRC_FILES))
 DEP_FILES     := $(OBJ_FILES:.o=.d)
@@ -100,6 +101,10 @@ test-json: $(BIN_DIR)/test_json ## Run the JSON test
 
 $(BIN_DIR)/test_json: $(TEST_DIR)/test_json.c $(filter-out $(TARGET_DIR)/main.o, $(OBJ_FILES)) | $(BIN_DIR)
 	@mkdir -p $(BIN_DIR)
+	$(CC) $(CFLAGS) $^ -o $@
+
+$(BCD_TEST_BINARY): $(TEST_DIR)/test_bcd_verifier.c $(filter-out $(TARGET_DIR)/main.o, $(OBJ_FILES)) | $(BIN_DIR)
+	@echo "Building BCD test binary..."
 	$(CC) $(CFLAGS) $^ -o $@
 
 .PHONY: test-valgrind
@@ -187,6 +192,28 @@ setup-hooks: ## Install Git hooks (pre-commit and pre-push)
 test-hooks: ## Run Git hooks on all files manually
 	@echo "Running Git hooks..."
 	@pre-commit run --all-files
+
+.PHONY: test-musashi
+test-musashi: ## Run Musashi's own test suite (optional submodule)
+	@if [ ! -d external/musashi ]; then \
+		echo "Musashi submodule missing. Run 'git submodule update --init --recursive'"; \
+		exit 0; \
+	fi
+	@$(MAKE) --no-print-directory -C external/musashi test 2>&1 | grep -v "warning:"
+
+.PHONY: test-bcd
+test-bcd: ## Generate Flamewing BCD table and run BCD verifier
+	@if [ ! -d external/bcd-test-rom ]; then \
+		echo "BCD test ROM submodule missing. Run 'git submodule update --init --recursive'"; \
+		exit 0; \
+	fi
+	@mkdir -p external/bcd-test-rom/data
+	@g++ -O2 -std=c++11 -o external/bcd-test-rom/bcd-gen \
+		external/bcd-test-rom/bcd-gen.cc \
+		external/bcd-test-rom/bcd-emul.cc
+	@cd external/bcd-test-rom && ./bcd-gen
+	@$(MAKE) --no-print-directory $(BCD_TEST_BINARY)
+	@BCD_TABLE_PATH=external/bcd-test-rom/data/bcd-table.bin ./$(BCD_TEST_BINARY)
 
 # Include dependency files, if they exist.
 -include $(DEP_FILES)
