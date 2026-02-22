@@ -1,32 +1,24 @@
 #include "m68k_internal.h"
 
-// -----------------------------------------------------------------------------
-// Bit Manipulation Instructions
-// BTST, BSET, BCLR, BCHG — both register (dynamic) and immediate (static)
-// -----------------------------------------------------------------------------
-
-// Helper: get bit number and mask, handling register (32-bit) vs memory (8-bit)
 static u32 get_bit_mask(int bit_num, bool is_register) {
     if (is_register) {
-        return 1u << (bit_num & 31);  // Modulo 32 for registers
+        return 1u << (bit_num & 31);
     } else {
-        return 1u << (bit_num & 7);  // Modulo 8 for memory
+        return 1u << (bit_num & 7);
     }
 }
 
 void m68k_exec_btst(M68kCpu* cpu, u16 opcode) {
-    bool is_dynamic = (opcode & 0x0100) != 0;  // Bit 8 set = register specifies bit#
+    bool is_dynamic = (opcode & 0x0100) != 0;
     int bit_num;
     int mode, reg;
 
     if (is_dynamic) {
-        // Dynamic: BTST Dn, <ea>
         int dn = (opcode >> 9) & 0x7;
         bit_num = cpu->d_regs[dn];
         mode = (opcode >> 3) & 0x7;
         reg = opcode & 0x7;
     } else {
-        // Static: BTST #imm, <ea>
         bit_num = m68k_fetch(cpu) & 0xFF;
         mode = (opcode >> 3) & 0x7;
         reg = opcode & 0x7;
@@ -43,7 +35,6 @@ void m68k_exec_btst(M68kCpu* cpu, u16 opcode) {
         data = ea.value & 0xFF;
     }
 
-    // Z flag = inverse of tested bit (Z set if bit is zero)
     if (data & mask)
         cpu->sr &= ~M68K_SR_Z;
     else
@@ -71,7 +62,7 @@ void m68k_exec_bset(M68kCpu* cpu, u16 opcode) {
 
     if (is_register) {
         u32 data = cpu->d_regs[reg];
-        // Set Z based on original bit value
+
         if (data & mask)
             cpu->sr &= ~M68K_SR_Z;
         else

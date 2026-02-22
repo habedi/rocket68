@@ -1,9 +1,5 @@
 #include "m68k_internal.h"
 
-// -----------------------------------------------------------------------------
-// Logic Instructions
-// -----------------------------------------------------------------------------
-
 void m68k_exec_and(M68kCpu* cpu, u16 opcode) {
     int reg_idx = (opcode >> 9) & 0x7;
     int opmode = (opcode >> 6) & 0x7;
@@ -85,7 +81,7 @@ void m68k_exec_or(M68kCpu* cpu, u16 opcode) {
             size = SIZE_LONG;
             break;
         case 3:
-            return;  // DIVU
+            return;
         case 4:
             size = SIZE_BYTE;
             dir_reg_to_ea = true;
@@ -99,7 +95,7 @@ void m68k_exec_or(M68kCpu* cpu, u16 opcode) {
             dir_reg_to_ea = true;
             break;
         case 7:
-            return;  // DIVS
+            return;
         default:
             return;
     }
@@ -312,13 +308,13 @@ void m68k_exec_shift(M68kCpu* cpu, u16 opcode) {
         cpu->sr &= ~(M68K_SR_N | M68K_SR_Z | M68K_SR_V | M68K_SR_C);
         if (result & msb) cpu->sr |= M68K_SR_N;
         if (result == 0) cpu->sr |= M68K_SR_Z;
-        // For ROX, C = X when count is 0
+
         if (type == 2 && extend) cpu->sr |= M68K_SR_C;
         return;
     }
 
     if (type == 0) {
-        if (dr == 0) {  // Right (ASR)
+        if (dr == 0) {
             for (int i = 0; i < count; i++) {
                 carry = (result & 1) != 0;
                 u32 sign = result & msb;
@@ -326,7 +322,7 @@ void m68k_exec_shift(M68kCpu* cpu, u16 opcode) {
             }
             extend = carry;
             overflow = false;
-        } else {  // Left (ASL)
+        } else {
             for (int i = 0; i < count; i++) {
                 bool old_msb = (result & msb) != 0;
                 carry = old_msb;
@@ -346,13 +342,13 @@ void m68k_exec_shift(M68kCpu* cpu, u16 opcode) {
     }
 
     else if (type == 1) {
-        if (dr == 0) {  // Right (LSR)
+        if (dr == 0) {
             for (int i = 0; i < count; i++) {
                 carry = (result & 1) != 0;
                 result = (result >> 1);
             }
             extend = carry;
-        } else {  // Left (LSL)
+        } else {
             for (int i = 0; i < count; i++) {
                 carry = (result & msb) != 0;
                 result = (result << 1) & mask;
@@ -368,7 +364,7 @@ void m68k_exec_shift(M68kCpu* cpu, u16 opcode) {
     }
 
     else if (type == 2) {
-        if (dr == 0) {  // Right (ROXR)
+        if (dr == 0) {
             for (int i = 0; i < count; i++) {
                 bool out = (result & 1) != 0;
                 result = result >> 1;
@@ -376,7 +372,7 @@ void m68k_exec_shift(M68kCpu* cpu, u16 opcode) {
                 extend = out;
                 carry = out;
             }
-        } else {  // Left (ROXL)
+        } else {
             for (int i = 0; i < count; i++) {
                 bool out = (result & msb) != 0;
                 result = (result << 1) & mask;
@@ -392,13 +388,13 @@ void m68k_exec_shift(M68kCpu* cpu, u16 opcode) {
     }
 
     else if (type == 3) {
-        if (dr == 0) {  // ROR
+        if (dr == 0) {
             for (int i = 0; i < count; i++) {
                 carry = (result & 1) != 0;
                 result = (result >> 1);
                 if (carry) result |= msb;
             }
-        } else {  // ROL
+        } else {
             for (int i = 0; i < count; i++) {
                 carry = (result & msb) != 0;
                 result = (result << 1) & mask;
@@ -421,21 +417,12 @@ void m68k_exec_shift(M68kCpu* cpu, u16 opcode) {
     }
 }
 
-// -----------------------------------------------------------------------------
-// Immediate Logic (ANDI, ORI, EORI) — includes to-CCR and to-SR
-// -----------------------------------------------------------------------------
-
-// Helper to swap USP/SSP when S bit changes
 void m68k_swap_sp(M68kCpu* cpu, bool new_supervisor) {
     bool old_supervisor = (cpu->sr & M68K_SR_S) != 0;
     if (old_supervisor != new_supervisor) {
         if (new_supervisor) {
-            // Going to supervisor: save USP, load SSP
             cpu->usp = cpu->a_regs[7];
-            // SSP would need to be stored somewhere — for 68000 we use the vector
         } else {
-            // Going to user: save SSP, load USP
-            // SSP stays in a_regs[7] implicitly
             u32 ssp = cpu->a_regs[7];
             cpu->a_regs[7] = cpu->usp;
             cpu->usp = ssp;
@@ -446,13 +433,12 @@ void m68k_swap_sp(M68kCpu* cpu, bool new_supervisor) {
 void m68k_exec_andi(M68kCpu* cpu, u16 opcode) {
     int size_bits = (opcode >> 6) & 0x3;
 
-    // ANDI to CCR: 0000 0010 0011 1100 (0x023C)
     if (opcode == 0x023C) {
         u16 imm = m68k_fetch(cpu) & 0xFF;
         cpu->sr = (cpu->sr & 0xFF00) | ((cpu->sr & 0x00FF) & imm);
         return;
     }
-    // ANDI to SR: 0000 0010 0111 1100 (0x027C)
+
     if (opcode == 0x027C) {
         if (!(cpu->sr & M68K_SR_S)) {
             cpu->pc -= 2;
@@ -504,13 +490,12 @@ void m68k_exec_andi(M68kCpu* cpu, u16 opcode) {
 void m68k_exec_ori(M68kCpu* cpu, u16 opcode) {
     int size_bits = (opcode >> 6) & 0x3;
 
-    // ORI to CCR: 0000 0000 0011 1100 (0x003C)
     if (opcode == 0x003C) {
         u16 imm = m68k_fetch(cpu) & 0xFF;
         cpu->sr = (cpu->sr & 0xFF00) | (((cpu->sr & 0x00FF) | imm) & 0x1F);
         return;
     }
-    // ORI to SR: 0000 0000 0111 1100 (0x007C)
+
     if (opcode == 0x007C) {
         if (!(cpu->sr & M68K_SR_S)) {
             cpu->pc -= 2;
@@ -562,13 +547,12 @@ void m68k_exec_ori(M68kCpu* cpu, u16 opcode) {
 void m68k_exec_eori(M68kCpu* cpu, u16 opcode) {
     int size_bits = (opcode >> 6) & 0x3;
 
-    // EORI to CCR: 0000 1010 0011 1100 (0x0A3C)
     if (opcode == 0x0A3C) {
         u16 imm = m68k_fetch(cpu) & 0xFF;
         cpu->sr = (cpu->sr & 0xFF00) | (((cpu->sr & 0x00FF) ^ imm) & 0x1F);
         return;
     }
-    // EORI to SR: 0000 1010 0111 1100 (0x0A7C)
+
     if (opcode == 0x0A7C) {
         if (!(cpu->sr & M68K_SR_S)) {
             cpu->pc -= 2;
@@ -617,20 +601,14 @@ void m68k_exec_eori(M68kCpu* cpu, u16 opcode) {
     update_flags_logic(cpu, result, size);
 }
 
-// -----------------------------------------------------------------------------
-// TAS — Test and Set (read-modify-write atomic byte)
-// -----------------------------------------------------------------------------
-
 void m68k_exec_tas(M68kCpu* cpu, u16 opcode) {
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_BYTE);
     u8 data = ea.value & 0xFF;
 
-    // Set flags based on original value
     update_flags_logic(cpu, data, SIZE_BYTE);
 
-    // Set the MSB of the byte
     u8 result = data | 0x80;
 
     if (ea.is_reg && !ea.is_addr) {

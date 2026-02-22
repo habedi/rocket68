@@ -1,9 +1,5 @@
 #include "m68k_internal.h"
 
-// -----------------------------------------------------------------------------
-// Control Flow Instructions
-// -----------------------------------------------------------------------------
-
 bool m68k_check_condition(M68kCpu* cpu, int condition) {
     bool c = (cpu->sr & M68K_SR_C) != 0;
     bool v = (cpu->sr & M68K_SR_V) != 0;
@@ -56,7 +52,7 @@ void m68k_exec_bcc(M68kCpu* cpu, u16 opcode) {
         disp = (s16)m68k_fetch(cpu);
     }
 
-    if (cond == 1) {  // BSR
+    if (cond == 1) {
         m68k_push_32(cpu, cpu->pc);
         if ((opcode & 0xFF) == 0)
             cpu->pc = (cpu->pc - 2) + disp;
@@ -132,7 +128,6 @@ void m68k_exec_trap(M68kCpu* cpu, u16 opcode) {
 void m68k_exec_rte(M68kCpu* cpu, u16 opcode) {
     (void)opcode;
     if (!(cpu->sr & M68K_SR_S)) {
-        // Privilege Violation
         cpu->pc -= 2;
         m68k_exception(cpu, 8);
         return;
@@ -153,26 +148,23 @@ void m68k_exec_chk(M68kCpu* cpu, u16 opcode) {
     s16 src = (s16)(cpu->d_regs[reg_idx] & 0xFFFF);
     s16 bound = (s16)ea.value;
 
-    // Undocumented M68000 CHK flag behavior: evaluates N/Z on src, clears V/C
     cpu->sr &= ~(M68K_SR_N | M68K_SR_Z | M68K_SR_V | M68K_SR_C);
     if (src < 0)
         cpu->sr |= M68K_SR_N;
     else if (src == 0)
         cpu->sr |= M68K_SR_Z;
 
-    // In-bounds: no exception
     if (src >= 0 && src <= bound) {
         return;
     }
 
-    // Out-of-bounds: trap
-    m68k_exception(cpu, 6);  // CHK instruction vector
+    m68k_exception(cpu, 6);
 }
 
 void m68k_exec_trapv(M68kCpu* cpu, u16 opcode) {
     (void)opcode;
     if (cpu->sr & M68K_SR_V) {
-        m68k_exception(cpu, 7);  // TRAPV instruction vector
+        m68k_exception(cpu, 7);
     }
 }
 
@@ -181,7 +173,6 @@ void m68k_exec_rtr(M68kCpu* cpu, u16 opcode) {
     u16 ccr = m68k_pop_16(cpu);
     u32 return_pc = m68k_pop_32(cpu);
 
-    // Restore only CCR (low byte of SR), preserve high byte
     cpu->sr = (cpu->sr & 0xFF00) | (ccr & 0x1F);
     cpu->pc = return_pc;
 }
@@ -198,32 +189,23 @@ void m68k_exec_stop(M68kCpu* cpu, u16 opcode) {
     u16 imm = m68k_fetch(cpu);
     m68k_set_sr(cpu, imm);
     cpu->stopped = true;
-    cpu->pc -= 4;  // STOP: PC should point at the STOP instruction itself
+    cpu->pc -= 4;
 }
 
 void m68k_exec_reset(M68kCpu* cpu, u16 opcode) {
     (void)opcode;
     if (!(cpu->sr & M68K_SR_S)) {
-        // Privilege Violation
         cpu->pc -= 2;
         m68k_exception(cpu, 8);
         return;
     }
-
-    // Asserts RESET line. In emulation, usually resets external devices.
-    // No-op for now unless we have devices.
 }
 
-// -----------------------------------------------------------------------------
-// 68010+ Instructions
-// -----------------------------------------------------------------------------
-
-// MOVEC — Move to/from Control Register (68010+)
 void m68k_exec_movec(M68kCpu* cpu, u16 opcode) {
     (void)opcode;
     if (!(cpu->sr & M68K_SR_S)) {
         cpu->pc -= 2;
-        m68k_exception(cpu, 8);  // Privilege violation
+        m68k_exception(cpu, 8);
         return;
     }
 
@@ -232,25 +214,24 @@ void m68k_exec_movec(M68kCpu* cpu, u16 opcode) {
     int reg_num = (ext >> 12) & 0x7;
     int ctrl_reg = ext & 0xFFF;
 
-    // Get pointer to general register
     u32* gpr = is_addr ? &cpu->a_regs[reg_num] : &cpu->d_regs[reg_num];
 
-    bool to_ctrl = (opcode & 1) != 0;  // 0x4E7A = from ctrl, 0x4E7B = to ctrl
+    bool to_ctrl = (opcode & 1) != 0;
 
     if (to_ctrl) {
         switch (ctrl_reg) {
             case 0x000:
                 cpu->sfc = *gpr;
-                break;  // SFC
+                break;
             case 0x001:
                 cpu->dfc = *gpr;
-                break;  // DFC
+                break;
             case 0x800:
                 cpu->usp = *gpr;
-                break;  // USP
+                break;
             case 0x801:
                 cpu->vbr = *gpr;
-                break;  // VBR
+                break;
             default:
                 break;
         }
@@ -275,7 +256,6 @@ void m68k_exec_movec(M68kCpu* cpu, u16 opcode) {
     }
 }
 
-// RTD — Return and Deallocate (68010+)
 void m68k_exec_rtd(M68kCpu* cpu, u16 opcode) {
     (void)opcode;
     u32 ret_addr = m68k_pop_32(cpu);
@@ -284,9 +264,8 @@ void m68k_exec_rtd(M68kCpu* cpu, u16 opcode) {
     cpu->pc = ret_addr;
 }
 
-// BKPT — Breakpoint (68010+)
 void m68k_exec_bkpt(M68kCpu* cpu, u16 opcode) {
     (void)opcode;
-    // On 68010+, BKPT triggers an illegal instruction exception
+
     m68k_exception(cpu, 4);
 }

@@ -1,9 +1,5 @@
 #include "m68k_internal.h"
 
-// -----------------------------------------------------------------------------
-// Arithmetic Instructions
-// -----------------------------------------------------------------------------
-
 void m68k_exec_add(M68kCpu* cpu, u16 opcode) {
     int reg_idx = (opcode >> 9) & 0x7;
     int opmode = (opcode >> 6) & 0x7;
@@ -66,7 +62,6 @@ void m68k_exec_add(M68kCpu* cpu, u16 opcode) {
             u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
             cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & ~mask) | (result & mask);
         } else if (ea.is_reg && ea.is_addr) {
-            // N/A
         } else {
             m68k_write_size(cpu, ea.address, result, size);
         }
@@ -268,7 +263,6 @@ void m68k_exec_addx(M68kCpu* cpu, u16 opcode) {
         cpu->a_regs[rx] -= step;
         if (size == SIZE_BYTE && rx == 7) cpu->a_regs[rx]--;
         dest = m68k_read_size(cpu, cpu->a_regs[rx], size);
-
     } else {
         src = cpu->d_regs[ry];
         dest = cpu->d_regs[rx];
@@ -284,17 +278,16 @@ void m68k_exec_addx(M68kCpu* cpu, u16 opcode) {
         cpu->d_regs[rx] = (cpu->d_regs[rx] & ~mask) | (result & mask);
     }
 
-    // ADDX Z-flag: cleared if result is non-zero, unchanged otherwise
     bool old_z = (cpu->sr & M68K_SR_Z) != 0;
     update_flags_add(cpu, src, dest, result, size);
 
     u32 value_mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
     if ((result & value_mask) != 0) {
-        cpu->sr &= ~M68K_SR_Z;  // Clear Z if result is non-zero
+        cpu->sr &= ~M68K_SR_Z;
     } else if (old_z) {
-        cpu->sr |= M68K_SR_Z;  // Preserve Z if result is zero and Z was set
+        cpu->sr |= M68K_SR_Z;
     } else {
-        cpu->sr &= ~M68K_SR_Z;  // Z was clear before, keep it clear
+        cpu->sr &= ~M68K_SR_Z;
     }
 }
 
@@ -326,7 +319,6 @@ void m68k_exec_subx(M68kCpu* cpu, u16 opcode) {
         cpu->a_regs[rx] -= step;
         if (size == SIZE_BYTE && rx == 7) cpu->a_regs[rx]--;
         dest = m68k_read_size(cpu, cpu->a_regs[rx], size);
-
     } else {
         src = cpu->d_regs[ry];
         dest = cpu->d_regs[rx];
@@ -342,7 +334,6 @@ void m68k_exec_subx(M68kCpu* cpu, u16 opcode) {
         cpu->d_regs[rx] = (cpu->d_regs[rx] & ~mask) | (result & mask);
     }
 
-    // SUBX Z-flag: cleared if result is non-zero, unchanged otherwise
     bool old_z = (cpu->sr & M68K_SR_Z) != 0;
     update_flags_sub(cpu, src, dest, result, size);
 
@@ -399,14 +390,13 @@ void m68k_exec_div(M68kCpu* cpu, u16 opcode) {
     u32 dividend = cpu->d_regs[reg_idx];
 
     if (divisor_raw == 0) {
-        m68k_exception(cpu, 5);  // Zero Divide exception
+        m68k_exception(cpu, 5);
         return;
     }
 
     if (is_signed) {
         s16 s_divisor = (s16)divisor_raw;
 
-        // Special case: 0x80000000 / -1 (C undefined behavior)
         if (dividend == 0x80000000 && s_divisor == -1) {
             cpu->sr &= ~(M68K_SR_N | M68K_SR_V | M68K_SR_C);
             cpu->sr |= M68K_SR_Z;
@@ -419,7 +409,6 @@ void m68k_exec_div(M68kCpu* cpu, u16 opcode) {
         s32 s_rem = s_dividend % s_divisor;
 
         if (s_quot != (s32)(s16)s_quot) {
-            // Overflow: unconditionally N=1, V=1, Z=0, C=0 (matches MAME/hardware tests)
             cpu->sr &= ~(M68K_SR_Z | M68K_SR_C);
             cpu->sr |= (M68K_SR_N | M68K_SR_V);
             return;
@@ -437,7 +426,6 @@ void m68k_exec_div(M68kCpu* cpu, u16 opcode) {
         u32 remainder = dividend % divisor_raw;
 
         if (quotient > 0xFFFF) {
-            // Overflow: unconditionally N=1, V=1, Z=0, C=0 (matches MAME/hardware tests)
             cpu->sr &= ~(M68K_SR_Z | M68K_SR_C);
             cpu->sr |= (M68K_SR_N | M68K_SR_V);
             return;
@@ -469,7 +457,6 @@ void m68k_exec_cmp(M68kCpu* cpu, u16 opcode) {
     else if (opmode == 7)
         size = SIZE_LONG;
     else if (opmode >= 4 && opmode <= 6 && mode == 1) {
-        // CMPM
         if (opmode == 4)
             size = SIZE_BYTE;
         else if (opmode == 5)
@@ -499,13 +486,11 @@ void m68k_exec_cmp(M68kCpu* cpu, u16 opcode) {
     u32 dest;
 
     if (opmode == 3 || opmode == 7) {
-        // CMPA
         dest = cpu->a_regs[reg_idx];
         if (size == SIZE_WORD) src = (s32)(s16)src;
         u32 result = dest - src;
         update_flags_cmp(cpu, src, dest, result, SIZE_LONG);
     } else {
-        // CMP
         dest = cpu->d_regs[reg_idx];
         if (size == SIZE_BYTE) {
             src &= 0xFF;
@@ -620,10 +605,6 @@ void m68k_exec_ext(M68kCpu* cpu, u16 opcode) {
     }
 }
 
-// -----------------------------------------------------------------------------
-// BCD Arithmetic
-// -----------------------------------------------------------------------------
-
 void m68k_exec_abcd(M68kCpu* cpu, u16 opcode) {
     int rx = (opcode >> 9) & 0x7;
     int rm = (opcode >> 3) & 0x1;
@@ -631,7 +612,7 @@ void m68k_exec_abcd(M68kCpu* cpu, u16 opcode) {
 
     u32 src, dest;
 
-    if (rm) {  // -(An)
+    if (rm) {
         cpu->a_regs[ry]--;
         if (ry == 7) cpu->a_regs[ry]--;
         src = m68k_read_8(cpu, cpu->a_regs[ry]);
@@ -639,24 +620,22 @@ void m68k_exec_abcd(M68kCpu* cpu, u16 opcode) {
         cpu->a_regs[rx]--;
         if (rx == 7) cpu->a_regs[rx]--;
         dest = m68k_read_8(cpu, cpu->a_regs[rx]);
-    } else {  // Dn
+    } else {
         src = cpu->d_regs[ry] & 0xFF;
         dest = cpu->d_regs[rx] & 0xFF;
     }
 
     u32 x = (cpu->sr & M68K_SR_X) ? 1 : 0;
-    u32 src_total = (src & 0xFF) + x;
-    u32 raw_res = (dest & 0xFF) + src_total;
-    u32 res = (src & 0x0F) + (dest & 0x0F) + x;
-
-    if (res > 9) res += 6;
-    res += (src & 0xF0) + (dest & 0xF0);
-
-    bool c_flag = (res > 0x99);
-    if (c_flag) res -= 0xA0;
+    u32 bin_res = (src & 0xFF) + (dest & 0xFF) + x;
+    u32 low_add = (src & 0x0F) + (dest & 0x0F) + x;
+    u32 res = bin_res;
+    if (low_add > 9) res += 6;
+    bool c_out = bin_res > 0xFF;
+    bool c_flag = c_out || (res > 0xFF) || ((res & 0xF0) > 0x90);
+    if (c_flag) res += 0x60;
 
     u8 result = (u8)res;
-    bool v_flag = ((~((dest & 0xFF) ^ src_total) & ((dest & 0xFF) ^ raw_res)) & 0x80) != 0;
+    bool v_flag = ((~bin_res & result) & 0x80) != 0;
 
     cpu->sr &= ~(M68K_SR_N | M68K_SR_V | M68K_SR_C | M68K_SR_X);
     if (result & 0x80) cpu->sr |= M68K_SR_N;
@@ -679,7 +658,7 @@ void m68k_exec_sbcd(M68kCpu* cpu, u16 opcode) {
 
     u32 src, dst;
 
-    if (rm) {  // -(An)
+    if (rm) {
         cpu->a_regs[ry]--;
         if (ry == 7) cpu->a_regs[ry]--;
         src = m68k_read_8(cpu, cpu->a_regs[ry]);
@@ -687,29 +666,35 @@ void m68k_exec_sbcd(M68kCpu* cpu, u16 opcode) {
         cpu->a_regs[rx]--;
         if (rx == 7) cpu->a_regs[rx]--;
         dst = m68k_read_8(cpu, cpu->a_regs[rx]);
-    } else {  // Dn
+    } else {
         src = cpu->d_regs[ry] & 0xFF;
         dst = cpu->d_regs[rx] & 0xFF;
     }
 
     u32 x = (cpu->sr & M68K_SR_X) ? 1 : 0;
-    u32 src_total = (src & 0xFF) + x;
-    u32 raw_res = (dst & 0xFF) - src_total;
-    u32 res = (dst & 0x0F) - (src & 0x0F) - x;
+    u32 bin_res = (dst & 0xFF) - (src & 0xFF) - x;
+    u32 res = bin_res;
+    int low_sub = (dst & 0x0F) - (src & 0x0F) - x;
+    if (low_sub < 0) {
+        res -= 6;
+    }
+    bool c_flag_sub = ((int)bin_res < 0);
+    if (c_flag_sub) {
+        res -= 0x60;
+    }
+    bool c_flag_sr = c_flag_sub || ((int)res < 0);
 
-    if (res > 9) res -= 6;
-    res += (dst & 0xF0) - (src & 0xF0);
-
-    bool c_flag = (res > 0x99);
-    if (c_flag) res += 0xA0;
-
-    u8 result = (u8)res;
-    bool v_flag = ((((dst & 0xFF) ^ src_total) & ((dst & 0xFF) ^ raw_res)) & 0x80) != 0;
+    u8 result = (u8)(res & 0xFF);
+    u32 raw_res = bin_res & 0xFF;
+    bool v_flag = ((~result & raw_res) & 0x80) != 0;
+    if (v_flag && ((~src & dst) & 0x80) != 0 && c_flag_sr) {
+        v_flag = false;
+    }
 
     cpu->sr &= ~(M68K_SR_N | M68K_SR_V | M68K_SR_C | M68K_SR_X);
     if (result & 0x80) cpu->sr |= M68K_SR_N;
     if (v_flag) cpu->sr |= M68K_SR_V;
-    if (c_flag) cpu->sr |= M68K_SR_C | M68K_SR_X;
+    if (c_flag_sr) cpu->sr |= M68K_SR_C | M68K_SR_X;
 
     if (result != 0) cpu->sr &= ~M68K_SR_Z;
 
@@ -727,19 +712,29 @@ void m68k_exec_nbcd(M68kCpu* cpu, u16 opcode) {
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_BYTE);
     u32 dest = ea.value & 0xFF;
     u32 x = (cpu->sr & M68K_SR_X) ? 1 : 0;
+    u32 bin_res = 0 - (dest & 0xFF) - x;
+    u32 res = bin_res;
+    int low_sub = 0 - (dest & 0x0F) - x;
+    if (low_sub < 0) {
+        res -= 6;
+    }
+    bool c_flag_sub = ((int)bin_res < 0);
+    if (c_flag_sub) {
+        res -= 0x60;
+    }
+    bool c_flag_sr = c_flag_sub || ((int)res < 0);
 
-    u32 zResult = 0 - dest - x;
-    u32 res = zResult;
-
-    if ((0) - (dest & 0x0F) - x > 9) res -= 6;
-    if (res > 0x99) res -= 0x60;
+    u8 result = (u8)(res & 0xFF);
+    u32 raw_res = bin_res & 0xFF;
 
     cpu->sr &= ~(M68K_SR_N | M68K_SR_V | M68K_SR_C | M68K_SR_X);
-    if (res & 0x80) cpu->sr |= M68K_SR_N;
-    if ((zResult & ~res) & 0x80) cpu->sr |= M68K_SR_V;
-    if (res > 0xFF) cpu->sr |= M68K_SR_C | M68K_SR_X;
+    if (result & 0x80) cpu->sr |= M68K_SR_N;
 
-    u8 result = res & 0xFF;
+    bool v_flag = ((~result & raw_res) & 0x80) != 0;
+    if (v_flag) cpu->sr |= M68K_SR_V;
+
+    if (c_flag_sr) cpu->sr |= M68K_SR_C | M68K_SR_X;
+
     if (result != 0) cpu->sr &= ~M68K_SR_Z;
 
     if (ea.is_reg && !ea.is_addr) {
@@ -748,10 +743,6 @@ void m68k_exec_nbcd(M68kCpu* cpu, u16 opcode) {
         m68k_write_8(cpu, ea.address, result);
     }
 }
-
-// -----------------------------------------------------------------------------
-// Immediate Arithmetic (ADDI, SUBI)
-// -----------------------------------------------------------------------------
 
 void m68k_exec_addi(M68kCpu* cpu, u16 opcode) {
     int size_bits = (opcode >> 6) & 0x3;
@@ -770,7 +761,6 @@ void m68k_exec_addi(M68kCpu* cpu, u16 opcode) {
             return;
     }
 
-    // Fetch immediate value
     u32 imm;
     if (size == SIZE_BYTE) {
         imm = m68k_fetch(cpu) & 0xFF;
@@ -838,10 +828,6 @@ void m68k_exec_subi(M68kCpu* cpu, u16 opcode) {
     update_flags_sub(cpu, imm, dest, result, size);
 }
 
-// -----------------------------------------------------------------------------
-// NEGX — Negate with Extend
-// -----------------------------------------------------------------------------
-
 void m68k_exec_negx(M68kCpu* cpu, u16 opcode) {
     int size_bits = (opcode >> 6) & 0x3;
     M68kSize size;
@@ -873,7 +859,6 @@ void m68k_exec_negx(M68kCpu* cpu, u16 opcode) {
         m68k_write_size(cpu, ea.address, result, size);
     }
 
-    // Flags: same as SUB but Z is "cleared if non-zero, unchanged otherwise"
     bool old_z = (cpu->sr & M68K_SR_Z) != 0;
     update_flags_sub(cpu, src, 0, result, size);
 
@@ -886,10 +871,6 @@ void m68k_exec_negx(M68kCpu* cpu, u16 opcode) {
         cpu->sr &= ~M68K_SR_Z;
     }
 }
-
-// -----------------------------------------------------------------------------
-// EXTB — Extend Byte to Long (68020+)
-// -----------------------------------------------------------------------------
 
 void m68k_exec_extb(M68kCpu* cpu, u16 opcode) {
     int reg = opcode & 0x7;

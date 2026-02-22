@@ -1,9 +1,5 @@
 #include "m68k_internal.h"
 
-// -----------------------------------------------------------------------------
-// Data Transfer Instructions
-// -----------------------------------------------------------------------------
-
 void m68k_exec_move(M68kCpu* cpu, u16 opcode) {
     int size_bits = (opcode >> 12) & 0x3;
     M68kSize size;
@@ -115,7 +111,7 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
     u32 addr = 0;
     int count = 0;
 
-    if (mode == 4) {  // -(An)
+    if (mode == 4) {
         for (int i = 0; i < 16; i++)
             if (mask & (1 << i)) count++;
         cpu->a_regs[reg] -= count * step;
@@ -141,9 +137,8 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
             }
         }
         if (mode == 3) cpu->a_regs[reg] = addr;
-
     } else {
-        if (mode == 4) {  // -(An)
+        if (mode == 4) {
             for (int i = 15; i >= 0; i--) {
                 if (mask & (1 << i)) {
                     int reg_idx = 15 - i;
@@ -151,7 +146,6 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
                     if (reg_idx < 8) {
                         val = cpu->d_regs[reg_idx];
                     } else if (reg_idx - 8 == reg) {
-                        // The initial address register value is written
                         val = cpu->a_regs[reg] + count * step;
                     } else {
                         val = cpu->a_regs[reg_idx - 8];
@@ -181,17 +175,17 @@ void m68k_exec_exg(M68kCpu* cpu, u16 opcode) {
 
     u32 val_rx, val_ry;
 
-    if (opmode == 0x08) {  // Dx, Dy
+    if (opmode == 0x08) {
         val_rx = cpu->d_regs[rx];
         val_ry = cpu->d_regs[ry];
         cpu->d_regs[rx] = val_ry;
         cpu->d_regs[ry] = val_rx;
-    } else if (opmode == 0x09) {  // Ax, Ay
+    } else if (opmode == 0x09) {
         val_rx = cpu->a_regs[rx];
         val_ry = cpu->a_regs[ry];
         cpu->a_regs[rx] = val_ry;
         cpu->a_regs[ry] = val_rx;
-    } else if (opmode == 0x11) {  // Dx, Ay
+    } else if (opmode == 0x11) {
         val_rx = cpu->d_regs[rx];
         val_ry = cpu->a_regs[ry];
         cpu->d_regs[rx] = val_ry;
@@ -209,7 +203,6 @@ void m68k_exec_swap(M68kCpu* cpu, u16 opcode) {
 }
 
 void m68k_exec_move_sr(M68kCpu* cpu, u16 opcode) {
-    // MOVE <ea>, SR: 0100 0110 11 ... (0x46C0)
     if ((opcode & 0xFFC0) == 0x46C0) {
         if (!(cpu->sr & M68K_SR_S)) {
             cpu->pc -= 2;
@@ -223,7 +216,6 @@ void m68k_exec_move_sr(M68kCpu* cpu, u16 opcode) {
         return;
     }
 
-    // MOVE SR, <ea>: 0100 0000 11 ... (0x40C0)
     if ((opcode & 0xFFC0) == 0x40C0) {
         int mode = (opcode >> 3) & 0x7;
         int reg = opcode & 0x7;
@@ -237,10 +229,6 @@ void m68k_exec_move_sr(M68kCpu* cpu, u16 opcode) {
     }
 }
 
-// -----------------------------------------------------------------------------
-// MOVEP — Move Peripheral Data (alternating bytes in memory)
-// -----------------------------------------------------------------------------
-
 void m68k_exec_movep(M68kCpu* cpu, u16 opcode) {
     int data_reg = (opcode >> 9) & 0x7;
     int addr_reg = opcode & 0x7;
@@ -250,20 +238,20 @@ void m68k_exec_movep(M68kCpu* cpu, u16 opcode) {
     u32 addr = cpu->a_regs[addr_reg] + disp;
 
     switch (opmode) {
-        case 4:  // MOVEP.W (d16,An), Dn — memory to register, word
+        case 4:
             cpu->d_regs[data_reg] = (cpu->d_regs[data_reg] & 0xFFFF0000) |
                                     ((u32)m68k_read_8(cpu, addr) << 8) | m68k_read_8(cpu, addr + 2);
             break;
-        case 5:  // MOVEP.L (d16,An), Dn — memory to register, long
+        case 5:
             cpu->d_regs[data_reg] =
                 ((u32)m68k_read_8(cpu, addr) << 24) | ((u32)m68k_read_8(cpu, addr + 2) << 16) |
                 ((u32)m68k_read_8(cpu, addr + 4) << 8) | m68k_read_8(cpu, addr + 6);
             break;
-        case 6:  // MOVEP.W Dn, (d16,An) — register to memory, word
+        case 6:
             m68k_write_8(cpu, addr, (cpu->d_regs[data_reg] >> 8) & 0xFF);
             m68k_write_8(cpu, addr + 2, cpu->d_regs[data_reg] & 0xFF);
             break;
-        case 7:  // MOVEP.L Dn, (d16,An) — register to memory, long
+        case 7:
             m68k_write_8(cpu, addr, (cpu->d_regs[data_reg] >> 24) & 0xFF);
             m68k_write_8(cpu, addr + 2, (cpu->d_regs[data_reg] >> 16) & 0xFF);
             m68k_write_8(cpu, addr + 4, (cpu->d_regs[data_reg] >> 8) & 0xFF);
@@ -274,19 +262,15 @@ void m68k_exec_movep(M68kCpu* cpu, u16 opcode) {
     }
 }
 
-// -----------------------------------------------------------------------------
-// MOVE USP — Move to/from User Stack Pointer (supervisor only)
-// -----------------------------------------------------------------------------
-
 void m68k_exec_move_usp(M68kCpu* cpu, u16 opcode) {
     if (!(cpu->sr & M68K_SR_S)) {
         cpu->pc -= 2;
-        m68k_exception(cpu, 8);  // Privilege violation
+        m68k_exception(cpu, 8);
         return;
     }
 
     int reg = opcode & 0x7;
-    bool to_usp = (opcode & 0x8) == 0;  // Bit 3: 0 = An->USP, 1 = USP->An
+    bool to_usp = (opcode & 0x8) == 0;
 
     if (to_usp) {
         cpu->usp = cpu->a_regs[reg];
@@ -295,26 +279,18 @@ void m68k_exec_move_usp(M68kCpu* cpu, u16 opcode) {
     }
 }
 
-// -----------------------------------------------------------------------------
-// MOVE to CCR — MOVE <ea>, CCR (writes lower byte of SR only)
-// -----------------------------------------------------------------------------
-
 void m68k_exec_move_ccr(M68kCpu* cpu, u16 opcode) {
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_WORD);
-    u16 data = ea.value & 0x1F;  // Only CCR bits (lower 5 bits)
+    u16 data = ea.value & 0x1F;
     cpu->sr = (cpu->sr & 0xFF00) | data;
 }
-
-// -----------------------------------------------------------------------------
-// MOVES — Move to/from Address Space (68010+, supervisor only)
-// -----------------------------------------------------------------------------
 
 void m68k_exec_moves(M68kCpu* cpu, u16 opcode) {
     if (!(cpu->sr & M68K_SR_S)) {
         cpu->pc -= 2;
-        m68k_exception(cpu, 8);  // Privilege violation
+        m68k_exception(cpu, 8);
         return;
     }
 
