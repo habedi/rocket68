@@ -141,3 +141,5 @@ docs/html
 docs/latex
 target/
 tmp_test/
+obj_coverage/
+bin_coverage/

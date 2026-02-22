@@ -195,7 +195,9 @@ static bool run_test(M68kCpu* cpu, Test_Rec* test, FILE* logf) {
         sprintf(buf, "D%d", i);
         if (cpu->d_regs[i] != test->final.regs[i]) {
             ok = false;
-            fprintf(logf, "[%03d %s] Mismatch %s: init %08X, got %08X, exp %08X\n", _test_id_counter, test->name, buf, test->initial.regs[i], cpu->d_regs[i], test->final.regs[i]);
+            fprintf(logf, "[%03d %s] Mismatch %s: init %08X, got %08X, exp %08X\n",
+                    _test_id_counter, test->name, buf, test->initial.regs[i], cpu->d_regs[i],
+                    test->final.regs[i]);
         }
     }
     for (int i = 0; i < 7; i++) {
@@ -206,10 +208,11 @@ static bool run_test(M68kCpu* cpu, Test_Rec* test, FILE* logf) {
 
     CHECK("USP", final_usp_val, test->final.usp);
     CHECK("SSP", final_ssp_val, test->final.ssp);
-    
+
     if (cpu->sr != test->final.sr) {
         ok = false;
-        fprintf(logf, "[%03d %s] Mismatch SR: init %08X, got %08X, exp %08X\n", _test_id_counter, test->name, test->initial.sr, cpu->sr, test->final.sr);
+        fprintf(logf, "[%03d %s] Mismatch SR: init %08X, got %08X, exp %08X\n", _test_id_counter,
+                test->name, test->initial.sr, cpu->sr, test->final.sr);
     }
 
     // MAME `final.pc` is also next prefetch base
@@ -250,7 +253,7 @@ static int process_file(M68kCpu* cpu, const char* path, FILE* err_log) {
 
     uint32_t num_tests = read_u32(f);
     int passed = 0;
-    
+
     global_test_id_counter = 0;
 
     for (uint32_t i = 0; i < num_tests; i++) {
@@ -265,7 +268,7 @@ static int process_file(M68kCpu* cpu, const char* path, FILE* err_log) {
         test.len = read_transactions(f);
 
         _test_id_counter = i;
-        
+
         if (run_test(cpu, &test, err_log)) {
             passed++;
         }

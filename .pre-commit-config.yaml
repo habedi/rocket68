@@ -1,6 +1,6 @@
 default_stages: [ pre-push ]
 fail_fast: false
-exclude: '(^external/|^docs/)'
+exclude: '^(external/|docs/|test/)'
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -30,7 +30,7 @@ repos:
         stages: [ pre-commit ]
 
       - id: lint
-        name: Check Code Style
+        name: Run Linter Checks
         entry: make lint
         language: system
         pass_filenames: false

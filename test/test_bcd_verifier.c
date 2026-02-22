@@ -27,43 +27,23 @@ static void set_input_flags(M68kCpu* cpu, int carry_in, int zero_in) {
     }
 }
 
-static void report_mismatch(const char* op,
-                            int ii,
-                            int jj,
-                            int carry_in,
-                            int zero_in,
-                            uint8_t expected_flags,
-                            uint8_t expected_result,
-                            uint8_t got_flags,
-                            uint8_t got_result,
-                            int* reported) {
+static void report_mismatch(const char* op, int ii, int jj, int carry_in, int zero_in,
+                            uint8_t expected_flags, uint8_t expected_result, uint8_t got_flags,
+                            uint8_t got_result, int* reported) {
     if (*reported >= 10) {
         return;
     }
 
     if (jj >= 0) {
         fprintf(stderr,
-                "%s mismatch ii=%02X jj=%02X X=%d Z=%d | exp flags=%02X res=%02X got flags=%02X res=%02X\n",
-                op,
-                ii,
-                jj,
-                carry_in,
-                zero_in,
-                expected_flags,
-                expected_result,
-                got_flags,
+                "%s mismatch ii=%02X jj=%02X X=%d Z=%d | exp flags=%02X res=%02X got flags=%02X "
+                "res=%02X\n",
+                op, ii, jj, carry_in, zero_in, expected_flags, expected_result, got_flags,
                 got_result);
     } else {
         fprintf(stderr,
                 "%s mismatch ii=%02X X=%d Z=%d | exp flags=%02X res=%02X got flags=%02X res=%02X\n",
-                op,
-                ii,
-                carry_in,
-                zero_in,
-                expected_flags,
-                expected_result,
-                got_flags,
-                got_result);
+                op, ii, carry_in, zero_in, expected_flags, expected_result, got_flags, got_result);
     }
 
     (*reported)++;

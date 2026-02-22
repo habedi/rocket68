@@ -4,13 +4,13 @@
   </picture>
 <br>
 
-<h2>Motorola 68000 Emulator</h2>
+<h2>Rocket 68</h2>
 
-[![Tests](https://img.shields.io/github/actions/workflow/status/habedi/m68k-emul/tests.yml?label=tests&style=flat&labelColor=282c34&logo=github)](https://github.com/habedi/m68k-emul/actions/workflows/tests.yml)
-[![Code Coverage](https://img.shields.io/codecov/c/github/habedi/m68k-emul?label=coverage&style=flat&labelColor=282c34&logo=codecov)](https://codecov.io/gh/habedi/m68k-emul)
+[![Tests](https://img.shields.io/github/actions/workflow/status/habedi/rocket68/tests.yml?label=tests&style=flat&labelColor=282c34&logo=github)](https://github.com/habedi/rocket68/actions/workflows/tests.yml)
+[![Code Coverage](https://img.shields.io/codecov/c/github/habedi/rocket68?label=coverage&style=flat&labelColor=282c34&logo=codecov)](https://codecov.io/gh/habedi/rocket68)
 [![Docs](https://img.shields.io/badge/docs-latest-007ec6?label=docs&style=flat&labelColor=282c34&logo=readthedocs)](docs)
-[![License](https://img.shields.io/badge/license-MIT-007ec6?label=license&style=flat&labelColor=282c34&logo=open-source-initiative)](https://github.com/habedi/m68k-emul)
-[![Release](https://img.shields.io/github/release/habedi/m68k-emul.svg?label=release&style=flat&labelColor=282c34&logo=github)](https://github.com/habedi/m68k-emul/releases/latest)
+[![License](https://img.shields.io/badge/license-MIT-007ec6?label=license&style=flat&labelColor=282c34&logo=open-source-initiative)](https://github.com/habedi/rocket68)
+[![Release](https://img.shields.io/github/release/habedi/rocket68.svg?label=release&style=flat&labelColor=282c34&logo=github)](https://github.com/habedi/rocket68/releases/latest)
 
 A Motorola 68000 CPU emulator in C
 
@@ -18,26 +18,24 @@ A Motorola 68000 CPU emulator in C
 
 ---
 
-This is a Motorola 68000 CPU emulator written in C11.
+Rocket 68 is a Motorola 68000 CPU emulator written in C11.
 
 ### Features
 
 - Minimalistic project structure
 - Pre-configured GitHub Actions for linting and testing
-- Makefile for managing the development workflow and tasks like code formatting, testing, linting, etc.
 
 See [ROADMAP.md](ROADMAP.md) for the list of implemented and planned features.
 
 > [!IMPORTANT]
 > This project is in early development, so bugs and breaking changes are expected.
-> Please use the [issues page](https://github.com/habedi/m68k-emul/issues) to report bugs or request features.
+> Please use the [issues page](https://github.com/habedi/rocket68/issues) to report bugs or request features.
 
 ---
 
 ### Quickstart
 
 To be added.
-
 
 ---
 
@@ -58,22 +56,3 @@ This project is licensed under the MIT License ([LICENSE](LICENSE)).
 ### Acknowledgments
 
 - The logo is from [SVG Repo](https://www.svgrepo.com/svg/142843/cpu) with some modifications.
-- Information from [M68000 Family Programmer's Reference Manual](https://www.nxp.com/docs/en/reference-manual/M68000PRM.pdf)
-  and [Motorola 68000 Opcodes](http://goldencrystal.free.fr/M68kOpcodes.pdf) are used in this project.
-
-### Musashi Tests (Optional)
-
-This project can optionally use Musashi as a git submodule to run Musashi's own test suite
-as a reference point.
-
-Setup and run:
-
-```bash
-git submodule update --init --recursive
-make test-musashi
-```
-
-Notes:
-- The Musashi tests require an m68k cross-assembler/linker to rebuild binaries.
-- The `test-musashi` target runs Musashi's own test harness and does not validate this
-  emulator directly.
