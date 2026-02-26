@@ -1,3 +1,7 @@
+#if defined(__STDC_LIB_EXT1__)
+#define __STDC_WANT_LIB_EXT1__ 1
+#endif
+
 #include <assert.h>
 #include <dirent.h>
 #include <stdint.h>
@@ -5,6 +9,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+
+#ifndef __STDC_LIB_EXT1__
+#define snprintf_s(buf, sz, fmt, ...) snprintf(buf, sz, fmt, ##__VA_ARGS__)
+#endif
 
 #include "../src/m68k/m68k_internal.h"
 #include "m68k.h"
@@ -312,7 +320,7 @@ int main(int argc, char** argv) {
     while ((entry = readdir(dir)) != NULL) {
         if (strstr(entry->d_name, ".json.bin")) {
             char path[1024];
-            snprintf(path, sizeof(path), "%s/%s", argv[1], entry->d_name);
+            snprintf_s(path, sizeof(path), "%s/%s", argv[1], entry->d_name);
             printf("Running %s... ", entry->d_name);
             fflush(stdout);
 

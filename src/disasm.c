@@ -1,7 +1,15 @@
+#if defined(__STDC_LIB_EXT1__)
+#define __STDC_WANT_LIB_EXT1__ 1
+#endif
+
 #include "disasm.h"
 
 #include <stdio.h>
 #include <string.h>
+
+#ifndef __STDC_LIB_EXT1__
+#define snprintf_s(buf, sz, fmt, ...) snprintf(buf, sz, fmt, ##__VA_ARGS__)
+#endif
 
 static u16 peek_word(M68kCpu* cpu, u32 pc) { return m68k_read_16(cpu, pc); }
 
@@ -783,6 +791,6 @@ int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size) {
         }
     }
 
-    snprintf(buffer, buf_size, "%04X  %-8s %s", opcode, op, args);
+    snprintf_s(buffer, buf_size, "%04X  %-8s %s", opcode, op, args);
     return len;
 }

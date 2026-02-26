@@ -181,6 +181,22 @@ coverage: $(COVERAGE_TEST_BINARY) ## Generate code coverage report
 	gcov -o $(COVERAGE_TARGET_DIR) $(wildcard $(SRC_DIR)/*.c)
 	gcov -o $(COVERAGE_TARGET_DIR)/m68k $(wildcard $(SRC_DIR)/m68k/*.c)
 
+.PHONY: bench
+bench: static ## Run benchmarks comparing Rocket68 to Musashi
+	@echo "Building benchmarks..."
+	@mkdir -p $(BIN_DIR)
+	@if [ ! -d external/musashi ]; then \
+		echo "Musashi submodule missing. Run 'git submodule update --init --recursive'"; \
+		exit 1; \
+	fi
+	@$(MAKE) --no-print-directory -C external/musashi
+	@$(CC) -O3 -I$(INC_DIR) benches/benchmark_rocket68.c $(STATIC_LIB) -o $(BIN_DIR)/benchmark_rocket68
+	@$(CC) -O3 -Iexternal/musashi benches/benchmark_musashi.c external/musashi/m68kcpu.o external/musashi/m68kops.o external/musashi/m68kdasm.o external/musashi/softfloat/softfloat.o -lm -o $(BIN_DIR)/benchmark_musashi
+	@echo "--- Rocket68 Benchmark ---"
+	@./$(BIN_DIR)/benchmark_rocket68
+	@echo "--- Musashi Benchmark ---"
+	@./$(BIN_DIR)/benchmark_musashi
+
 .PHONY: clean
 clean: ## Remove all build artifacts
 	@echo "Cleaning up..."
