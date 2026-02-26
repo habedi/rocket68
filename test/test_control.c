@@ -239,3 +239,42 @@ void test_exceptions() {
 
     printf("Exception test passed!\n");
 }
+
+void test_nop_bsr_rtr() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    // 1. NOP
+    // 0100 1110 0111 0001 = 0x4E71
+    m68k_write_16(&cpu, 0, 0x4E71);
+    m68k_step(&cpu);
+    assert(cpu.pc == 2);
+
+    // 2. BSR
+    // 0110 0001 0000 1000 = 0x6108 (BSR.B +8)
+    cpu.pc = 2;  // base address for bsr
+    cpu.a_regs[7] = 0x100;
+    m68k_write_16(&cpu, 2, 0x6108);
+    m68k_step(&cpu);
+    assert(cpu.pc == 4 + 8);  // 12
+    assert(cpu.a_regs[7] == 0xFC);
+    assert(m68k_read_32(&cpu, 0xFC) == 4);  // return address PC pushed
+
+    // 3. RTR (Return and Restore Condition Codes)
+    // 0100 1110 0111 0111 = 0x4E77
+    cpu.pc = 12;
+    // Push PC = 0x00000020
+    // Push CCR/SR = 0x001F
+    m68k_write_32(&cpu, cpu.a_regs[7] - 4, 0x20);  // Push PC
+    m68k_write_16(&cpu, cpu.a_regs[7] - 6, 0x1F);  // Push CCR
+    cpu.a_regs[7] -= 6;
+    m68k_write_16(&cpu, 12, 0x4E77);
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x20);
+    assert(cpu.a_regs[7] == 0xFC);    // Stack restored
+    assert((cpu.sr & 0xFF) == 0x1F);  // Lower byte of SR restored to CCR
+
+    printf("NOP/BSR/RTR test passed!\n");
+}

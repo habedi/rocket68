@@ -61,6 +61,10 @@ int main() {
     test_string_copy();
     test_exception_handler();
 
+    test_nop_bsr_rtr();
+    test_logic_ccr_sr();
+    test_logic_not();
+
     // Loader Tests
     extern void run_loader_tests();
     run_loader_tests();

@@ -46,5 +46,8 @@ void test_stopped_state();
 void test_fibonacci();
 void test_string_copy();
 void test_exception_handler();
+void test_nop_bsr_rtr();
+void test_logic_ccr_sr();
+void test_logic_not();
 
 #endif

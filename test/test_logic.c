@@ -282,3 +282,68 @@ void test_new_tas() {
 
     printf("TAS test passed!\n");
 }
+
+void test_logic_not() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    // NOT.W D0
+    // 0100 0110 01 000 000 = 0x4640
+    cpu.d_regs[0] = 0x5555;
+    m68k_write_16(&cpu, 0, 0x4640);
+    m68k_step(&cpu);
+    assert((cpu.d_regs[0] & 0xFFFF) == 0xAAAA);
+    assert((cpu.sr & M68K_SR_N) != 0);
+
+    // NOT.L D1
+    // 0100 0110 10 000 001 = 0x4681
+    cpu.d_regs[1] = 0x12345678;
+    m68k_write_16(&cpu, 2, 0x4681);
+    m68k_step(&cpu);
+    assert(cpu.d_regs[1] == (u32)~0x12345678);
+
+    printf("NOT test passed!\n");
+}
+
+void test_logic_ccr_sr() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    // ANDI to CCR
+    // 0000 0010 0011 1100 = 0x023C, then word 0x00XX
+    cpu.sr = 0x271F;  // Supervisor (S=1, T=0, I=7), all CCR flags set
+    m68k_write_16(&cpu, 0, 0x023C);
+    m68k_write_16(&cpu, 2, 0x000F);  // Keep only 0x0F
+    m68k_step(&cpu);
+    assert(cpu.sr == 0x270F);  // Upper byte untouched, lower byte masked
+
+    // ORI to CCR
+    // 0000 0000 0011 1100 = 0x003C
+    cpu.sr = 0x0000;
+    m68k_write_16(&cpu, 4, 0x003C);
+    m68k_write_16(&cpu, 6, 0x0015);
+    m68k_step(&cpu);
+    assert(cpu.sr == 0x0015);
+
+    // EORI to CCR
+    // 0000 1010 0011 1100 = 0x0A3C
+    cpu.sr = 0x0015;
+    m68k_write_16(&cpu, 8, 0x0A3C);
+    m68k_write_16(&cpu, 10, 0x0011);
+    m68k_step(&cpu);
+    assert(cpu.sr == 0x0004);  // 0x15 ^ 0x11 = 0x04
+
+    // EORI to SR (privilege)
+    // 0000 1010 0111 1100 = 0x0A7C
+    cpu.sr = 0x2000;  // Supervisor mode
+    m68k_write_16(&cpu, 12, 0x0A7C);
+    m68k_write_16(&cpu, 14, 0x001F);
+    m68k_step(&cpu);
+    assert(cpu.sr == 0x201F);
+
+    printf("CCR/SR Logic test passed!\n");
+}

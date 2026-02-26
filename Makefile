@@ -130,9 +130,15 @@ test-bcd: ## Run BCD test suite
 	@BCD_TABLE_PATH=external/bcd-test-rom/data/bcd-table.bin ./$(BCD_TEST_BINARY)
 
 .PHONY: test-valgrind
-test-valgrind: $(TEST_BINARY) ## Run unit tests with Valgrind to check for memory leaks
+test-valgrind: $(TEST_BINARY) $(BIN_DIR)/test_json $(BCD_TEST_BINARY) ## Run unit tests with Valgrind to check for memory leaks
 	@echo "Running tests with Valgrind..."
-	valgrind --leak-check=full --suppressions=valgrind.supp ./$(TEST_BINARY)
+	valgrind --error-exitcode=1 --leak-check=full --suppressions=valgrind.supp ./$(TEST_BINARY)
+	@if [ -d external/m68000-json-tests/v1 ]; then \
+		valgrind --error-exitcode=1 --leak-check=full --suppressions=valgrind.supp ./$(BIN_DIR)/test_json external/m68000-json-tests/v1 || exit 1; \
+	fi
+	@if [ -f external/bcd-test-rom/data/bcd-table.bin ]; then \
+		env BCD_TABLE_PATH=external/bcd-test-rom/data/bcd-table.bin valgrind --error-exitcode=1 --leak-check=full --suppressions=valgrind.supp ./$(BCD_TEST_BINARY) || exit 1; \
+	fi
 
 .PHONY: static
 static: $(STATIC_LIB) ## Build static library version of Rocket 68
