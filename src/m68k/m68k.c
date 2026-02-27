@@ -22,12 +22,17 @@ void m68k_reset(M68kCpu* cpu) {
     cpu->usp = 0;
     cpu->stopped = false;
     cpu->trace_pending = false;
+    cpu->exception_thrown = 0;
+    cpu->irq_level = 0;
 
     cpu->a_regs[7] = m68k_read_32(cpu, 0x00000000);
     cpu->pc = m68k_read_32(cpu, 0x00000004);
 }
 
-void m68k_set_pc(M68kCpu* cpu, u32 pc) { cpu->pc = pc; }
+void m68k_set_pc(M68kCpu* cpu, u32 pc) {
+    cpu->pc = pc;
+    if (pc_changed_cb) pc_changed_cb(pc);
+}
 
 u32 m68k_get_pc(M68kCpu* cpu) { return cpu->pc; }
 
@@ -58,6 +63,46 @@ u32 m68k_get_ar(M68kCpu* cpu, int reg) {
 }
 
 static bool is_valid_address(M68kCpu* cpu, u32 address) { return address < cpu->memory_size; }
+
+M68kWaitBusCallback wait_bus = NULL;
+
+void m68k_set_wait_bus_callback(M68kWaitBusCallback callback) { wait_bus = callback; }
+
+M68kIntAckCallback int_ack = NULL;
+
+void m68k_set_int_ack_callback(M68kIntAckCallback callback) { int_ack = callback; }
+
+M68kFcCallback fc_cb = NULL;
+
+void m68k_set_fc_callback(M68kFcCallback callback) { fc_cb = callback; }
+
+M68kInstrHookCallback instr_hook_cb = NULL;
+void m68k_set_instr_hook_callback(M68kInstrHookCallback callback) { instr_hook_cb = callback; }
+
+M68kPcChangedCallback pc_changed_cb = NULL;
+void m68k_set_pc_changed_callback(M68kPcChangedCallback callback) { pc_changed_cb = callback; }
+
+M68kResetCallback reset_cb = NULL;
+void m68k_set_reset_callback(M68kResetCallback callback) { reset_cb = callback; }
+
+M68kTasCallback tas_cb = NULL;
+void m68k_set_tas_callback(M68kTasCallback callback) { tas_cb = callback; }
+
+M68kIllgCallback illg_cb = NULL;
+void m68k_set_illg_callback(M68kIllgCallback callback) { illg_cb = callback; }
+
+static inline void set_fc(M68kCpu* cpu, bool is_program) {
+    if (fc_cb) {
+        bool is_supervisor = (cpu->sr & M68K_SR_S) != 0;
+        unsigned int fc = 0;
+        if (is_supervisor) {
+            fc = is_program ? M68K_FC_SUPV_PROG : M68K_FC_SUPV_DATA;
+        } else {
+            fc = is_program ? M68K_FC_USER_PROG : M68K_FC_USER_DATA;
+        }
+        fc_cb(fc);
+    }
+}
 
 static bool in_address_error = false;
 static bool in_bus_error = false;
@@ -96,6 +141,8 @@ int m68k_ea_cycles(int mode, int reg, M68kSize size) {
 }
 
 u8 m68k_read_8(M68kCpu* cpu, u32 address) {
+    set_fc(cpu, false);
+    if (wait_bus) wait_bus(address, SIZE_BYTE);
     if (is_valid_address(cpu, address)) {
         return cpu->memory[address];
     }
@@ -108,6 +155,8 @@ u8 m68k_read_8(M68kCpu* cpu, u32 address) {
 }
 
 u16 m68k_read_16(M68kCpu* cpu, u32 address) {
+    set_fc(cpu, false);
+    if (wait_bus) wait_bus(address, SIZE_WORD);
     if ((address & 1) && !in_address_error) {
         in_address_error = true;
         m68k_exception(cpu, 3);
@@ -126,6 +175,8 @@ u16 m68k_read_16(M68kCpu* cpu, u32 address) {
 }
 
 u32 m68k_read_32(M68kCpu* cpu, u32 address) {
+    set_fc(cpu, false);
+    if (wait_bus) wait_bus(address, SIZE_LONG);
     if ((address & 1) && !in_address_error) {
         in_address_error = true;
         m68k_exception(cpu, 3);
@@ -145,6 +196,8 @@ u32 m68k_read_32(M68kCpu* cpu, u32 address) {
 }
 
 void m68k_write_8(M68kCpu* cpu, u32 address, u8 value) {
+    set_fc(cpu, false);
+    if (wait_bus) wait_bus(address, SIZE_BYTE);
     if (address < cpu->memory_size) {
         cpu->memory[address] = value;
     } else if (address == 0xE00000) {
@@ -158,6 +211,8 @@ void m68k_write_8(M68kCpu* cpu, u32 address, u8 value) {
 }
 
 void m68k_write_16(M68kCpu* cpu, u32 address, u16 value) {
+    set_fc(cpu, false);
+    if (wait_bus) wait_bus(address, SIZE_WORD);
     if ((address & 1) && !in_address_error) {
         in_address_error = true;
         m68k_exception(cpu, 3);
@@ -175,6 +230,8 @@ void m68k_write_16(M68kCpu* cpu, u32 address, u16 value) {
 }
 
 void m68k_write_32(M68kCpu* cpu, u32 address, u32 value) {
+    set_fc(cpu, false);
+    if (wait_bus) wait_bus(address, SIZE_LONG);
     if ((address & 1) && !in_address_error) {
         in_address_error = true;
         m68k_exception(cpu, 3);
@@ -194,7 +251,25 @@ void m68k_write_32(M68kCpu* cpu, u32 address, u32 value) {
 }
 
 u16 m68k_fetch(M68kCpu* cpu) {
-    u16 opcode = m68k_read_16(cpu, cpu->pc);
+    set_fc(cpu, true);
+    if (wait_bus) wait_bus(cpu->pc, SIZE_WORD);
+    u16 opcode = 0;
+
+    if ((cpu->pc & 1) && !in_address_error) {
+        in_address_error = true;
+        m68k_exception(cpu, 3);
+        in_address_error = false;
+        return 0;
+    }
+    if (is_valid_address(cpu, cpu->pc) && is_valid_address(cpu, cpu->pc + 1)) {
+        opcode = (cpu->memory[cpu->pc] << 8) | cpu->memory[cpu->pc + 1];
+    } else if (!in_bus_error) {
+        in_bus_error = true;
+        m68k_exception(cpu, 2);
+        in_bus_error = false;
+        return 0;
+    }
+
     cpu->pc += 2;
     return opcode;
 }
@@ -451,7 +526,7 @@ void m68k_exception(M68kCpu* cpu, int vector) {
 
     u32 vector_addr = m68k_read_32(cpu, vector * 4);
 
-    cpu->pc = vector_addr;
+    m68k_set_pc(cpu, vector_addr);
 }
 
 void m68k_set_irq(M68kCpu* cpu, int level) { cpu->irq_level = level; }
@@ -462,7 +537,20 @@ static bool check_interrupts(M68kCpu* cpu) {
     int current_level = (cpu->sr >> 8) & 0x7;
 
     if (cpu->irq_level > current_level || cpu->irq_level == 7) {
-        int vector = 24 + cpu->irq_level;
+        int vector;
+
+        if (int_ack) {
+            int ack = int_ack(cpu->irq_level);
+            if (ack == (int)M68K_INT_ACK_AUTOVECTOR) {
+                vector = 24 + cpu->irq_level;
+            } else if (ack == (int)M68K_INT_ACK_SPURIOUS) {
+                vector = 24;
+            } else {
+                vector = ack & 0xFF;
+            }
+        } else {
+            vector = 24 + cpu->irq_level;
+        }
 
         cpu->sr &= ~0x0700;
         cpu->sr |= (cpu->irq_level << 8);
@@ -490,6 +578,10 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
     }
 
     bool trace_active = (cpu->sr & 0x8000) != 0;
+
+    if (instr_hook_cb) {
+        instr_hook_cb(cpu->pc);
+    }
 
     u16 opcode = m68k_fetch(cpu);
     int cycles = 4;
@@ -937,12 +1029,48 @@ done:
 void m68k_step(M68kCpu* cpu) { m68k_step_ex(cpu, true); }
 
 int m68k_execute(M68kCpu* cpu, int cycles_requested) {
-    int start_cycles = cpu->cycles_remaining;
     cpu->cycles_remaining += cycles_requested;
+    cpu->target_cycles += cycles_requested;
+
+    int start_cycles_run = m68k_cycles_run(cpu);
 
     while (cpu->cycles_remaining > 0 && !cpu->stopped) {
         m68k_step(cpu);
     }
 
-    return (start_cycles + cycles_requested) - cpu->cycles_remaining;
+    return m68k_cycles_run(cpu) - start_cycles_run;
+}
+
+int m68k_cycles_run(M68kCpu* cpu) { return cpu->target_cycles - cpu->cycles_remaining; }
+
+int m68k_cycles_remaining(M68kCpu* cpu) { return cpu->cycles_remaining; }
+
+void m68k_modify_timeslice(M68kCpu* cpu, int cycles) {
+    cpu->cycles_remaining += cycles;
+    cpu->target_cycles += cycles;
+}
+
+void m68k_end_timeslice(M68kCpu* cpu) {
+    cpu->target_cycles = cpu->target_cycles - cpu->cycles_remaining;
+    cpu->cycles_remaining = 0;
+}
+
+unsigned int m68k_context_size(void) { return sizeof(M68kCpu); }
+
+void m68k_get_context(M68kCpu* cpu, void* dst) {
+    if (dst) {
+        memcpy(dst, cpu, sizeof(M68kCpu));
+    }
+}
+
+void m68k_set_context(M68kCpu* cpu, const void* src) {
+    if (src) {
+        u8* old_memory = cpu->memory;
+        u32 old_memory_size = cpu->memory_size;
+
+        memcpy(cpu, src, sizeof(M68kCpu));
+
+        cpu->memory = old_memory;
+        cpu->memory_size = old_memory_size;
+    }
 }

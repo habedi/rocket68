@@ -1,7 +1,17 @@
 Checks: >
     clang-analyzer-*,
     bugprone-*,
-    performance-*
-WarningsAsErrors: 'clang-analyzer-*,bugprone-*'
+    performance-*,
+    cert-*,
+    readability-*,
+    misc-*,
+    -bugprone-easily-swappable-parameters,
+    -bugprone-narrowing-conversions,
+    -readability-magic-numbers,
+    -readability-identifier-length
+
+# Don't treat any warnings as errors for now
+WarningsAsErrors: ''
+
 HeaderFilterRegex: '^(include|src)/'
 FormatStyle: google

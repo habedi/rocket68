@@ -100,7 +100,7 @@ void test_addx_subx() {
     // Op: 1101 <D1=1> 1 10 00 0 <D0=0> -> 1101 001 1 10 00 0 000 -> 0xD380
     cpu.d_regs[0] = 1;
     cpu.d_regs[1] = 2;
-    cpu.sr |= M68K_SR_X;  // Set X
+    cpu.sr |= M68K_SR_X;
 
     m68k_write_16(&cpu, 0, 0xD380);
     m68k_step(&cpu);

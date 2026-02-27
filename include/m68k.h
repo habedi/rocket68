@@ -13,6 +13,39 @@ typedef int32_t s32;
 
 typedef enum { SIZE_BYTE = 1, SIZE_WORD = 2, SIZE_LONG = 4 } M68kSize;
 
+typedef void (*M68kWaitBusCallback)(u32 address, M68kSize size);
+extern M68kWaitBusCallback wait_bus;
+
+#define M68K_INT_ACK_AUTOVECTOR 0xffffffff
+#define M68K_INT_ACK_SPURIOUS 0xfffffffe
+
+typedef int (*M68kIntAckCallback)(int level);
+extern M68kIntAckCallback int_ack;
+
+#define M68K_FC_USER_DATA 1
+#define M68K_FC_USER_PROG 2
+#define M68K_FC_SUPV_DATA 5
+#define M68K_FC_SUPV_PROG 6
+#define M68K_FC_INT_ACK 7
+
+typedef void (*M68kFcCallback)(unsigned int new_fc);
+extern M68kFcCallback fc_cb;
+
+typedef void (*M68kInstrHookCallback)(u32 pc);
+extern M68kInstrHookCallback instr_hook_cb;
+
+typedef void (*M68kPcChangedCallback)(u32 new_pc);
+extern M68kPcChangedCallback pc_changed_cb;
+
+typedef void (*M68kResetCallback)(void);
+extern M68kResetCallback reset_cb;
+
+typedef int (*M68kTasCallback)(void);
+extern M68kTasCallback tas_cb;
+
+typedef int (*M68kIllgCallback)(int opcode);
+extern M68kIllgCallback illg_cb;
+
 typedef enum {
     ADDR_MODE_DATA_REG_DIRECT,
     ADDR_MODE_ADDR_REG_DIRECT,
@@ -48,6 +81,7 @@ typedef struct {
     u32 sfc;
     u32 dfc;
 
+    int target_cycles;
     int cycles_remaining;
 } M68kCpu;
 
@@ -71,6 +105,11 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions);
 void m68k_step(M68kCpu* cpu);
 int m68k_execute(M68kCpu* cpu, int cycles);
 
+int m68k_cycles_run(M68kCpu* cpu);
+int m68k_cycles_remaining(M68kCpu* cpu);
+void m68k_modify_timeslice(M68kCpu* cpu, int cycles);
+void m68k_end_timeslice(M68kCpu* cpu);
+
 void m68k_set_sr(M68kCpu* cpu, u16 new_sr);
 
 void m68k_set_irq(M68kCpu* cpu, int level);
@@ -82,5 +121,18 @@ u32 m68k_read_32(M68kCpu* cpu, u32 address);
 void m68k_write_8(M68kCpu* cpu, u32 address, u8 value);
 void m68k_write_16(M68kCpu* cpu, u32 address, u16 value);
 void m68k_write_32(M68kCpu* cpu, u32 address, u32 value);
+
+void m68k_set_wait_bus_callback(M68kWaitBusCallback callback);
+void m68k_set_int_ack_callback(M68kIntAckCallback callback);
+void m68k_set_fc_callback(M68kFcCallback callback);
+void m68k_set_instr_hook_callback(M68kInstrHookCallback callback);
+void m68k_set_pc_changed_callback(M68kPcChangedCallback callback);
+void m68k_set_reset_callback(M68kResetCallback callback);
+void m68k_set_tas_callback(M68kTasCallback callback);
+void m68k_set_illg_callback(M68kIllgCallback callback);
+
+unsigned int m68k_context_size(void);
+void m68k_get_context(M68kCpu* cpu, void* dst);
+void m68k_set_context(M68kCpu* cpu, const void* src);
 
 #endif

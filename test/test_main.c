@@ -15,26 +15,29 @@ int main() {
     test_arithmetic();
     test_control_flow();
     test_logic();
-    test_data_manipulation();  // CLR, NEG, EXT, SWAP, MUL/DIV
+    test_data_manipulation();
     test_shift_rotate();
-    test_exceptions();  // TRAP, RTE
+    test_exceptions();
     test_cmp_tst();
     test_lea_pea();
-    test_stack_frame();        // LINK, UNLK
-    test_dbcc_scc();           // DBcc, Scc
-    test_addressing_mode_6();  // Index addressing
+    test_stack_frame();
+    test_dbcc_scc();
+    test_addressing_mode_6();
     test_exg();
-    test_movem();  // MOVEM
+    test_movem();
     test_adda_suba();
     test_addx_subx();
     test_pcrel();
 
-    // New Tests
     test_bcd();
     test_misc_control();
     test_interrupts();
+    test_int_ack();
+    test_fc();
+    test_hooks();
+    test_timeslice();
+    test_serialization();
 
-    // Regression Tests for Bug Fixes
     test_regression_postinc_predec_byte();
     test_regression_reset_vectors();
     test_regression_jmp_dispatch();
@@ -45,7 +48,6 @@ int main() {
     test_regression_stop_privilege();
     test_regression_ext_dispatch();
 
-    // New Instruction & Infrastructure Tests
     test_bit_manipulation();
     test_immediate_alu();
     test_negx();
@@ -56,7 +58,6 @@ int main() {
     test_trace_mode();
     test_stopped_state();
 
-    // Integration Tests
     test_fibonacci();
     test_string_copy();
     test_exception_handler();
@@ -65,7 +66,6 @@ int main() {
     test_logic_ccr_sr();
     test_logic_not();
 
-    // Loader Tests
     extern void run_loader_tests();
     run_loader_tests();
 

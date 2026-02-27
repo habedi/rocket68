@@ -89,7 +89,7 @@ void test_disasm() {
     // ADD D0, D1: 1101 001 001 000 000 -> D240?
     // D040 -> 1101 0000 0100 0000. D0, opmode 0(byte), ea mode 2(A0)?
 
-    m68k_write_16(&cpu, 2, 0x4E75);  // RTS
+    m68k_write_16(&cpu, 2, 0x4E75);
 
     char buf[64];
     int len = m68k_disasm(&cpu, 0, buf, sizeof(buf));
@@ -101,8 +101,6 @@ void test_disasm() {
     printf("Disasm 2: %s\n", buf);
     assert(strstr(buf, "RTS"));
 }
-
-// ... (Previous tests)
 
 void test_disasm_full() {
     M68kCpu cpu;

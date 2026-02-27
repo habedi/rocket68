@@ -89,8 +89,6 @@ static void read_state(FILE* f, CPU_State* st) {
     for (uint32_t i = 0; i < st->ram_count; i++) {
         uint32_t addr = read_u32(f);
         uint16_t data = read_u16(f);
-        // data comes in as full 16-bit word at `addr`. Python decoder stored [addr, data>>8],
-        // [addr|1, data&FF]. The binary file provides (addr: u32, data: u16).
         st->ram[i * 2].addr = addr;
         st->ram[i * 2 + 1].addr = addr | 1;
 

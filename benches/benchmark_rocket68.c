@@ -26,7 +26,7 @@ int main() {
     }
 
     cpu.pc = 0;
-    
+
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
 
@@ -36,7 +36,7 @@ int main() {
 
     clock_gettime(CLOCK_MONOTONIC, &end);
     double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
-    
+
     printf("Rocket68 Elapsed: %.4f seconds\n", elapsed);
     return 0;
 }

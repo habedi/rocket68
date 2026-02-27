@@ -55,14 +55,14 @@ void m68k_exec_bcc(M68kCpu* cpu, u16 opcode) {
     if (cond == 1) {
         m68k_push_32(cpu, cpu->pc);
         if ((opcode & 0xFF) == 0)
-            cpu->pc = (cpu->pc - 2) + disp;
+            m68k_set_pc(cpu, (cpu->pc - 2) + disp);
         else
-            cpu->pc = cpu->pc + disp;
+            m68k_set_pc(cpu, cpu->pc + disp);
     } else if (m68k_check_condition(cpu, cond)) {
         if ((opcode & 0xFF) == 0)
-            cpu->pc = (cpu->pc - 2) + disp;
+            m68k_set_pc(cpu, (cpu->pc - 2) + disp);
         else
-            cpu->pc = cpu->pc + disp;
+            m68k_set_pc(cpu, cpu->pc + disp);
     }
 }
 
@@ -82,7 +82,7 @@ void m68k_exec_dbcc(M68kCpu* cpu, u16 opcode) {
 
     if (val != 0xFFFF) {
         cpu->cycles_remaining -= 10;  // Loop branched
-        cpu->pc = (cpu->pc - 2) + displacement;
+        m68k_set_pc(cpu, (cpu->pc - 2) + displacement);
     } else {
         cpu->cycles_remaining -= 14;  // Loop expired
     }
@@ -116,12 +116,12 @@ void m68k_exec_jmp(M68kCpu* cpu, u16 opcode) {
         m68k_push_32(cpu, cpu->pc);
     }
 
-    cpu->pc = ea.address;
+    m68k_set_pc(cpu, ea.address);
 }
 
 void m68k_exec_rts(M68kCpu* cpu, u16 opcode) {
     (void)opcode;
-    cpu->pc = m68k_pop_32(cpu);
+    m68k_set_pc(cpu, m68k_pop_32(cpu));
 }
 
 void m68k_exec_trap(M68kCpu* cpu, u16 opcode) {
@@ -140,7 +140,7 @@ void m68k_exec_rte(M68kCpu* cpu, u16 opcode) {
     u16 new_sr = m68k_pop_16(cpu);
     u32 new_pc = m68k_pop_32(cpu);
     m68k_set_sr(cpu, new_sr);
-    cpu->pc = new_pc;
+    m68k_set_pc(cpu, new_pc);
 }
 
 void m68k_exec_chk(M68kCpu* cpu, u16 opcode) {
@@ -178,7 +178,7 @@ void m68k_exec_rtr(M68kCpu* cpu, u16 opcode) {
     u32 return_pc = m68k_pop_32(cpu);
 
     cpu->sr = (cpu->sr & 0xFF00) | (ccr & 0x1F);
-    cpu->pc = return_pc;
+    m68k_set_pc(cpu, return_pc);
 }
 
 void m68k_exec_stop(M68kCpu* cpu, u16 opcode) {
@@ -202,6 +202,10 @@ void m68k_exec_reset(M68kCpu* cpu, u16 opcode) {
         cpu->pc -= 2;
         m68k_exception(cpu, 8);
         return;
+    }
+
+    if (reset_cb) {
+        reset_cb();
     }
 }
 
@@ -265,7 +269,7 @@ void m68k_exec_rtd(M68kCpu* cpu, u16 opcode) {
     u32 ret_addr = m68k_pop_32(cpu);
     s16 disp = (s16)m68k_fetch(cpu);
     cpu->a_regs[7] += disp;
-    cpu->pc = ret_addr;
+    m68k_set_pc(cpu, ret_addr);
 }
 
 void m68k_exec_bkpt(M68kCpu* cpu, u16 opcode) {

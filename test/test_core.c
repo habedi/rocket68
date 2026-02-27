@@ -6,6 +6,8 @@
 #include "m68k.h"
 #include "test_m68k.h"
 
+u16 m68k_fetch(M68kCpu* cpu);
+
 void test_initialization() {
     M68kCpu cpu;
     u8 memory[1024];
@@ -220,4 +222,252 @@ void test_interrupts() {
     assert(saved_pc == 0x100);
 
     printf("Interrupt test passed!\n");
+}
+
+static int mock_iack_vector = 0;
+static int mock_int_ack_cb(int level) {
+    (void)level;
+    return mock_iack_vector;
+}
+
+void test_int_ack() {
+    M68kCpu cpu;
+    u8 memory[4096];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    m68k_set_int_ack_callback(mock_int_ack_cb);
+
+    // 1. Setup
+    cpu.pc = 0x100;
+    cpu.a_regs[7] = 0x1000;
+    cpu.ssp = 0x1000;
+    cpu.sr = 0x0000;
+
+    // 2. Test Spurious Interrupt (M68K_INT_ACK_SPURIOUS -> vector 24)
+    mock_iack_vector = M68K_INT_ACK_SPURIOUS;
+    m68k_write_32(&cpu, 24 * 4, 0x500);  // Spurious handler
+    m68k_set_irq(&cpu, 4);
+    m68k_write_16(&cpu, cpu.pc, 0x4E71);
+    m68k_step_ex(&cpu, true);
+    assert(cpu.exception_thrown == 24);
+    assert(cpu.pc == 0x500);
+
+    // Reset
+    m68k_reset(&cpu);
+    cpu.pc = 0x200;
+    cpu.ssp = 0x1000;
+    cpu.a_regs[7] = 0x1000;
+    cpu.sr = 0x0000;
+
+    // 3. Test Custom Vector (e.g. 0x40 -> vector 64)
+    mock_iack_vector = 0x40;
+    m68k_write_32(&cpu, 0x40 * 4, 0x600);  // Custom handler
+    m68k_set_irq(&cpu, 5);
+    m68k_write_16(&cpu, cpu.pc, 0x4E71);
+    m68k_step_ex(&cpu, true);
+    assert(cpu.exception_thrown == 0x40);
+    assert(cpu.pc == 0x600);
+
+    // Reset
+    m68k_reset(&cpu);
+    cpu.pc = 0x100;
+    cpu.ssp = 0x1000;
+    cpu.a_regs[7] = 0x1000;
+    cpu.sr = 0x0000;
+
+    // 4. Test Autovector (M68K_INT_ACK_AUTOVECTOR) via IRQ 6 -> vector 30
+    mock_iack_vector = M68K_INT_ACK_AUTOVECTOR;
+    m68k_write_32(&cpu, 30 * 4, 0x700);  // Autovector handler
+    m68k_set_irq(&cpu, 6);
+    m68k_write_16(&cpu, cpu.pc, 0x4E71);
+    m68k_step_ex(&cpu, true);
+    assert(cpu.exception_thrown == 30);
+    assert(cpu.pc == 0x700);
+
+    m68k_set_int_ack_callback(NULL);
+    printf("IACK Callback test passed!\n");
+}
+
+static unsigned int mock_fc = 0;
+static void mock_fc_cb(unsigned int fc) { mock_fc = fc; }
+
+void test_fc() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    m68k_set_fc_callback(mock_fc_cb);
+
+    // 1. User Data Access
+    cpu.sr = 0x0000;  // User mode
+    mock_fc = 0;
+    m68k_write_8(&cpu, 10, 0);  // Implicit data write
+    assert(mock_fc == M68K_FC_USER_DATA);
+
+    mock_fc = 0;
+    m68k_read_16(&cpu, 10);
+    assert(mock_fc == M68K_FC_USER_DATA);
+
+    // 2. Supervisor Data Access
+    cpu.sr = 0x2000;  // Supervisor mode (bit 13)
+    mock_fc = 0;
+    m68k_write_32(&cpu, 10, 0);
+    assert(mock_fc == M68K_FC_SUPV_DATA);
+
+    // 3. User Program Access
+    // Emulated via a fetch
+    cpu.sr = 0x0000;
+    cpu.pc = 100;
+    mock_fc = 0;
+    m68k_fetch(&cpu);
+    assert(mock_fc == M68K_FC_USER_PROG);
+
+    // 4. Supervisor Program Access
+    cpu.sr = 0x2000;
+    cpu.pc = 100;
+    mock_fc = 0;
+    m68k_fetch(&cpu);
+    assert(mock_fc == M68K_FC_SUPV_PROG);
+
+    m68k_set_fc_callback(NULL);
+    printf("Function Code (FC) Callback test passed!\n");
+}
+
+static u32 mock_instr_pc = 0;
+static u32 mock_pc_changed = 0;
+static bool mock_reset_called = false;
+static int mock_tas_result = 1;
+
+static void handle_instr_hook(u32 pc) { mock_instr_pc = pc; }
+static void handle_pc_changed(u32 pc) { mock_pc_changed = pc; }
+static void handle_reset(void) { mock_reset_called = true; }
+static int handle_tas(void) { return mock_tas_result; }
+
+void test_hooks() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    m68k_set_instr_hook_callback(handle_instr_hook);
+    m68k_set_pc_changed_callback(handle_pc_changed);
+    m68k_set_reset_callback(handle_reset);
+    m68k_set_tas_callback(handle_tas);
+
+    // 1. Instruction Hook & PC Changed
+    cpu.pc = 0x100;
+    // JMP 0x200: 0100 1110 11 111 000 = 0x4EF8
+    // Word 2: 0x0200
+    m68k_write_16(&cpu, 0x100, 0x4EF8);
+    m68k_write_16(&cpu, 0x102, 0x0200);
+    m68k_step_ex(&cpu, true);
+
+    // Instruction hook should have fired BEFORE the JMP execution at PC 0x100
+    assert(mock_instr_pc == 0x100);
+    // PC should have changed to 0x200
+    assert(mock_pc_changed == 0x200);
+
+    // 2. RESET instruction hook
+    cpu.pc = 0x200;
+    cpu.sr = 0x2700;  // Supervisor mode required for RESET
+    mock_reset_called = false;
+    // RESET: 0100 1110 0111 0000 = 0x4E70
+    m68k_write_16(&cpu, 0x200, 0x4E70);
+    m68k_step_ex(&cpu, true);
+
+    assert(mock_reset_called == true);
+
+    // 3. TAS instruction hook
+    // TAS D0: 0100 1010 11 000 000 = 0x4AC0
+    cpu.pc = 0x300;
+    cpu.d_regs[0] = 0;
+    m68k_write_16(&cpu, 0x300, 0x4AC0);
+
+    // First try with write allowed
+    mock_tas_result = 1;
+    m68k_step_ex(&cpu, true);
+    assert((cpu.d_regs[0] & 0x80) != 0);  // Writeback succeeded
+
+    // Try with write denied
+    cpu.pc = 0x302;
+    cpu.d_regs[0] = 0;
+    m68k_write_16(&cpu, 0x302, 0x4AC0);
+    mock_tas_result = 0;
+    m68k_step_ex(&cpu, true);
+    assert((cpu.d_regs[0] & 0x80) == 0);  // Writeback denied
+
+    m68k_set_instr_hook_callback(NULL);
+    m68k_set_pc_changed_callback(NULL);
+    m68k_set_reset_callback(NULL);
+    m68k_set_tas_callback(NULL);
+
+    printf("Execution Hooks test passed!\n");
+}
+
+static M68kCpu* timeslice_test_cpu = NULL;
+static void timeslice_hook(u32 pc) {
+    (void)pc;
+    m68k_end_timeslice(timeslice_test_cpu);
+}
+
+void test_timeslice() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    // NOP is 4 cycles
+    m68k_write_16(&cpu, 0x100, 0x4E71);
+    m68k_write_16(&cpu, 0x102, 0x4E71);
+    cpu.pc = 0x100;
+
+    int cycles_used = m68k_execute(&cpu, 8);
+    assert(cycles_used >= 8);
+    assert(cpu.pc == 0x104);
+
+    // Test early yield
+    cpu.pc = 0x100;
+    timeslice_test_cpu = &cpu;
+    m68k_set_instr_hook_callback(timeslice_hook);
+    cycles_used = m68k_execute(&cpu, 8);
+    assert(cycles_used == 4);  // one instruction ran, then timeslice ended
+    assert(cpu.pc == 0x102);
+    m68k_set_instr_hook_callback(NULL);
+
+    printf("Advanced Timeslice logic test passed!\n");
+}
+
+void test_serialization() {
+    M68kCpu cpu1;
+    M68kCpu cpu2;
+    u8 memory1[1024];
+    u8 memory2[1024];
+
+    memset(memory1, 0, sizeof(memory1));
+    memset(memory2, 0, sizeof(memory2));
+
+    m68k_init(&cpu1, memory1, sizeof(memory1));
+    m68k_init(&cpu2, memory2, sizeof(memory2));
+
+    cpu1.d_regs[0] = 0xDEADBEEF;
+    cpu1.a_regs[0] = 0xCAFEBABE;
+    cpu1.pc = 0x100;
+    cpu1.sr = 0x2700;
+
+    unsigned int ctx_size = m68k_context_size();
+    u8* ctx_buffer = malloc(ctx_size);
+
+    m68k_get_context(&cpu1, ctx_buffer);
+    m68k_set_context(&cpu2, ctx_buffer);
+    free(ctx_buffer);
+
+    assert(cpu2.d_regs[0] == 0xDEADBEEF);
+    assert(cpu2.a_regs[0] == 0xCAFEBABE);
+    assert(cpu2.pc == 0x100);
+    assert(cpu2.sr == 0x2700);
+
+    // CPU2 should still point to memory2!
+    assert(cpu2.memory == memory2);
+
+    printf("CPU Context Serialization test passed!\n");
 }

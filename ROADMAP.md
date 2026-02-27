@@ -46,6 +46,14 @@ This document outlines the implemented features and the future goals for the pro
 - [x] Program loader (S-record and binary)
 - [x] Disassembler (instruction decoding to text)
 - [x] Sub-instruction cycle counting and timing bounds parity
+- [x] Memory wait state hooks (`M68kWaitBusCallback`)
+- [x] Interrupt acknowledge (IACK) dynamic vector callback
+- [x] Function Code (FC0-FC2) callbacks for MMU and memory access typing
+- [x] Execution debug hooks (instruction pre-fetch, PC change, and RESET/TAS/BKPT support)
+- [x] Advanced timeslice management (voluntary yielding and dynamic cycle modification)
+- [x] Separation of program versus data memory fetch APIs
+- [x] CPU state serialization and save state support
+- [ ] Instruction supports for for 68010, 68020, 68030, and 68040 CPUs
 
 ### Development and Testing
 

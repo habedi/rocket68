@@ -39,23 +39,23 @@ int main() {
 
     m68k_init();
     m68k_set_cpu_type(M68K_CPU_TYPE_68000);
-    // PC starts at 0, USP/SSP starts at 0x10000? Let's manually set PC.
+
     m68k_set_reg(M68K_REG_PC, 0);
 
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
 
-    // Musashi executes cyclically
+
     while (m68k_get_reg(NULL, M68K_REG_PC) < sizeof(program) * 2) {
-        m68k_execute(100000); // chunk
-        // Musashi's STOP doesn't exit m68k_execute automatically until cycles run out 
-        // We'll check if PC is at STOP. STOP is at 12, PC after reading STOP is 16.
+        m68k_execute(100000);
+
+
         if (m68k_get_reg(NULL, M68K_REG_PC) >= 16) break;
     }
 
     clock_gettime(CLOCK_MONOTONIC, &end);
     double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
-    
+
     printf("Musashi  Elapsed: %.4f seconds\n", elapsed);
     return 0;
 }

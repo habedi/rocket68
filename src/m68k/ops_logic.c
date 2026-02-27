@@ -600,20 +600,3 @@ void m68k_exec_eori(M68kCpu* cpu, u16 opcode) {
     }
     update_flags_logic(cpu, result, size);
 }
-
-void m68k_exec_tas(M68kCpu* cpu, u16 opcode) {
-    int mode = (opcode >> 3) & 0x7;
-    int reg = opcode & 0x7;
-    M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_BYTE);
-    u8 data = ea.value & 0xFF;
-
-    update_flags_logic(cpu, data, SIZE_BYTE);
-
-    u8 result = data | 0x80;
-
-    if (ea.is_reg && !ea.is_addr) {
-        cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & 0xFFFFFF00) | result;
-    } else {
-        m68k_write_8(cpu, ea.address, result);
-    }
-}

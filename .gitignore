@@ -112,6 +112,13 @@ test-results/
 tags
 
 ########################
+# Zig Specific
+########################
+zig-cache/
+.zig-cache/
+zig-out/
+
+########################
 # Miscellaneous
 ########################
 
