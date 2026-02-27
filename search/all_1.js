@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['a_5fregs_0',['a_regs',['../structM68kCpu.html#afe9d05a40e5fc126f72cb9c00c307d6b',1,'M68kCpu::a_regs'],['../include_2m68k_8h.html#a841c04da362c589335c2d78b81314c8a',1,'a_regs:&#160;m68k.h']]],
+  ['add_5fcycles_1',['add_cycles',['../example_2m68kcpu_8h.html#a57d4f0d8771f1c1f5b82d028545550ea',1,'ADD_CYCLES:&#160;m68kcpu.h'],['../m68kcpu_8h.html#a57d4f0d8771f1c1f5b82d028545550ea',1,'ADD_CYCLES:&#160;m68kcpu.h']]],
+  ['add_5fopcode_5foutput_5ftable_5fentry_2',['add_opcode_output_table_entry',['../example_2m68kmake_8c.html#a86e552a625d9ecff2ec79f8c627df077',1,'add_opcode_output_table_entry(opcode_struct *op, char *name):&#160;m68kmake.c'],['../m68kmake_8c.html#a86e552a625d9ecff2ec79f8c627df077',1,'add_opcode_output_table_entry(opcode_struct *op, char *name):&#160;m68kmake.c']]],
+  ['add_5freplace_5fstring_3',['add_replace_string',['../example_2m68kmake_8c.html#a5b1fd6109f8523dca58f742ea67f9c17',1,'add_replace_string(replace_struct *replace, char *search_str, char *replace_str):&#160;m68kmake.c'],['../m68kmake_8c.html#a5b1fd6109f8523dca58f742ea67f9c17',1,'add_replace_string(replace_struct *replace, char *search_str, char *replace_str):&#160;m68kmake.c']]],
+  ['addr_4',['addr',['../structCPU__State.html#afa4705a10d079b2d88fd09442299242b',1,'CPU_State']]],
+  ['addr_5fmode_5fabs_5flong_5',['ADDR_MODE_ABS_LONG',['../include_2m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3a6cc5d81828e315e24d935600a35954cd',1,'m68k.h']]],
+  ['addr_5fmode_5fabs_5fshort_6',['ADDR_MODE_ABS_SHORT',['../include_2m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3ac54b5b7c902086e1ee6804941a776938',1,'m68k.h']]],
+  ['addr_5fmode_5faddr_5freg_5fdirect_7',['ADDR_MODE_ADDR_REG_DIRECT',['../include_2m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3a838714077bd5873ceca0542e811fabbc',1,'m68k.h']]],
+  ['addr_5fmode_5faddr_5freg_5findirect_8',['ADDR_MODE_ADDR_REG_INDIRECT',['../include_2m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3a76f02f390aaf6e64e8cdc59c8830ff67',1,'m68k.h']]],
+  ['addr_5fmode_5fari_5fdisp_9',['ADDR_MODE_ARI_DISP',['../include_2m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3a3e608beb22a71bcbf56a6092d9d1e2a3',1,'m68k.h']]],
+  ['addr_5fmode_5fari_5findex_10',['ADDR_MODE_ARI_INDEX',['../include_2m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3a644cf81bdb9b06fe00604202a880f4ec',1,'m68k.h']]],
+  ['addr_5fmode_5fari_5fpostinc_11',['ADDR_MODE_ARI_POSTINC',['../include_2m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3af9f4afaa6ea10c049e1c633bbbec14af',1,'m68k.h']]],
+  ['addr_5fmode_5fari_5fpredec_12',['ADDR_MODE_ARI_PREDEC',['../include_2m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3aa0ccc724536a98e6f653b1733853332e',1,'m68k.h']]],
+  ['addr_5fmode_5fdata_5freg_5fdirect_13',['ADDR_MODE_DATA_REG_DIRECT',['../include_2m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3a2c45d8ac3bed3b162e2f59a4e789b06d',1,'m68k.h']]],
+  ['addr_5fmode_5fimmediate_14',['ADDR_MODE_IMMEDIATE',['../include_2m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3a590b442e092ec46c282c853b92cb05a1',1,'m68k.h']]],
+  ['addr_5fmode_5fpc_5fdisp_15',['ADDR_MODE_PC_DISP',['../include_2m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3ad64657f7f49d63ce54bf654aaed2bb0e',1,'m68k.h']]],
+  ['addr_5fmode_5fpc_5findex_16',['ADDR_MODE_PC_INDEX',['../include_2m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3ab4aba1847934889876ce362d62951cd3',1,'m68k.h']]],
+  ['address_17',['address',['../structM68kEA.html#a92293d03c36a7b71ecf7245e8393f3a9',1,'M68kEA']]],
+  ['address_5f68k_18',['address_68k',['../m68kcpu_8h.html#ac7b07a8f85b9e4c912270f85c98f4dd2',1,'ADDRESS_68K:&#160;m68kcpu.h'],['../example_2m68kcpu_8h.html#ac7b07a8f85b9e4c912270f85c98f4dd2',1,'ADDRESS_68K:&#160;m68kcpu.h']]],
+  ['address_5fmask_19',['address_mask',['../structm68ki__cpu__core.html#a6220f38c0f888f6c3926d74fc7406bcd',1,'m68ki_cpu_core']]],
+  ['array_5flength_20',['array_length',['../external_2musashi_2example_2m68k_8h.html#a4a21612c647552b916d9de1f911995ad',1,'ARRAY_LENGTH:&#160;m68k.h'],['../external_2musashi_2m68k_8h.html#a4a21612c647552b916d9de1f911995ad',1,'ARRAY_LENGTH:&#160;m68k.h']]],
+  ['atoh_21',['atoh',['../example_2m68kmake_8c.html#aa0f9e11660b1a4c2b1bb5e2b6280b979',1,'atoh(char *buff):&#160;m68kmake.c'],['../m68kmake_8c.html#aa0f9e11660b1a4c2b1bb5e2b6280b979',1,'atoh(char *buff):&#160;m68kmake.c']]],
+  ['ax_22',['ax',['../example_2m68kcpu_8h.html#aabc40350f8f80c9c718c44dea61e10fe',1,'AX:&#160;m68kcpu.h'],['../m68kcpu_8h.html#aabc40350f8f80c9c718c44dea61e10fe',1,'AX:&#160;m68kcpu.h']]],
+  ['ay_23',['ay',['../example_2m68kcpu_8h.html#a970af8d81d68477d5c3daa3389366587',1,'AY:&#160;m68kcpu.h'],['../m68kcpu_8h.html#a970af8d81d68477d5c3daa3389366587',1,'AY:&#160;m68kcpu.h']]]
+];

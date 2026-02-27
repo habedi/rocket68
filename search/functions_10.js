@@ -1,0 +1,7 @@
+var searchData=
+[
+  ['update_5fflags_5fadd_0',['update_flags_add',['../m68k_8c.html#a5f2daf8f0231acb716e654b808580fb2',1,'update_flags_add(M68kCpu *cpu, u32 src, u32 dest, u32 result, M68kSize size):&#160;m68k.c'],['../m68k__internal_8h.html#a5f2daf8f0231acb716e654b808580fb2',1,'update_flags_add(M68kCpu *cpu, u32 src, u32 dest, u32 result, M68kSize size):&#160;m68k.c']]],
+  ['update_5fflags_5fcmp_1',['update_flags_cmp',['../m68k_8c.html#a49b24b7de508de692c28df0d31e62ff4',1,'update_flags_cmp(M68kCpu *cpu, u32 src, u32 dest, u32 result, M68kSize size):&#160;m68k.c'],['../m68k__internal_8h.html#a49b24b7de508de692c28df0d31e62ff4',1,'update_flags_cmp(M68kCpu *cpu, u32 src, u32 dest, u32 result, M68kSize size):&#160;m68k.c']]],
+  ['update_5fflags_5flogic_2',['update_flags_logic',['../m68k_8c.html#a3c08da54bfe43bcbb988595763cff38a',1,'update_flags_logic(M68kCpu *cpu, u32 result, M68kSize size):&#160;m68k.c'],['../m68k__internal_8h.html#a3c08da54bfe43bcbb988595763cff38a',1,'update_flags_logic(M68kCpu *cpu, u32 result, M68kSize size):&#160;m68k.c']]],
+  ['update_5fflags_5fsub_3',['update_flags_sub',['../m68k_8c.html#aac4161062bf6f08b777eaade0163f5f8',1,'update_flags_sub(M68kCpu *cpu, u32 src, u32 dest, u32 result, M68kSize size):&#160;m68k.c'],['../m68k__internal_8h.html#aac4161062bf6f08b777eaade0163f5f8',1,'update_flags_sub(M68kCpu *cpu, u32 src, u32 dest, u32 result, M68kSize size):&#160;m68k.c']]]
+];
