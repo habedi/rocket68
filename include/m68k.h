@@ -19,14 +19,14 @@ typedef int32_t s32;
 
 typedef enum { SIZE_BYTE = 1, SIZE_WORD = 2, SIZE_LONG = 4 } M68kSize;
 
-typedef void (*M68kWaitBusCallback)(u32 address, M68kSize size);
-extern M68kWaitBusCallback wait_bus;
+typedef struct M68kCpu M68kCpu;  // Forward declare
+
+typedef void (*M68kWaitBusCallback)(M68kCpu* cpu, u32 address, M68kSize size);
 
 #define M68K_INT_ACK_AUTOVECTOR 0xffffffff
 #define M68K_INT_ACK_SPURIOUS 0xfffffffe
 
-typedef int (*M68kIntAckCallback)(int level);
-extern M68kIntAckCallback int_ack;
+typedef int (*M68kIntAckCallback)(M68kCpu* cpu, int level);
 
 #define M68K_FC_USER_DATA 1
 #define M68K_FC_USER_PROG 2
@@ -34,23 +34,17 @@ extern M68kIntAckCallback int_ack;
 #define M68K_FC_SUPV_PROG 6
 #define M68K_FC_INT_ACK 7
 
-typedef void (*M68kFcCallback)(unsigned int new_fc);
-extern M68kFcCallback fc_cb;
+typedef void (*M68kFcCallback)(M68kCpu* cpu, unsigned int new_fc);
 
-typedef void (*M68kInstrHookCallback)(u32 pc);
-extern M68kInstrHookCallback instr_hook_cb;
+typedef void (*M68kInstrHookCallback)(M68kCpu* cpu, u32 pc);
 
-typedef void (*M68kPcChangedCallback)(u32 new_pc);
-extern M68kPcChangedCallback pc_changed_cb;
+typedef void (*M68kPcChangedCallback)(M68kCpu* cpu, u32 new_pc);
 
-typedef void (*M68kResetCallback)(void);
-extern M68kResetCallback reset_cb;
+typedef void (*M68kResetCallback)(M68kCpu* cpu);
 
-typedef int (*M68kTasCallback)(void);
-extern M68kTasCallback tas_cb;
+typedef int (*M68kTasCallback)(M68kCpu* cpu);
 
-typedef int (*M68kIllgCallback)(int opcode);
-extern M68kIllgCallback illg_cb;
+typedef int (*M68kIllgCallback)(M68kCpu* cpu, int opcode);
 
 typedef enum {
     ADDR_MODE_DATA_REG_DIRECT,
@@ -80,7 +74,7 @@ typedef union {
     };
 } M68kRegister;
 
-typedef struct {
+typedef struct M68kCpu {
     M68kRegister d_regs[8];
     M68kRegister a_regs[8];
     u32 pc;
@@ -102,6 +96,15 @@ typedef struct {
 
     int target_cycles;
     int cycles_remaining;
+
+    M68kWaitBusCallback wait_bus;
+    M68kIntAckCallback int_ack;
+    M68kFcCallback fc_cb;
+    M68kInstrHookCallback instr_hook_cb;
+    M68kPcChangedCallback pc_changed_cb;
+    M68kResetCallback reset_cb;
+    M68kTasCallback tas_cb;
+    M68kIllgCallback illg_cb;
 } __attribute__((aligned(64))) M68kCpu;
 
 #define M68K_SR_C (1 << 0)
@@ -141,14 +144,14 @@ void m68k_write_8(M68kCpu* cpu, u32 address, u8 value);
 void m68k_write_16(M68kCpu* cpu, u32 address, u16 value);
 void m68k_write_32(M68kCpu* cpu, u32 address, u32 value);
 
-void m68k_set_wait_bus_callback(M68kWaitBusCallback callback);
-void m68k_set_int_ack_callback(M68kIntAckCallback callback);
-void m68k_set_fc_callback(M68kFcCallback callback);
-void m68k_set_instr_hook_callback(M68kInstrHookCallback callback);
-void m68k_set_pc_changed_callback(M68kPcChangedCallback callback);
-void m68k_set_reset_callback(M68kResetCallback callback);
-void m68k_set_tas_callback(M68kTasCallback callback);
-void m68k_set_illg_callback(M68kIllgCallback callback);
+void m68k_set_wait_bus_callback(M68kCpu* cpu, M68kWaitBusCallback callback);
+void m68k_set_int_ack_callback(M68kCpu* cpu, M68kIntAckCallback callback);
+void m68k_set_fc_callback(M68kCpu* cpu, M68kFcCallback callback);
+void m68k_set_instr_hook_callback(M68kCpu* cpu, M68kInstrHookCallback callback);
+void m68k_set_pc_changed_callback(M68kCpu* cpu, M68kPcChangedCallback callback);
+void m68k_set_reset_callback(M68kCpu* cpu, M68kResetCallback callback);
+void m68k_set_tas_callback(M68kCpu* cpu, M68kTasCallback callback);
+void m68k_set_illg_callback(M68kCpu* cpu, M68kIllgCallback callback);
 
 unsigned int m68k_context_size(void);
 void m68k_get_context(M68kCpu* cpu, void* dst);

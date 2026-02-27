@@ -204,8 +204,8 @@ void m68k_exec_reset(M68kCpu* cpu, u16 opcode) {
         return;
     }
 
-    if (reset_cb) {
-        reset_cb();
+    if (cpu->reset_cb) {
+        cpu->reset_cb(cpu);
     }
 }
 

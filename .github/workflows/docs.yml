@@ -25,15 +25,10 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install Zig
-        uses: goto-bus-stop/setup-zig@v2
-        with:
-          version: '0.15.2'
-
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y make
+          sudo apt-get install -y make doxygen
 
       - name: Generate Documentation
         run: make docs

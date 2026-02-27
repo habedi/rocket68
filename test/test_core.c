@@ -225,7 +225,7 @@ void test_interrupts() {
 }
 
 static int mock_iack_vector = 0;
-static int mock_int_ack_cb(int level) {
+static int mock_int_ack_cb(M68kCpu* cpu, int level) {
     (void)level;
     return mock_iack_vector;
 }
@@ -235,7 +235,7 @@ void test_int_ack() {
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
     m68k_init(&cpu, memory, sizeof(memory));
-    m68k_set_int_ack_callback(mock_int_ack_cb);
+    m68k_set_int_ack_callback(&cpu, mock_int_ack_cb);
 
     // 1. Setup
     cpu.pc = 0x100;
@@ -284,19 +284,19 @@ void test_int_ack() {
     assert(cpu.exception_thrown == 30);
     assert(cpu.pc == 0x700);
 
-    m68k_set_int_ack_callback(NULL);
+    m68k_set_int_ack_callback(&cpu, NULL);
     printf("IACK Callback test passed!\n");
 }
 
 static unsigned int mock_fc = 0;
-static void mock_fc_cb(unsigned int fc) { mock_fc = fc; }
+static void mock_fc_cb(M68kCpu* cpu, unsigned int fc) { mock_fc = fc; }
 
 void test_fc() {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
     m68k_init(&cpu, memory, sizeof(memory));
-    m68k_set_fc_callback(mock_fc_cb);
+    m68k_set_fc_callback(&cpu, mock_fc_cb);
 
     // 1. User Data Access
     cpu.sr = 0x0000;  // User mode
@@ -329,7 +329,7 @@ void test_fc() {
     m68k_fetch(&cpu);
     assert(mock_fc == M68K_FC_SUPV_PROG);
 
-    m68k_set_fc_callback(NULL);
+    m68k_set_fc_callback(&cpu, NULL);
     printf("Function Code (FC) Callback test passed!\n");
 }
 
@@ -338,10 +338,10 @@ static u32 mock_pc_changed = 0;
 static bool mock_reset_called = false;
 static int mock_tas_result = 1;
 
-static void handle_instr_hook(u32 pc) { mock_instr_pc = pc; }
-static void handle_pc_changed(u32 pc) { mock_pc_changed = pc; }
-static void handle_reset(void) { mock_reset_called = true; }
-static int handle_tas(void) { return mock_tas_result; }
+static void handle_instr_hook(M68kCpu* cpu, u32 pc) { mock_instr_pc = pc; }
+static void handle_pc_changed(M68kCpu* cpu, u32 pc) { mock_pc_changed = pc; }
+static void handle_reset(M68kCpu* cpu) { mock_reset_called = true; }
+static int handle_tas(M68kCpu* cpu) { return mock_tas_result; }
 
 void test_hooks() {
     M68kCpu cpu;
@@ -349,10 +349,10 @@ void test_hooks() {
     memset(memory, 0, sizeof(memory));
     m68k_init(&cpu, memory, sizeof(memory));
 
-    m68k_set_instr_hook_callback(handle_instr_hook);
-    m68k_set_pc_changed_callback(handle_pc_changed);
-    m68k_set_reset_callback(handle_reset);
-    m68k_set_tas_callback(handle_tas);
+    m68k_set_instr_hook_callback(&cpu, handle_instr_hook);
+    m68k_set_pc_changed_callback(&cpu, handle_pc_changed);
+    m68k_set_reset_callback(&cpu, handle_reset);
+    m68k_set_tas_callback(&cpu, handle_tas);
 
     // 1. Instruction Hook & PC Changed
     cpu.pc = 0x100;
@@ -396,16 +396,16 @@ void test_hooks() {
     m68k_step_ex(&cpu, true);
     assert((cpu.d_regs[0].l & 0x80) == 0);  // Writeback denied
 
-    m68k_set_instr_hook_callback(NULL);
-    m68k_set_pc_changed_callback(NULL);
-    m68k_set_reset_callback(NULL);
-    m68k_set_tas_callback(NULL);
+    m68k_set_instr_hook_callback(&cpu, NULL);
+    m68k_set_pc_changed_callback(&cpu, NULL);
+    m68k_set_reset_callback(&cpu, NULL);
+    m68k_set_tas_callback(&cpu, NULL);
 
     printf("Execution Hooks test passed!\n");
 }
 
 static M68kCpu* timeslice_test_cpu = NULL;
-static void timeslice_hook(u32 pc) {
+static void timeslice_hook(M68kCpu* cpu, u32 pc) {
     (void)pc;
     m68k_end_timeslice(timeslice_test_cpu);
 }
@@ -428,11 +428,11 @@ void test_timeslice() {
     // Test early yield
     cpu.pc = 0x100;
     timeslice_test_cpu = &cpu;
-    m68k_set_instr_hook_callback(timeslice_hook);
+    m68k_set_instr_hook_callback(&cpu, timeslice_hook);
     cycles_used = m68k_execute(&cpu, 8);
     assert(cycles_used == 4);  // one instruction ran, then timeslice ended
     assert(cpu.pc == 0x102);
-    m68k_set_instr_hook_callback(NULL);
+    m68k_set_instr_hook_callback(&cpu, NULL);
 
     printf("Advanced Timeslice logic test passed!\n");
 }

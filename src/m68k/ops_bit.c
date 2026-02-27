@@ -173,8 +173,8 @@ void m68k_exec_tas(M68kCpu* cpu, u16 opcode) {
     data |= 0x80;
 
     bool allow_write = true;
-    if (tas_cb) {
-        allow_write = (tas_cb() != 0);
+    if (cpu->tas_cb) {
+        allow_write = (cpu->tas_cb(cpu) != 0);
     }
 
     if (allow_write) {
