@@ -7,7 +7,7 @@ AR       := ar
 # Set BUILD_TYPE=release for an optimized build
 BUILD_TYPE ?= debug
 ifeq ($(BUILD_TYPE),release)
-    CFLAGS += -O2
+    CFLAGS += -O3
 else
     CFLAGS += -g -O0
 endif
@@ -221,7 +221,7 @@ $(BIN_DIR)/benchmark_musashi: benches/benchmark_musashi.c | $(BIN_DIR)
 		exit 1; \
 	fi
 	@$(MAKE) --no-print-directory -C external/musashi
-	@$(CC) $(CFLAGS) -O3 -Iexternal/musashi benches/benchmark_musashi.c external/musashi/m68kcpu.o external/musashi/m68kops.o external/musashi/m68kdasm.o external/musashi/softfloat/softfloat.o -lm -o $(BIN_DIR)/benchmark_musashi
+	@$(CC) -O3 -Iexternal/musashi $(CFLAGS) benches/benchmark_musashi.c external/musashi/m68kcpu.o external/musashi/m68kops.o external/musashi/m68kdasm.o external/musashi/softfloat/softfloat.o -lm -o $(BIN_DIR)/benchmark_musashi
 
 .PHONY: zig-test
 zig-test: ## Run tests using Zig build system
