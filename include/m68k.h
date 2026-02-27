@@ -47,6 +47,8 @@ typedef struct {
     u32 vbr;
     u32 sfc;
     u32 dfc;
+
+    int cycles_remaining;
 } M68kCpu;
 
 #define M68K_SR_C (1 << 0)
@@ -65,8 +67,9 @@ u32 m68k_get_dr(M68kCpu* cpu, int reg);
 void m68k_set_ar(M68kCpu* cpu, int reg, u32 value);
 u32 m68k_get_ar(M68kCpu* cpu, int reg);
 
-int m68k_step_ex(M68kCpu* cpu, bool check_exceptions);
-int m68k_step(M68kCpu* cpu);
+void m68k_step_ex(M68kCpu* cpu, bool check_exceptions);
+void m68k_step(M68kCpu* cpu);
+int m68k_execute(M68kCpu* cpu, int cycles);
 
 void m68k_set_sr(M68kCpu* cpu, u16 new_sr);
 

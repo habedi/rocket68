@@ -7,18 +7,21 @@
 <h2>Rocket 68</h2>
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/habedi/rocket68/tests.yml?label=tests&style=flat&labelColor=282c34&logo=github)](https://github.com/habedi/rocket68/actions/workflows/tests.yml)
+[![Benchmarks](https://img.shields.io/github/actions/workflow/status/habedi/rocket68/benches.yml?label=benches&style=flat&labelColor=282c34&logo=github)](https://github.com/habedi/rocket68/actions/workflows/benches.yml)
 [![Code Coverage](https://img.shields.io/codecov/c/github/habedi/rocket68?label=coverage&style=flat&labelColor=282c34&logo=codecov)](https://codecov.io/gh/habedi/rocket68)
 [![Docs](https://img.shields.io/badge/docs-latest-007ec6?label=docs&style=flat&labelColor=282c34&logo=readthedocs)](docs)
 [![License](https://img.shields.io/badge/license-MIT-007ec6?label=license&style=flat&labelColor=282c34&logo=open-source-initiative)](https://github.com/habedi/rocket68)
 [![Release](https://img.shields.io/github/release/habedi/rocket68.svg?label=release&style=flat&labelColor=282c34&logo=github)](https://github.com/habedi/rocket68/releases/latest)
 
-A Motorola 68000 CPU emulator in C
+A fast and accurate Motorola 68000 CPU emulator in C
 
 </div>
 
 ---
 
 Rocket 68 is a Motorola 68000 CPU emulator written in C11.
+It supports all the instructions and addressing modes of the 68000 CPU, plus system control features like supervisor mode, interrupts, and exceptions.
+It is also runs as a similar clock cycle to the real 68000 CPU with a very good accuracy.
 
 ### Features
 

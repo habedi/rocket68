@@ -26,6 +26,8 @@ void m68k_write_32(M68kCpu* cpu, u32 address, u32 value);
 u32 m68k_read_size(M68kCpu* cpu, u32 address, M68kSize size);
 void m68k_write_size(M68kCpu* cpu, u32 address, u32 value, M68kSize size);
 
+int m68k_ea_cycles(int mode, int reg, M68kSize size);
+
 
 u16 m68k_fetch(M68kCpu* cpu);
 u32 fetch_extension(M68kCpu* cpu);

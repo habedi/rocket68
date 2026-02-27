@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - develop
     tags:
       - 'v*'
     paths-ignore:
@@ -35,6 +36,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y make
           make install-deps
+
+      - name: Run Memory Tests
+        run: make test-valgrind
 
       - name: Run Tests and Generate Coverage Report
         run: make coverage

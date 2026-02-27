@@ -220,6 +220,8 @@ void m68k_write_size(M68kCpu* cpu, u32 address, u32 value, M68kSize size) {
 M68kEA m68k_calc_ea(M68kCpu* cpu, int mode, int reg, M68kSize size) {
     M68kEA ea = {0};
 
+    cpu->cycles_remaining -= m68k_ea_cycles(mode, reg, size);
+
     switch (mode) {
         case 0:
             ea.is_reg = true;
@@ -472,17 +474,19 @@ static bool check_interrupts(M68kCpu* cpu) {
     return false;
 }
 
-int m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
+void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
     if (cpu->stopped) {
         if (cpu->irq_level > 0) {
             cpu->stopped = false;
         } else {
-            return 4;
+            cpu->cycles_remaining -= 4;
+            return;
         }
     }
 
     if (check_exceptions && check_interrupts(cpu)) {
-        return 44;
+        cpu->cycles_remaining -= 44;
+        return;
     }
 
     bool trace_active = (cpu->sr & 0x8000) != 0;
@@ -927,7 +931,18 @@ done:
     if (check_exceptions && trace_active && !cpu->stopped) {
         m68k_exception(cpu, 9);
     }
-    return cycles;
+    cpu->cycles_remaining -= cycles;
 }
 
-int m68k_step(M68kCpu* cpu) { return m68k_step_ex(cpu, true); }
+void m68k_step(M68kCpu* cpu) { m68k_step_ex(cpu, true); }
+
+int m68k_execute(M68kCpu* cpu, int cycles_requested) {
+    int start_cycles = cpu->cycles_remaining;
+    cpu->cycles_remaining += cycles_requested;
+
+    while (cpu->cycles_remaining > 0 && !cpu->stopped) {
+        m68k_step(cpu);
+    }
+
+    return (start_cycles + cycles_requested) - cpu->cycles_remaining;
+}

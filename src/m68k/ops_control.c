@@ -72,6 +72,7 @@ void m68k_exec_dbcc(M68kCpu* cpu, u16 opcode) {
     s16 displacement = (s16)m68k_fetch(cpu);
 
     if (m68k_check_condition(cpu, condition)) {
+        cpu->cycles_remaining -= 12;  // Condition True
         return;
     }
 
@@ -80,7 +81,10 @@ void m68k_exec_dbcc(M68kCpu* cpu, u16 opcode) {
     cpu->d_regs[reg] = (cpu->d_regs[reg] & 0xFFFF0000) | val;
 
     if (val != 0xFFFF) {
+        cpu->cycles_remaining -= 10;  // Loop branched
         cpu->pc = (cpu->pc - 2) + displacement;
+    } else {
+        cpu->cycles_remaining -= 14;  // Loop expired
     }
 }
 
