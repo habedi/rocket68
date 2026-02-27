@@ -7,7 +7,7 @@
 <h2>Rocket 68</h2>
 
 [![Tests](https://img.shields.io/github/actions/workflow/status/habedi/rocket68/tests.yml?label=tests&style=flat&labelColor=282c34&logo=github)](https://github.com/habedi/rocket68/actions/workflows/tests.yml)
-[![Benchmarks](https://img.shields.io/github/actions/workflow/status/habedi/rocket68/benches.yml?label=benches&style=flat&labelColor=282c34&logo=github)](https://github.com/habedi/rocket68/actions/workflows/benches.yml)
+[![Benchmarks](https://img.shields.io/github/actions/workflow/status/habedi/rocket68/benches.yml?label=benchmarks&style=flat&labelColor=282c34&logo=github)](https://github.com/habedi/rocket68/actions/workflows/benches.yml)
 [![Code Coverage](https://img.shields.io/codecov/c/github/habedi/rocket68?label=coverage&style=flat&labelColor=282c34&logo=codecov)](https://codecov.io/gh/habedi/rocket68)
 [![Docs](https://img.shields.io/badge/docs-latest-007ec6?label=docs&style=flat&labelColor=282c34&logo=readthedocs)](docs)
 [![License](https://img.shields.io/badge/license-MIT-007ec6?label=license&style=flat&labelColor=282c34&logo=open-source-initiative)](https://github.com/habedi/rocket68)

@@ -164,7 +164,7 @@ u16 m68k_read_16(M68kCpu* cpu, u32 address) {
         return 0;
     }
     if (is_valid_address(cpu, address) && is_valid_address(cpu, address + 1)) {
-        return (cpu->memory[address] << 8) | cpu->memory[address + 1];
+        return (u16)((cpu->memory[address] << 8) | cpu->memory[address + 1]);
     }
     if (!in_bus_error) {
         in_bus_error = true;
@@ -184,8 +184,8 @@ u32 m68k_read_32(M68kCpu* cpu, u32 address) {
         return 0;
     }
     if (is_valid_address(cpu, address) && is_valid_address(cpu, address + 3)) {
-        return (cpu->memory[address] << 24) | (cpu->memory[address + 1] << 16) |
-               (cpu->memory[address + 2] << 8) | cpu->memory[address + 3];
+        return ((u32)cpu->memory[address] << 24) | ((u32)cpu->memory[address + 1] << 16) |
+               ((u32)cpu->memory[address + 2] << 8) | (u32)cpu->memory[address + 3];
     }
     if (!in_bus_error) {
         in_bus_error = true;
@@ -262,7 +262,7 @@ u16 m68k_fetch(M68kCpu* cpu) {
         return 0;
     }
     if (is_valid_address(cpu, cpu->pc) && is_valid_address(cpu, cpu->pc + 1)) {
-        opcode = (cpu->memory[cpu->pc] << 8) | cpu->memory[cpu->pc + 1];
+        opcode = (u16)((cpu->memory[cpu->pc] << 8) | cpu->memory[cpu->pc + 1]);
     } else if (!in_bus_error) {
         in_bus_error = true;
         m68k_exception(cpu, 2);

@@ -12,8 +12,8 @@ else
     CFLAGS += -g -O0
 endif
 
-# Common flags, including automatic dependency generation (-MMD -MP)
-CFLAGS   += -Wall -Wextra -pedantic -std=c11 -fPIC -Iinclude -MMD -MP
+# Common build flags
+CFLAGS   += -Wall -Wextra -pedantic -std=c11 -Iinclude
 LDFLAGS  :=
 LIBS     :=
 
@@ -77,7 +77,7 @@ $(COVERAGE_TARGET_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: test
-test: $(TEST_BINARY) ## Run unit tests (excluding JSON/BCD/Musashi)
+test: $(TEST_BINARY) ## Run unit tests (excluding JSON/BCD/Musashi, etc.)
 	@echo "Running tests..."
 	./$(TEST_BINARY)
 
@@ -92,7 +92,7 @@ $(COVERAGE_TEST_BINARY): $(UNIT_TEST_FILES) $(COVERAGE_OBJ_FILES) | $(COVERAGE_B
 	$(CC) $(CFLAGS) $(UNIT_TEST_FILES) $(COVERAGE_OBJ_FILES) -o $@ $(LDFLAGS)
 
 .PHONY: test-json
-test-json: $(BIN_DIR)/test_json ## Run JSON test suites
+test-json: $(BIN_DIR)/test_json ## Run JSON test suite
 	@if [ ! -d external/m68000-json-tests/v1 ]; then \
 		echo "JSON tests missing. Run 'git submodule update --init --recursive'"; \
 		exit 0; \
@@ -129,8 +129,8 @@ test-bcd: ## Run BCD test suite
 	@$(MAKE) --no-print-directory $(BCD_TEST_BINARY)
 	@BCD_TABLE_PATH=external/bcd-test-rom/data/bcd-table.bin ./$(BCD_TEST_BINARY)
 
-.PHONY: test-valgrind
-test-valgrind: $(TEST_BINARY) $(BIN_DIR)/test_json $(BCD_TEST_BINARY) ## Run unit tests with Valgrind to check for memory leaks
+.PHONY: test-memory
+test-memory: $(TEST_BINARY) $(BIN_DIR)/test_json $(BCD_TEST_BINARY) ## Run the tests with Valgrind to check for memory leaks
 	@echo "Running tests with Valgrind..."
 	valgrind --error-exitcode=1 --leak-check=full --suppressions=valgrind.supp ./$(TEST_BINARY)
 	@if [ -d external/m68000-json-tests/v1 ]; then \
@@ -138,6 +138,28 @@ test-valgrind: $(TEST_BINARY) $(BIN_DIR)/test_json $(BCD_TEST_BINARY) ## Run uni
 	fi
 	@if [ -f external/bcd-test-rom/data/bcd-table.bin ]; then \
 		env BCD_TABLE_PATH=external/bcd-test-rom/data/bcd-table.bin valgrind --error-exitcode=1 --leak-check=full --suppressions=valgrind.supp ./$(BCD_TEST_BINARY) || exit 1; \
+	fi
+
+.PHONY: test-ubsan
+test-ubsan: CFLAGS += -fsanitize=undefined
+test-ubsan: LDFLAGS += -fsanitize=undefined
+test-ubsan: clean $(TEST_BINARY) $(BIN_DIR)/benchmark_rocket68 $(BIN_DIR)/test_json ## Run `undefined behavior sanitizer` tests
+	@echo "Running UBSan tests..."
+	UBSAN_OPTIONS=print_stacktrace=1 ./$(TEST_BINARY)
+	UBSAN_OPTIONS=print_stacktrace=1 ./$(BIN_DIR)/benchmark_rocket68
+	@if [ -d external/m68000-json-tests/v1 ]; then \
+		UBSAN_OPTIONS=print_stacktrace=1 ./$(BIN_DIR)/test_json external/m68000-json-tests/v1; \
+	fi
+
+.PHONY: test-asan
+test-asan: CFLAGS += -fsanitize=address
+test-asan: LDFLAGS += -fsanitize=address
+test-asan: clean $(TEST_BINARY) $(BIN_DIR)/benchmark_rocket68 $(BIN_DIR)/test_json ## Run `address sanitizer` tests
+	@echo "Running ASan tests..."
+	ASAN_OPTIONS=detect_leaks=1 ./$(TEST_BINARY)
+	ASAN_OPTIONS=detect_leaks=1 ./$(BIN_DIR)/benchmark_rocket68
+	@if [ -d external/m68000-json-tests/v1 ]; then \
+		ASAN_OPTIONS=detect_leaks=1 ./$(BIN_DIR)/test_json external/m68000-json-tests/v1; \
 	fi
 
 .PHONY: static
@@ -182,20 +204,34 @@ coverage: $(COVERAGE_TEST_BINARY) ## Generate code coverage report
 	gcov -o $(COVERAGE_TARGET_DIR)/m68k $(wildcard $(SRC_DIR)/m68k/*.c)
 
 .PHONY: bench
-bench: static ## Run benchmarks comparing Rocket68 to Musashi
-	@echo "Building benchmarks..."
-	@mkdir -p $(BIN_DIR)
+bench: $(BIN_DIR)/benchmark_rocket68 $(BIN_DIR)/benchmark_musashi ## Run benchmarks comparing Rocket68 to Musashi
+	@echo "--- Rocket68 Benchmark ---"
+	@./$(BIN_DIR)/benchmark_rocket68
+	@echo "--- Musashi Benchmark ---"
+	@./$(BIN_DIR)/benchmark_musashi
+
+$(BIN_DIR)/benchmark_rocket68: benches/benchmark_rocket68.c static | $(BIN_DIR)
+	@echo "Building Rocket68 benchmark..."
+	@$(CC) $(CFLAGS) -O3 -I$(INC_DIR) benches/benchmark_rocket68.c $(STATIC_LIB) -o $(BIN_DIR)/benchmark_rocket68
+
+$(BIN_DIR)/benchmark_musashi: benches/benchmark_musashi.c | $(BIN_DIR)
+	@echo "Building Musashi benchmark..."
 	@if [ ! -d external/musashi ]; then \
 		echo "Musashi submodule missing. Run 'git submodule update --init --recursive'"; \
 		exit 1; \
 	fi
 	@$(MAKE) --no-print-directory -C external/musashi
-	@$(CC) -O3 -I$(INC_DIR) benches/benchmark_rocket68.c $(STATIC_LIB) -o $(BIN_DIR)/benchmark_rocket68
-	@$(CC) -O3 -Iexternal/musashi benches/benchmark_musashi.c external/musashi/m68kcpu.o external/musashi/m68kops.o external/musashi/m68kdasm.o external/musashi/softfloat/softfloat.o -lm -o $(BIN_DIR)/benchmark_musashi
-	@echo "--- Rocket68 Benchmark ---"
-	@./$(BIN_DIR)/benchmark_rocket68
-	@echo "--- Musashi Benchmark ---"
-	@./$(BIN_DIR)/benchmark_musashi
+	@$(CC) $(CFLAGS) -O3 -Iexternal/musashi benches/benchmark_musashi.c external/musashi/m68kcpu.o external/musashi/m68kops.o external/musashi/m68kdasm.o external/musashi/softfloat/softfloat.o -lm -o $(BIN_DIR)/benchmark_musashi
+
+.PHONY: zig-test
+zig-test: ## Run tests using Zig build system
+	@echo "Running tests with zig build..."
+	zig build test
+
+.PHONY: zig-bench
+zig-bench: ## Run benchmarks using Zig build system
+	@echo "Running benchmarks with zig build..."
+	zig build bench -Doptimize=ReleaseFast
 
 .PHONY: clean
 clean: ## Remove all build artifacts

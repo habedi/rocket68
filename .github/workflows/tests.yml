@@ -38,7 +38,7 @@ jobs:
           make install-deps
 
       - name: Run Memory Tests
-        run: make test-valgrind
+        run: make test-memory
 
       - name: Run Tests and Generate Coverage Report
         run: make coverage

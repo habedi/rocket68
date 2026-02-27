@@ -140,9 +140,6 @@ temp/
 *.wal
 *.duckdb
 
-# Dependency lock files (optional)
-poetry.lock
-
 # Additional files and directories to ignore (put below)
 docs/html
 docs/latex
@@ -150,3 +147,4 @@ target/
 tmp_test/
 obj_coverage/
 bin_coverage/
+core.*

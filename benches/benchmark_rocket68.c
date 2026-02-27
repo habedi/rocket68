@@ -1,10 +1,11 @@
+#define _POSIX_C_SOURCE 199309L
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include "m68k.h"
 
-int main() {
+int main(void) {
     M68kCpu cpu;
     uint8_t memory[0x10000];
     memset(memory, 0, sizeof(memory));
