@@ -46,7 +46,7 @@ void m68k_exec_add(M68kCpu* cpu, u16 opcode) {
         u32 src = ea.value;
         if (size == SIZE_WORD) src = (s32)(s16)src;
 
-        cpu->a_regs[reg_idx] += src;
+        cpu->a_regs[reg_idx].l += src;
         return;
     }
 
@@ -54,24 +54,24 @@ void m68k_exec_add(M68kCpu* cpu, u16 opcode) {
     u32 src, dest, result;
 
     if (dir_reg_to_ea) {
-        src = cpu->d_regs[reg_idx];
+        src = cpu->d_regs[reg_idx].l;
         dest = ea.value;
         result = dest + src;
 
         if (ea.is_reg && !ea.is_addr) {
             u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
-            cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & ~mask) | (result & mask);
+            cpu->d_regs[ea.reg_num].l = (cpu->d_regs[ea.reg_num].l & ~mask) | (result & mask);
         } else if (ea.is_reg && ea.is_addr) {
         } else {
             m68k_write_size(cpu, ea.address, result, size);
         }
     } else {
         src = ea.value;
-        dest = cpu->d_regs[reg_idx];
+        dest = cpu->d_regs[reg_idx].l;
         result = dest + src;
 
         u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
-        cpu->d_regs[reg_idx] = (dest & ~mask) | (result & mask);
+        cpu->d_regs[reg_idx].l = (dest & ~mask) | (result & mask);
     }
 
     update_flags_add(cpu, src, dest, result, size);
@@ -123,7 +123,7 @@ void m68k_exec_sub(M68kCpu* cpu, u16 opcode) {
         u32 src = ea.value;
         if (size == SIZE_WORD) src = (s32)(s16)src;
 
-        cpu->a_regs[reg_idx] -= src;
+        cpu->a_regs[reg_idx].l -= src;
         return;
     }
 
@@ -131,23 +131,23 @@ void m68k_exec_sub(M68kCpu* cpu, u16 opcode) {
     u32 src, dest, result;
 
     if (dir_reg_to_ea) {
-        src = cpu->d_regs[reg_idx];
+        src = cpu->d_regs[reg_idx].l;
         dest = ea.value;
         result = dest - src;
 
         if (ea.is_reg && !ea.is_addr) {
             u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
-            cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & ~mask) | (result & mask);
+            cpu->d_regs[ea.reg_num].l = (cpu->d_regs[ea.reg_num].l & ~mask) | (result & mask);
         } else {
             m68k_write_size(cpu, ea.address, result, size);
         }
     } else {
         src = ea.value;
-        dest = cpu->d_regs[reg_idx];
+        dest = cpu->d_regs[reg_idx].l;
         result = dest - src;
 
         u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
-        cpu->d_regs[reg_idx] = (dest & ~mask) | (result & mask);
+        cpu->d_regs[reg_idx].l = (dest & ~mask) | (result & mask);
     }
 
     update_flags_sub(cpu, src, dest, result, size);
@@ -174,8 +174,8 @@ void m68k_exec_addq(M68kCpu* cpu, u16 opcode) {
     if (mode == 1) {
         if (size == SIZE_BYTE) return;
 
-        u32 val = cpu->a_regs[reg];
-        cpu->a_regs[reg] = val + data;
+        u32 val = cpu->a_regs[reg].l;
+        cpu->a_regs[reg].l = val + data;
         return;
     }
 
@@ -186,7 +186,7 @@ void m68k_exec_addq(M68kCpu* cpu, u16 opcode) {
 
     if (ea.is_reg && !ea.is_addr) {
         u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
-        cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & ~mask) | (result & mask);
+        cpu->d_regs[ea.reg_num].l = (cpu->d_regs[ea.reg_num].l & ~mask) | (result & mask);
     } else {
         m68k_write_size(cpu, ea.address, result, size);
     }
@@ -215,8 +215,8 @@ void m68k_exec_subq(M68kCpu* cpu, u16 opcode) {
     if (mode == 1) {
         if (size == SIZE_BYTE) return;
 
-        u32 val = cpu->a_regs[reg];
-        cpu->a_regs[reg] = val - data;
+        u32 val = cpu->a_regs[reg].l;
+        cpu->a_regs[reg].l = val - data;
         return;
     }
 
@@ -227,7 +227,7 @@ void m68k_exec_subq(M68kCpu* cpu, u16 opcode) {
 
     if (ea.is_reg && !ea.is_addr) {
         u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
-        cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & ~mask) | (result & mask);
+        cpu->d_regs[ea.reg_num].l = (cpu->d_regs[ea.reg_num].l & ~mask) | (result & mask);
     } else {
         m68k_write_size(cpu, ea.address, result, size);
     }
@@ -256,26 +256,26 @@ void m68k_exec_addx(M68kCpu* cpu, u16 opcode) {
     if (rm) {
         int step = (size == SIZE_BYTE) ? 1 : (size == SIZE_WORD) ? 2 : 4;
 
-        cpu->a_regs[ry] -= step;
-        if (size == SIZE_BYTE && ry == 7) cpu->a_regs[ry]--;
-        src = m68k_read_size(cpu, cpu->a_regs[ry], size);
+        cpu->a_regs[ry].l -= step;
+        if (size == SIZE_BYTE && ry == 7) cpu->a_regs[ry].l--;
+        src = m68k_read_size(cpu, cpu->a_regs[ry].l, size);
 
-        cpu->a_regs[rx] -= step;
-        if (size == SIZE_BYTE && rx == 7) cpu->a_regs[rx]--;
-        dest = m68k_read_size(cpu, cpu->a_regs[rx], size);
+        cpu->a_regs[rx].l -= step;
+        if (size == SIZE_BYTE && rx == 7) cpu->a_regs[rx].l--;
+        dest = m68k_read_size(cpu, cpu->a_regs[rx].l, size);
     } else {
-        src = cpu->d_regs[ry];
-        dest = cpu->d_regs[rx];
+        src = cpu->d_regs[ry].l;
+        dest = cpu->d_regs[rx].l;
     }
 
     u32 x = (cpu->sr & M68K_SR_X) ? 1 : 0;
     u32 result = dest + src + x;
 
     if (rm) {
-        m68k_write_size(cpu, cpu->a_regs[rx], result, size);
+        m68k_write_size(cpu, cpu->a_regs[rx].l, result, size);
     } else {
         u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
-        cpu->d_regs[rx] = (cpu->d_regs[rx] & ~mask) | (result & mask);
+        cpu->d_regs[rx].l = (cpu->d_regs[rx].l & ~mask) | (result & mask);
     }
 
     bool old_z = (cpu->sr & M68K_SR_Z) != 0;
@@ -312,26 +312,26 @@ void m68k_exec_subx(M68kCpu* cpu, u16 opcode) {
     if (rm) {
         int step = (size == SIZE_BYTE) ? 1 : (size == SIZE_WORD) ? 2 : 4;
 
-        cpu->a_regs[ry] -= step;
-        if (size == SIZE_BYTE && ry == 7) cpu->a_regs[ry]--;
-        src = m68k_read_size(cpu, cpu->a_regs[ry], size);
+        cpu->a_regs[ry].l -= step;
+        if (size == SIZE_BYTE && ry == 7) cpu->a_regs[ry].l--;
+        src = m68k_read_size(cpu, cpu->a_regs[ry].l, size);
 
-        cpu->a_regs[rx] -= step;
-        if (size == SIZE_BYTE && rx == 7) cpu->a_regs[rx]--;
-        dest = m68k_read_size(cpu, cpu->a_regs[rx], size);
+        cpu->a_regs[rx].l -= step;
+        if (size == SIZE_BYTE && rx == 7) cpu->a_regs[rx].l--;
+        dest = m68k_read_size(cpu, cpu->a_regs[rx].l, size);
     } else {
-        src = cpu->d_regs[ry];
-        dest = cpu->d_regs[rx];
+        src = cpu->d_regs[ry].l;
+        dest = cpu->d_regs[rx].l;
     }
 
     u32 x = (cpu->sr & M68K_SR_X) ? 1 : 0;
     u32 result = dest - src - x;
 
     if (rm) {
-        m68k_write_size(cpu, cpu->a_regs[rx], result, size);
+        m68k_write_size(cpu, cpu->a_regs[rx].l, result, size);
     } else {
         u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
-        cpu->d_regs[rx] = (cpu->d_regs[rx] & ~mask) | (result & mask);
+        cpu->d_regs[rx].l = (cpu->d_regs[rx].l & ~mask) | (result & mask);
     }
 
     bool old_z = (cpu->sr & M68K_SR_Z) != 0;
@@ -358,7 +358,7 @@ void m68k_exec_mul(M68kCpu* cpu, u16 opcode) {
     M68kSize size = SIZE_WORD;
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
 
-    u32 op1 = cpu->d_regs[reg_idx] & 0xFFFF;
+    u32 op1 = cpu->d_regs[reg_idx].l & 0xFFFF;
     u32 op2 = ea.value & 0xFFFF;
     u32 result;
 
@@ -370,7 +370,7 @@ void m68k_exec_mul(M68kCpu* cpu, u16 opcode) {
         result = op1 * op2;
     }
 
-    cpu->d_regs[reg_idx] = result;
+    cpu->d_regs[reg_idx].l = result;
 
     update_flags_logic(cpu, result, SIZE_LONG);
 }
@@ -387,7 +387,7 @@ void m68k_exec_div(M68kCpu* cpu, u16 opcode) {
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
 
     u32 divisor_raw = ea.value & 0xFFFF;
-    u32 dividend = cpu->d_regs[reg_idx];
+    u32 dividend = cpu->d_regs[reg_idx].l;
 
     if (divisor_raw == 0) {
         m68k_exception(cpu, 5);
@@ -400,7 +400,7 @@ void m68k_exec_div(M68kCpu* cpu, u16 opcode) {
         if (dividend == 0x80000000 && s_divisor == -1) {
             cpu->sr &= ~(M68K_SR_N | M68K_SR_V | M68K_SR_C);
             cpu->sr |= M68K_SR_Z;
-            cpu->d_regs[reg_idx] = 0;
+            cpu->d_regs[reg_idx].l = 0;
             return;
         }
 
@@ -416,7 +416,7 @@ void m68k_exec_div(M68kCpu* cpu, u16 opcode) {
 
         u32 quotient = (u32)s_quot & 0xFFFF;
         u32 remainder = (u32)s_rem & 0xFFFF;
-        cpu->d_regs[reg_idx] = (remainder << 16) | quotient;
+        cpu->d_regs[reg_idx].l = (remainder << 16) | quotient;
 
         cpu->sr &= ~(M68K_SR_N | M68K_SR_Z | M68K_SR_V | M68K_SR_C);
         if (quotient & 0x8000) cpu->sr |= M68K_SR_N;
@@ -431,7 +431,7 @@ void m68k_exec_div(M68kCpu* cpu, u16 opcode) {
             return;
         }
 
-        cpu->d_regs[reg_idx] = (remainder << 16) | (quotient & 0xFFFF);
+        cpu->d_regs[reg_idx].l = (remainder << 16) | (quotient & 0xFFFF);
 
         cpu->sr &= ~(M68K_SR_N | M68K_SR_Z | M68K_SR_V | M68K_SR_C);
         if (quotient & 0x8000) cpu->sr |= M68K_SR_N;
@@ -466,13 +466,13 @@ void m68k_exec_cmp(M68kCpu* cpu, u16 opcode) {
 
         int step = (size == SIZE_BYTE) ? 1 : (size == SIZE_WORD) ? 2 : 4;
 
-        u32 src_addr = cpu->a_regs[reg];
+        u32 src_addr = cpu->a_regs[reg].l;
         u32 src_val = m68k_read_size(cpu, src_addr, size);
-        cpu->a_regs[reg] += (reg == 7 && size == SIZE_BYTE) ? 2 : step;
+        cpu->a_regs[reg].l += (reg == 7 && size == SIZE_BYTE) ? 2 : step;
 
-        u32 dest_addr = cpu->a_regs[reg_idx];
+        u32 dest_addr = cpu->a_regs[reg_idx].l;
         u32 dest_val = m68k_read_size(cpu, dest_addr, size);
-        cpu->a_regs[reg_idx] += (reg_idx == 7 && size == SIZE_BYTE) ? 2 : step;
+        cpu->a_regs[reg_idx].l += (reg_idx == 7 && size == SIZE_BYTE) ? 2 : step;
 
         u32 result = dest_val - src_val;
         update_flags_cmp(cpu, src_val, dest_val, result, size);
@@ -486,12 +486,12 @@ void m68k_exec_cmp(M68kCpu* cpu, u16 opcode) {
     u32 dest;
 
     if (opmode == 3 || opmode == 7) {
-        dest = cpu->a_regs[reg_idx];
+        dest = cpu->a_regs[reg_idx].l;
         if (size == SIZE_WORD) src = (s32)(s16)src;
         u32 result = dest - src;
         update_flags_cmp(cpu, src, dest, result, SIZE_LONG);
     } else {
-        dest = cpu->d_regs[reg_idx];
+        dest = cpu->d_regs[reg_idx].l;
         if (size == SIZE_BYTE) {
             src &= 0xFF;
             dest &= 0xFF;
@@ -564,7 +564,7 @@ void m68k_exec_neg(M68kCpu* cpu, u16 opcode) {
 
     if (ea.is_reg && !ea.is_addr) {
         u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
-        cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & ~mask) | (result & mask);
+        cpu->d_regs[ea.reg_num].l = (cpu->d_regs[ea.reg_num].l & ~mask) | (result & mask);
     } else {
         m68k_write_size(cpu, ea.address, result, size);
     }
@@ -587,7 +587,7 @@ void m68k_exec_ext(M68kCpu* cpu, u16 opcode) {
         return;
     }
 
-    u32 val = cpu->d_regs[reg];
+    u32 val = cpu->d_regs[reg].l;
     u32 result;
 
     if (size == SIZE_BYTE) {
@@ -597,10 +597,10 @@ void m68k_exec_ext(M68kCpu* cpu, u16 opcode) {
     }
 
     if (result_size == SIZE_WORD) {
-        cpu->d_regs[reg] = (cpu->d_regs[reg] & 0xFFFF0000) | (result & 0xFFFF);
+        cpu->d_regs[reg].l = (cpu->d_regs[reg].l & 0xFFFF0000) | (result & 0xFFFF);
         update_flags_logic(cpu, result & 0xFFFF, SIZE_WORD);
     } else {
-        cpu->d_regs[reg] = result;
+        cpu->d_regs[reg].l = result;
         update_flags_logic(cpu, result, SIZE_LONG);
     }
 }
@@ -613,16 +613,16 @@ void m68k_exec_abcd(M68kCpu* cpu, u16 opcode) {
     u32 src, dest;
 
     if (rm) {
-        cpu->a_regs[ry]--;
-        if (ry == 7) cpu->a_regs[ry]--;
-        src = m68k_read_8(cpu, cpu->a_regs[ry]);
+        cpu->a_regs[ry].l--;
+        if (ry == 7) cpu->a_regs[ry].l--;
+        src = m68k_read_8(cpu, cpu->a_regs[ry].l);
 
-        cpu->a_regs[rx]--;
-        if (rx == 7) cpu->a_regs[rx]--;
-        dest = m68k_read_8(cpu, cpu->a_regs[rx]);
+        cpu->a_regs[rx].l--;
+        if (rx == 7) cpu->a_regs[rx].l--;
+        dest = m68k_read_8(cpu, cpu->a_regs[rx].l);
     } else {
-        src = cpu->d_regs[ry] & 0xFF;
-        dest = cpu->d_regs[rx] & 0xFF;
+        src = cpu->d_regs[ry].l & 0xFF;
+        dest = cpu->d_regs[rx].l & 0xFF;
     }
 
     u32 x = (cpu->sr & M68K_SR_X) ? 1 : 0;
@@ -645,9 +645,9 @@ void m68k_exec_abcd(M68kCpu* cpu, u16 opcode) {
     if (result != 0) cpu->sr &= ~M68K_SR_Z;
 
     if (rm) {
-        m68k_write_8(cpu, cpu->a_regs[rx], result);
+        m68k_write_8(cpu, cpu->a_regs[rx].l, result);
     } else {
-        cpu->d_regs[rx] = (cpu->d_regs[rx] & 0xFFFFFF00) | result;
+        cpu->d_regs[rx].l = (cpu->d_regs[rx].l & 0xFFFFFF00) | result;
     }
 }
 
@@ -659,16 +659,16 @@ void m68k_exec_sbcd(M68kCpu* cpu, u16 opcode) {
     u32 src, dst;
 
     if (rm) {
-        cpu->a_regs[ry]--;
-        if (ry == 7) cpu->a_regs[ry]--;
-        src = m68k_read_8(cpu, cpu->a_regs[ry]);
+        cpu->a_regs[ry].l--;
+        if (ry == 7) cpu->a_regs[ry].l--;
+        src = m68k_read_8(cpu, cpu->a_regs[ry].l);
 
-        cpu->a_regs[rx]--;
-        if (rx == 7) cpu->a_regs[rx]--;
-        dst = m68k_read_8(cpu, cpu->a_regs[rx]);
+        cpu->a_regs[rx].l--;
+        if (rx == 7) cpu->a_regs[rx].l--;
+        dst = m68k_read_8(cpu, cpu->a_regs[rx].l);
     } else {
-        src = cpu->d_regs[ry] & 0xFF;
-        dst = cpu->d_regs[rx] & 0xFF;
+        src = cpu->d_regs[ry].l & 0xFF;
+        dst = cpu->d_regs[rx].l & 0xFF;
     }
 
     u32 x = (cpu->sr & M68K_SR_X) ? 1 : 0;
@@ -699,9 +699,9 @@ void m68k_exec_sbcd(M68kCpu* cpu, u16 opcode) {
     if (result != 0) cpu->sr &= ~M68K_SR_Z;
 
     if (rm) {
-        m68k_write_8(cpu, cpu->a_regs[rx], result);
+        m68k_write_8(cpu, cpu->a_regs[rx].l, result);
     } else {
-        cpu->d_regs[rx] = (cpu->d_regs[rx] & 0xFFFFFF00) | result;
+        cpu->d_regs[rx].l = (cpu->d_regs[rx].l & 0xFFFFFF00) | result;
     }
 }
 
@@ -738,7 +738,7 @@ void m68k_exec_nbcd(M68kCpu* cpu, u16 opcode) {
     if (result != 0) cpu->sr &= ~M68K_SR_Z;
 
     if (ea.is_reg && !ea.is_addr) {
-        cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & 0xFFFFFF00) | result;
+        cpu->d_regs[ea.reg_num].l = (cpu->d_regs[ea.reg_num].l & 0xFFFFFF00) | result;
     } else {
         m68k_write_8(cpu, ea.address, result);
     }
@@ -778,7 +778,7 @@ void m68k_exec_addi(M68kCpu* cpu, u16 opcode) {
 
     if (ea.is_reg && !ea.is_addr) {
         u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
-        cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & ~mask) | (result & mask);
+        cpu->d_regs[ea.reg_num].l = (cpu->d_regs[ea.reg_num].l & ~mask) | (result & mask);
     } else {
         m68k_write_size(cpu, ea.address, result, size);
     }
@@ -820,7 +820,7 @@ void m68k_exec_subi(M68kCpu* cpu, u16 opcode) {
 
     if (ea.is_reg && !ea.is_addr) {
         u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
-        cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & ~mask) | (result & mask);
+        cpu->d_regs[ea.reg_num].l = (cpu->d_regs[ea.reg_num].l & ~mask) | (result & mask);
     } else {
         m68k_write_size(cpu, ea.address, result, size);
     }
@@ -854,7 +854,7 @@ void m68k_exec_negx(M68kCpu* cpu, u16 opcode) {
 
     if (ea.is_reg && !ea.is_addr) {
         u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
-        cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & ~mask) | (result & mask);
+        cpu->d_regs[ea.reg_num].l = (cpu->d_regs[ea.reg_num].l & ~mask) | (result & mask);
     } else {
         m68k_write_size(cpu, ea.address, result, size);
     }
@@ -874,7 +874,7 @@ void m68k_exec_negx(M68kCpu* cpu, u16 opcode) {
 
 void m68k_exec_extb(M68kCpu* cpu, u16 opcode) {
     int reg = opcode & 0x7;
-    s8 byte_val = (s8)(cpu->d_regs[reg] & 0xFF);
-    cpu->d_regs[reg] = (u32)(s32)byte_val;
-    update_flags_logic(cpu, cpu->d_regs[reg], SIZE_LONG);
+    s8 byte_val = (s8)(cpu->d_regs[reg].l & 0xFF);
+    cpu->d_regs[reg].l = (u32)(s32)byte_val;
+    update_flags_logic(cpu, cpu->d_regs[reg].l, SIZE_LONG);
 }

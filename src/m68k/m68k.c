@@ -15,8 +15,8 @@ void m68k_init(M68kCpu* cpu, u8* memory, u32 memory_size) {
 
 void m68k_reset(M68kCpu* cpu) {
     for (int i = 0; i < 8; i++) {
-        cpu->d_regs[i] = 0;
-        cpu->a_regs[i] = 0;
+        cpu->d_regs[i].l = 0;
+        cpu->a_regs[i].l = 0;
     }
     cpu->sr = 0x2700;
     cpu->usp = 0;
@@ -25,7 +25,7 @@ void m68k_reset(M68kCpu* cpu) {
     cpu->exception_thrown = 0;
     cpu->irq_level = 0;
 
-    cpu->a_regs[7] = m68k_read_32(cpu, 0x00000000);
+    cpu->a_regs[7].l = m68k_read_32(cpu, 0x00000000);
     cpu->pc = m68k_read_32(cpu, 0x00000004);
 }
 
@@ -38,26 +38,26 @@ u32 m68k_get_pc(M68kCpu* cpu) { return cpu->pc; }
 
 void m68k_set_dr(M68kCpu* cpu, int reg, u32 value) {
     if (reg >= 0 && reg < 8) {
-        cpu->d_regs[reg] = value;
+        cpu->d_regs[reg].l = value;
     }
 }
 
 u32 m68k_get_dr(M68kCpu* cpu, int reg) {
     if (reg >= 0 && reg < 8) {
-        return cpu->d_regs[reg];
+        return cpu->d_regs[reg].l;
     }
     return 0;
 }
 
 void m68k_set_ar(M68kCpu* cpu, int reg, u32 value) {
     if (reg >= 0 && reg < 8) {
-        cpu->a_regs[reg] = value;
+        cpu->a_regs[reg].l = value;
     }
 }
 
 u32 m68k_get_ar(M68kCpu* cpu, int reg) {
     if (reg >= 0 && reg < 8) {
-        return cpu->a_regs[reg];
+        return cpu->a_regs[reg].l;
     }
     return 0;
 }
@@ -302,33 +302,33 @@ M68kEA m68k_calc_ea(M68kCpu* cpu, int mode, int reg, M68kSize size) {
             ea.is_reg = true;
             ea.reg_num = reg;
             ea.is_addr = false;
-            ea.value = cpu->d_regs[reg];
+            ea.value = cpu->d_regs[reg].l;
             break;
         case 1:
             ea.is_reg = true;
             ea.reg_num = reg;
             ea.is_addr = true;
-            ea.value = cpu->a_regs[reg];
+            ea.value = cpu->a_regs[reg].l;
             break;
         case 2:
-            ea.address = cpu->a_regs[reg];
+            ea.address = cpu->a_regs[reg].l;
             ea.value = m68k_read_size(cpu, ea.address, size);
             break;
         case 3:
-            ea.address = cpu->a_regs[reg];
+            ea.address = cpu->a_regs[reg].l;
             ea.value = m68k_read_size(cpu, ea.address, size);
 
-            cpu->a_regs[reg] += (size == SIZE_BYTE && reg == 7) ? 2 : size;
+            cpu->a_regs[reg].l += (size == SIZE_BYTE && reg == 7) ? 2 : size;
             break;
         case 4:
 
-            cpu->a_regs[reg] -= (size == SIZE_BYTE && reg == 7) ? 2 : size;
-            ea.address = cpu->a_regs[reg];
+            cpu->a_regs[reg].l -= (size == SIZE_BYTE && reg == 7) ? 2 : size;
+            ea.address = cpu->a_regs[reg].l;
             ea.value = m68k_read_size(cpu, ea.address, size);
             break;
         case 5: {
             s16 disp = (s16)fetch_extension(cpu);
-            ea.address = cpu->a_regs[reg] + disp;
+            ea.address = cpu->a_regs[reg].l + disp;
             ea.value = m68k_read_size(cpu, ea.address, size);
         } break;
         case 7:
@@ -367,7 +367,7 @@ M68kEA m68k_calc_ea(M68kCpu* cpu, int mode, int reg, M68kSize size) {
                     int xn_is_addr = (ext >> 15) & 0x1;
                     int xn_is_long = (ext >> 11) & 0x1;
 
-                    u32 xn_val = xn_is_addr ? cpu->a_regs[xn_reg_num] : cpu->d_regs[xn_reg_num];
+                    u32 xn_val = xn_is_addr ? cpu->a_regs[xn_reg_num].l : cpu->d_regs[xn_reg_num].l;
                     if (!xn_is_long) {
                         xn_val = (s32)(s16)(xn_val & 0xFFFF);
                     }
@@ -386,12 +386,12 @@ M68kEA m68k_calc_ea(M68kCpu* cpu, int mode, int reg, M68kSize size) {
             int xn_is_addr = (ext >> 15) & 0x1;
             int xn_is_long = (ext >> 11) & 0x1;
 
-            u32 xn_val = xn_is_addr ? cpu->a_regs[xn_reg_num] : cpu->d_regs[xn_reg_num];
+            u32 xn_val = xn_is_addr ? cpu->a_regs[xn_reg_num].l : cpu->d_regs[xn_reg_num].l;
             if (!xn_is_long) {
                 xn_val = (s32)(s16)(xn_val & 0xFFFF);
             }
 
-            ea.address = cpu->a_regs[reg] + xn_val + disp8;
+            ea.address = cpu->a_regs[reg].l + xn_val + disp8;
             ea.value = m68k_read_size(cpu, ea.address, size);
         } break;
     }
@@ -474,24 +474,24 @@ void update_flags_logic(M68kCpu* cpu, u32 result, M68kSize size) {
 }
 
 void m68k_push_32(M68kCpu* cpu, u32 value) {
-    cpu->a_regs[7] -= 4;
-    m68k_write_32(cpu, cpu->a_regs[7], value);
+    cpu->a_regs[7].l -= 4;
+    m68k_write_32(cpu, cpu->a_regs[7].l, value);
 }
 
 u32 m68k_pop_32(M68kCpu* cpu) {
-    u32 value = m68k_read_32(cpu, cpu->a_regs[7]);
-    cpu->a_regs[7] += 4;
+    u32 value = m68k_read_32(cpu, cpu->a_regs[7].l);
+    cpu->a_regs[7].l += 4;
     return value;
 }
 
 void m68k_push_16(M68kCpu* cpu, u16 value) {
-    cpu->a_regs[7] -= 2;
-    m68k_write_16(cpu, cpu->a_regs[7], value);
+    cpu->a_regs[7].l -= 2;
+    m68k_write_16(cpu, cpu->a_regs[7].l, value);
 }
 
 u16 m68k_pop_16(M68kCpu* cpu) {
-    u16 value = m68k_read_16(cpu, cpu->a_regs[7]);
-    cpu->a_regs[7] += 2;
+    u16 value = m68k_read_16(cpu, cpu->a_regs[7].l);
+    cpu->a_regs[7].l += 2;
     return value;
 }
 
@@ -502,11 +502,11 @@ void m68k_set_sr(M68kCpu* cpu, u16 new_sr) {
 
     if (old_s != new_s) {
         if (new_s) {
-            cpu->usp = cpu->a_regs[7];
-            cpu->a_regs[7] = cpu->ssp;
+            cpu->usp = cpu->a_regs[7].l;
+            cpu->a_regs[7].l = cpu->ssp;
         } else {
-            cpu->ssp = cpu->a_regs[7];
-            cpu->a_regs[7] = cpu->usp;
+            cpu->ssp = cpu->a_regs[7].l;
+            cpu->a_regs[7].l = cpu->usp;
         }
     }
     cpu->sr = new_sr;

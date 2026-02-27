@@ -1,8 +1,14 @@
 #ifndef M68K_H
 #define M68K_H
 
+#include <assert.h>
+#include <stdalign.h>
 #include <stdbool.h>
 #include <stdint.h>
+
+static_assert(sizeof(uint8_t) == 1, "uint8_t must be exactly 1 byte");
+static_assert(sizeof(uint16_t) == 2, "uint16_t must be exactly 2 bytes");
+static_assert(sizeof(uint32_t) == 4, "uint32_t must be exactly 4 bytes");
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -61,9 +67,22 @@ typedef enum {
     ADDR_MODE_IMMEDIATE
 } M68kAddrMode;
 
+typedef union {
+    u32 l;
+    struct {
+#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+        u16 high;
+        u16 w;
+#else
+        u16 w;
+        u16 high;
+#endif
+    };
+} M68kRegister;
+
 typedef struct {
-    u32 d_regs[8];
-    u32 a_regs[8];
+    M68kRegister d_regs[8];
+    M68kRegister a_regs[8];
     u32 pc;
     u16 sr;
 
@@ -83,7 +102,7 @@ typedef struct {
 
     int target_cycles;
     int cycles_remaining;
-} M68kCpu;
+} __attribute__((aligned(64))) M68kCpu;
 
 #define M68K_SR_C (1 << 0)
 #define M68K_SR_V (1 << 1)

@@ -134,8 +134,8 @@ static bool run_test(M68kCpu* cpu, Test_Rec* test, FILE* logf) {
     }
 
     // 3. Load CPU State
-    for (int i = 0; i < 8; i++) cpu->d_regs[i] = test->initial.regs[i];
-    for (int i = 0; i < 7; i++) cpu->a_regs[i] = test->initial.regs[8 + i];
+    for (int i = 0; i < 8; i++) cpu->d_regs[i].l = test->initial.regs[i];
+    for (int i = 0; i < 7; i++) cpu->a_regs[i].l = test->initial.regs[8 + i];
 
     cpu->sr = test->initial.sr;
     cpu->usp = test->initial.usp;
@@ -143,9 +143,9 @@ static bool run_test(M68kCpu* cpu, Test_Rec* test, FILE* logf) {
 
     bool supervisor = (cpu->sr & M68K_SR_S) != 0;
     if (supervisor) {
-        cpu->a_regs[7] = test->initial.ssp;
+        cpu->a_regs[7].l = test->initial.ssp;
     } else {
-        cpu->a_regs[7] = test->initial.usp;
+        cpu->a_regs[7].l = test->initial.usp;
     }
 
     // Exec PC is prefetch start index
@@ -168,9 +168,9 @@ static bool run_test(M68kCpu* cpu, Test_Rec* test, FILE* logf) {
     bool ok = true;
     bool final_supervisor = (cpu->sr & M68K_SR_S) != 0;
     if (final_supervisor) {
-        cpu->ssp = cpu->a_regs[7];
+        cpu->ssp = cpu->a_regs[7].l;
     } else {
-        cpu->usp = cpu->a_regs[7];
+        cpu->usp = cpu->a_regs[7].l;
     }
 
     // Save final state of A7 cleanly
@@ -182,11 +182,11 @@ static bool run_test(M68kCpu* cpu, Test_Rec* test, FILE* logf) {
     uint32_t final_usp_val;
 
     if (final_supervisor) {
-        final_ssp_val = cpu->a_regs[7];
+        final_ssp_val = cpu->a_regs[7].l;
         final_usp_val = cpu->usp;
     } else {
         final_ssp_val = cpu->ssp;
-        final_usp_val = cpu->a_regs[7];
+        final_usp_val = cpu->a_regs[7].l;
     }
 
 #define CHECK(_name_, val, expected)                                                     \
@@ -199,17 +199,17 @@ static bool run_test(M68kCpu* cpu, Test_Rec* test, FILE* logf) {
     for (int i = 0; i < 8; i++) {
         char buf[8];
         sprintf(buf, "D%d", i);
-        if (cpu->d_regs[i] != test->final.regs[i]) {
+        if (cpu->d_regs[i].l != test->final.regs[i]) {
             ok = false;
             fprintf(logf, "[%03d %s] Mismatch %s: init %08X, got %08X, exp %08X\n",
-                    _test_id_counter, test->name, buf, test->initial.regs[i], cpu->d_regs[i],
+                    _test_id_counter, test->name, buf, test->initial.regs[i], cpu->d_regs[i].l,
                     test->final.regs[i]);
         }
     }
     for (int i = 0; i < 7; i++) {
         char buf[8];
         sprintf(buf, "A%d", i);
-        CHECK(buf, cpu->a_regs[i], test->final.regs[8 + i]);
+        CHECK(buf, cpu->a_regs[i].l, test->final.regs[8 + i]);
     }
 
     CHECK("USP", final_usp_val, test->final.usp);

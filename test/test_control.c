@@ -21,7 +21,7 @@ void test_control_flow() {
     assert(cpu.pc == 6);
 
     m68k_step(&cpu);
-    assert(cpu.d_regs[0] == 2);
+    assert(cpu.d_regs[0].l == 2);
 
     memset(memory, 0, 8);
     m68k_reset(&cpu);
@@ -41,16 +41,16 @@ void test_control_flow() {
     m68k_step(&cpu);
     assert(cpu.pc == 0x100);
 
-    assert(m68k_read_32(&cpu, cpu.a_regs[7]) == 4);
+    assert(m68k_read_32(&cpu, cpu.a_regs[7].l) == 4);
 
     m68k_step(&cpu);
-    assert(cpu.d_regs[0] == 10);
+    assert(cpu.d_regs[0].l == 10);
 
     m68k_step(&cpu);
     assert(cpu.pc == 4);
 
     m68k_step(&cpu);
-    assert(cpu.d_regs[0] == 5);
+    assert(cpu.d_regs[0].l == 5);
 
     printf("Control Flow test passed!\n");
 }
@@ -70,7 +70,7 @@ void test_dbcc_scc() {
     assert((cpu.sr & M68K_SR_Z) != 0);
     m68k_step(&cpu);
 
-    assert((cpu.d_regs[1] & 0xFF) == 0xFF);
+    assert((cpu.d_regs[1].l & 0xFF) == 0xFF);
 
     m68k_write_16(&cpu, 4, 0x7002);
 
@@ -89,19 +89,19 @@ void test_dbcc_scc() {
     m68k_step(&cpu);
     m68k_step(&cpu);
     assert(cpu.pc == 6);
-    assert((cpu.d_regs[0] & 0xFFFF) == 1);
+    assert((cpu.d_regs[0].l & 0xFFFF) == 1);
 
     printf("Loop 2 start\n");
     fflush(stdout);
     m68k_step(&cpu);
     m68k_step(&cpu);
     assert(cpu.pc == 6);
-    assert((cpu.d_regs[0] & 0xFFFF) == 0);
+    assert((cpu.d_regs[0].l & 0xFFFF) == 0);
 
     m68k_step(&cpu);
     m68k_step(&cpu);
     assert(cpu.pc == 12);
-    assert((cpu.d_regs[0] & 0xFFFF) == 0xFFFF);
+    assert((cpu.d_regs[0].l & 0xFFFF) == 0xFFFF);
 
     printf("Loop (DBcc/Scc) test passed!\n");
 }
@@ -111,8 +111,8 @@ void test_misc_control() {
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
 
-    cpu.d_regs[0] = 50;
-    cpu.d_regs[1] = 100;
+    cpu.d_regs[0].l = 50;
+    cpu.d_regs[1].l = 100;
 
     m68k_write_32(&cpu, 6 * 4, 0x400);
 
@@ -129,7 +129,7 @@ void test_exceptions() {
     u8 memory[4096];
     m68k_init(&cpu, memory, sizeof(memory));
 
-    cpu.a_regs[7] = 0x1000;
+    cpu.a_regs[7].l = 0x1000;
     cpu.ssp = 0x1000;
     cpu.pc = 0x200;
     cpu.sr = 0;
@@ -146,19 +146,19 @@ void test_exceptions() {
 
     assert((cpu.sr & M68K_SR_S) != 0);
 
-    assert(cpu.a_regs[7] == 0x1000 - 6);
+    assert(cpu.a_regs[7].l == 0x1000 - 6);
 
-    u16 saved_sr = (memory[cpu.a_regs[7]] << 8) | memory[cpu.a_regs[7] + 1];
+    u16 saved_sr = (memory[cpu.a_regs[7].l] << 8) | memory[cpu.a_regs[7].l + 1];
     assert((saved_sr & M68K_SR_S) == 0);
-    u32 saved_pc = (memory[cpu.a_regs[7] + 2] << 24) | (memory[cpu.a_regs[7] + 3] << 16) |
-                   (memory[cpu.a_regs[7] + 4] << 8) | memory[cpu.a_regs[7] + 5];
+    u32 saved_pc = (memory[cpu.a_regs[7].l + 2] << 24) | (memory[cpu.a_regs[7].l + 3] << 16) |
+                   (memory[cpu.a_regs[7].l + 4] << 8) | memory[cpu.a_regs[7].l + 5];
     assert(saved_pc == 0x202);
 
     m68k_write_16(&cpu, 0x400, 0x4E73);
     m68k_step(&cpu);
 
     assert(cpu.pc == 0x202);
-    assert(cpu.a_regs[7] == 0x1000);
+    assert(cpu.a_regs[7].l == 0x1000);
     assert((cpu.sr & M68K_SR_S) == 0);
 
     printf("Exception test passed!\n");
@@ -175,22 +175,22 @@ void test_nop_bsr_rtr() {
     assert(cpu.pc == 2);
 
     cpu.pc = 2;
-    cpu.a_regs[7] = 0x100;
+    cpu.a_regs[7].l = 0x100;
     m68k_write_16(&cpu, 2, 0x6108);
     m68k_step(&cpu);
     assert(cpu.pc == 4 + 8);
-    assert(cpu.a_regs[7] == 0xFC);
+    assert(cpu.a_regs[7].l == 0xFC);
     assert(m68k_read_32(&cpu, 0xFC) == 4);
 
     cpu.pc = 12;
 
-    m68k_write_32(&cpu, cpu.a_regs[7] - 4, 0x20);
-    m68k_write_16(&cpu, cpu.a_regs[7] - 6, 0x1F);
-    cpu.a_regs[7] -= 6;
+    m68k_write_32(&cpu, cpu.a_regs[7].l - 4, 0x20);
+    m68k_write_16(&cpu, cpu.a_regs[7].l - 6, 0x1F);
+    cpu.a_regs[7].l -= 6;
     m68k_write_16(&cpu, 12, 0x4E77);
     m68k_step(&cpu);
     assert(cpu.pc == 0x20);
-    assert(cpu.a_regs[7] == 0xFC);
+    assert(cpu.a_regs[7].l == 0xFC);
     assert((cpu.sr & 0xFF) == 0x1F);
 
     printf("NOP/BSR/RTR test passed!\n");

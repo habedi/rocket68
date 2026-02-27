@@ -19,7 +19,7 @@ A fast and accurate Motorola 68000 CPU emulator in C
 
 ---
 
-Rocket 68 is a Motorola 68000 CPU emulator written in C11.
+Rocket 68 is a Motorola 68000 CPU emulator written in pure C11.
 It supports all the instructions and addressing modes of the 68000 CPU, plus system control features like supervisor mode, interrupts, and exceptions.
 It is also runs as a similar clock cycle to the real 68000 CPU with good accuracy.
 

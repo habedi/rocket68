@@ -20,8 +20,8 @@ void test_initialization() {
     assert(cpu.pc == 0);
     assert(cpu.sr == 0x2700);
     for (int i = 0; i < 8; i++) {
-        assert(cpu.d_regs[i] == 0);
-        assert(cpu.a_regs[i] == 0);
+        assert(cpu.d_regs[i].l == 0);
+        assert(cpu.a_regs[i].l == 0);
     }
 
     printf("Initialization test passed!\n");
@@ -91,11 +91,11 @@ void test_usp_switching() {
     memset(memory, 0, sizeof(memory));
     m68k_init(&cpu, memory, sizeof(memory));
 
-    cpu.sr = 0x2700;         // Supervisor mode
-    cpu.a_regs[7] = 0x1000;  // SSP
+    cpu.sr = 0x2700;           // Supervisor mode
+    cpu.a_regs[7].l = 0x1000;  // SSP
 
     // MOVE A0, USP: 0100 1110 0110 0 000 = 0x4E60
-    cpu.a_regs[0] = 0x800;
+    cpu.a_regs[0].l = 0x800;
     m68k_write_16(&cpu, 0, 0x4E60);
     m68k_step(&cpu);
     assert(cpu.usp == 0x800);
@@ -103,7 +103,7 @@ void test_usp_switching() {
     // MOVE USP, A1: 0100 1110 0110 1 001 = 0x4E69
     m68k_write_16(&cpu, 2, 0x4E69);
     m68k_step(&cpu);
-    assert(cpu.a_regs[1] == 0x800);
+    assert(cpu.a_regs[1].l == 0x800);
 
     printf("USP switching test passed!\n");
 }
@@ -114,7 +114,7 @@ void test_trace_mode() {
     memset(memory, 0, sizeof(memory));
     m68k_init(&cpu, memory, sizeof(memory));
 
-    cpu.a_regs[7] = 0x1000;
+    cpu.a_regs[7].l = 0x1000;
     cpu.sr = 0xA700;  // Supervisor + Trace bit (bit 15)
 
     // Set trace vector (vector 9) to 0x500
@@ -135,7 +135,7 @@ void test_stopped_state() {
     m68k_init(&cpu, memory, sizeof(memory));
 
     cpu.sr = 0x2700;  // Supervisor mode
-    cpu.a_regs[7] = 0x1000;
+    cpu.a_regs[7].l = 0x1000;
 
     // STOP #$2700
     m68k_write_16(&cpu, 0, 0x4E72);
@@ -165,7 +165,7 @@ void test_address_error() {
     memset(memory, 0, sizeof(memory));
     m68k_init(&cpu, memory, sizeof(memory));
 
-    cpu.a_regs[7] = 0x1000;
+    cpu.a_regs[7].l = 0x1000;
     cpu.sr = 0x2700;
 
     // Set address error vector (vector 3) to 0x400
@@ -185,9 +185,9 @@ void test_interrupts() {
 
     // 1. Setup
     cpu.pc = 0x100;
-    cpu.a_regs[7] = 0x400;  // SP
-    cpu.ssp = 0x400;        // SSP must match since IRQ switches to supervisor mode
-    cpu.sr = 0x0000;        // User mode, IRQ mask 0 (Enable all)
+    cpu.a_regs[7].l = 0x400;  // SP
+    cpu.ssp = 0x400;          // SSP must match since IRQ switches to supervisor mode
+    cpu.sr = 0x0000;          // User mode, IRQ mask 0 (Enable all)
 
     // 2. Setup Auto-Vector for Level 4
     // Vector 24 + 4 = 28. Address 28*4 = 112 (0x70).
@@ -215,10 +215,10 @@ void test_interrupts() {
 
     // Check Stack (Format: PC (4), SR (2))
     // SP was 0x400. Pushed 6 bytes -> 0x3FA.
-    assert(cpu.a_regs[7] == 0x3FA);
+    assert(cpu.a_regs[7].l == 0x3FA);
 
     // Verify saved PC (0x100 - before NOP execution since IRQ is pre-fetch)
-    u32 saved_pc = m68k_read_32(&cpu, cpu.a_regs[7] + 2);
+    u32 saved_pc = m68k_read_32(&cpu, cpu.a_regs[7].l + 2);
     assert(saved_pc == 0x100);
 
     printf("Interrupt test passed!\n");
@@ -239,7 +239,7 @@ void test_int_ack() {
 
     // 1. Setup
     cpu.pc = 0x100;
-    cpu.a_regs[7] = 0x1000;
+    cpu.a_regs[7].l = 0x1000;
     cpu.ssp = 0x1000;
     cpu.sr = 0x0000;
 
@@ -256,7 +256,7 @@ void test_int_ack() {
     m68k_reset(&cpu);
     cpu.pc = 0x200;
     cpu.ssp = 0x1000;
-    cpu.a_regs[7] = 0x1000;
+    cpu.a_regs[7].l = 0x1000;
     cpu.sr = 0x0000;
 
     // 3. Test Custom Vector (e.g. 0x40 -> vector 64)
@@ -272,7 +272,7 @@ void test_int_ack() {
     m68k_reset(&cpu);
     cpu.pc = 0x100;
     cpu.ssp = 0x1000;
-    cpu.a_regs[7] = 0x1000;
+    cpu.a_regs[7].l = 0x1000;
     cpu.sr = 0x0000;
 
     // 4. Test Autovector (M68K_INT_ACK_AUTOVECTOR) via IRQ 6 -> vector 30
@@ -380,21 +380,21 @@ void test_hooks() {
     // 3. TAS instruction hook
     // TAS D0: 0100 1010 11 000 000 = 0x4AC0
     cpu.pc = 0x300;
-    cpu.d_regs[0] = 0;
+    cpu.d_regs[0].l = 0;
     m68k_write_16(&cpu, 0x300, 0x4AC0);
 
     // First try with write allowed
     mock_tas_result = 1;
     m68k_step_ex(&cpu, true);
-    assert((cpu.d_regs[0] & 0x80) != 0);  // Writeback succeeded
+    assert((cpu.d_regs[0].l & 0x80) != 0);  // Writeback succeeded
 
     // Try with write denied
     cpu.pc = 0x302;
-    cpu.d_regs[0] = 0;
+    cpu.d_regs[0].l = 0;
     m68k_write_16(&cpu, 0x302, 0x4AC0);
     mock_tas_result = 0;
     m68k_step_ex(&cpu, true);
-    assert((cpu.d_regs[0] & 0x80) == 0);  // Writeback denied
+    assert((cpu.d_regs[0].l & 0x80) == 0);  // Writeback denied
 
     m68k_set_instr_hook_callback(NULL);
     m68k_set_pc_changed_callback(NULL);
@@ -449,8 +449,8 @@ void test_serialization() {
     m68k_init(&cpu1, memory1, sizeof(memory1));
     m68k_init(&cpu2, memory2, sizeof(memory2));
 
-    cpu1.d_regs[0] = 0xDEADBEEF;
-    cpu1.a_regs[0] = 0xCAFEBABE;
+    cpu1.d_regs[0].l = 0xDEADBEEF;
+    cpu1.a_regs[0].l = 0xCAFEBABE;
     cpu1.pc = 0x100;
     cpu1.sr = 0x2700;
 
@@ -461,8 +461,8 @@ void test_serialization() {
     m68k_set_context(&cpu2, ctx_buffer);
     free(ctx_buffer);
 
-    assert(cpu2.d_regs[0] == 0xDEADBEEF);
-    assert(cpu2.a_regs[0] == 0xCAFEBABE);
+    assert(cpu2.d_regs[0].l == 0xDEADBEEF);
+    assert(cpu2.a_regs[0].l == 0xCAFEBABE);
     assert(cpu2.pc == 0x100);
     assert(cpu2.sr == 0x2700);
 

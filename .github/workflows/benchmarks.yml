@@ -26,7 +26,7 @@ permissions:
   contents: read
 
 jobs:
-  lint:
+  benchmarks:
     runs-on: ubuntu-latest
 
     steps:

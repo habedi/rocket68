@@ -76,9 +76,9 @@ void m68k_exec_dbcc(M68kCpu* cpu, u16 opcode) {
         return;
     }
 
-    u16 val = cpu->d_regs[reg] & 0xFFFF;
+    u16 val = cpu->d_regs[reg].l & 0xFFFF;
     val--;
-    cpu->d_regs[reg] = (cpu->d_regs[reg] & 0xFFFF0000) | val;
+    cpu->d_regs[reg].l = (cpu->d_regs[reg].l & 0xFFFF0000) | val;
 
     if (val != 0xFFFF) {
         cpu->cycles_remaining -= 10;  // Loop branched
@@ -98,7 +98,7 @@ void m68k_exec_scc(M68kCpu* cpu, u16 opcode) {
 
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_BYTE);
     if (ea.is_reg && !ea.is_addr) {
-        cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & 0xFFFFFF00) | val;
+        cpu->d_regs[ea.reg_num].l = (cpu->d_regs[ea.reg_num].l & 0xFFFFFF00) | val;
     } else {
         m68k_write_8(cpu, ea.address, val);
     }
@@ -149,7 +149,7 @@ void m68k_exec_chk(M68kCpu* cpu, u16 opcode) {
     int reg = opcode & 0x7;
 
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_WORD);
-    s16 src = (s16)(cpu->d_regs[reg_idx] & 0xFFFF);
+    s16 src = (s16)(cpu->d_regs[reg_idx].l & 0xFFFF);
     s16 bound = (s16)ea.value;
 
     cpu->sr &= ~(M68K_SR_N | M68K_SR_Z | M68K_SR_V | M68K_SR_C);
@@ -222,7 +222,7 @@ void m68k_exec_movec(M68kCpu* cpu, u16 opcode) {
     int reg_num = (ext >> 12) & 0x7;
     int ctrl_reg = ext & 0xFFF;
 
-    u32* gpr = is_addr ? &cpu->a_regs[reg_num] : &cpu->d_regs[reg_num];
+    u32* gpr = is_addr ? &cpu->a_regs[reg_num].l : &cpu->d_regs[reg_num].l;
 
     bool to_ctrl = (opcode & 1) != 0;
 
@@ -268,7 +268,7 @@ void m68k_exec_rtd(M68kCpu* cpu, u16 opcode) {
     (void)opcode;
     u32 ret_addr = m68k_pop_32(cpu);
     s16 disp = (s16)m68k_fetch(cpu);
-    cpu->a_regs[7] += disp;
+    cpu->a_regs[7].l += disp;
     m68k_set_pc(cpu, ret_addr);
 }
 

@@ -15,7 +15,7 @@ void m68k_exec_btst(M68kCpu* cpu, u16 opcode) {
 
     if (is_dynamic) {
         int dn = (opcode >> 9) & 0x7;
-        bit_num = cpu->d_regs[dn];
+        bit_num = cpu->d_regs[dn].l;
         mode = (opcode >> 3) & 0x7;
         reg = opcode & 0x7;
     } else {
@@ -29,7 +29,7 @@ void m68k_exec_btst(M68kCpu* cpu, u16 opcode) {
 
     u32 data;
     if (is_register) {
-        data = cpu->d_regs[reg];
+        data = cpu->d_regs[reg].l;
     } else {
         M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_BYTE);
         data = ea.value & 0xFF;
@@ -48,7 +48,7 @@ void m68k_exec_bset(M68kCpu* cpu, u16 opcode) {
 
     if (is_dynamic) {
         int dn = (opcode >> 9) & 0x7;
-        bit_num = cpu->d_regs[dn];
+        bit_num = cpu->d_regs[dn].l;
         mode = (opcode >> 3) & 0x7;
         reg = opcode & 0x7;
     } else {
@@ -61,13 +61,13 @@ void m68k_exec_bset(M68kCpu* cpu, u16 opcode) {
     u32 mask = get_bit_mask(bit_num, is_register);
 
     if (is_register) {
-        u32 data = cpu->d_regs[reg];
+        u32 data = cpu->d_regs[reg].l;
 
         if (data & mask)
             cpu->sr &= ~M68K_SR_Z;
         else
             cpu->sr |= M68K_SR_Z;
-        cpu->d_regs[reg] = data | mask;
+        cpu->d_regs[reg].l = data | mask;
     } else {
         M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_BYTE);
         u8 data = ea.value & 0xFF;
@@ -86,7 +86,7 @@ void m68k_exec_bclr(M68kCpu* cpu, u16 opcode) {
 
     if (is_dynamic) {
         int dn = (opcode >> 9) & 0x7;
-        bit_num = cpu->d_regs[dn];
+        bit_num = cpu->d_regs[dn].l;
         mode = (opcode >> 3) & 0x7;
         reg = opcode & 0x7;
     } else {
@@ -99,12 +99,12 @@ void m68k_exec_bclr(M68kCpu* cpu, u16 opcode) {
     u32 mask = get_bit_mask(bit_num, is_register);
 
     if (is_register) {
-        u32 data = cpu->d_regs[reg];
+        u32 data = cpu->d_regs[reg].l;
         if (data & mask)
             cpu->sr &= ~M68K_SR_Z;
         else
             cpu->sr |= M68K_SR_Z;
-        cpu->d_regs[reg] = data & ~mask;
+        cpu->d_regs[reg].l = data & ~mask;
     } else {
         M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_BYTE);
         u8 data = ea.value & 0xFF;
@@ -123,7 +123,7 @@ void m68k_exec_bchg(M68kCpu* cpu, u16 opcode) {
 
     if (is_dynamic) {
         int dn = (opcode >> 9) & 0x7;
-        bit_num = cpu->d_regs[dn];
+        bit_num = cpu->d_regs[dn].l;
         mode = (opcode >> 3) & 0x7;
         reg = opcode & 0x7;
     } else {
@@ -136,12 +136,12 @@ void m68k_exec_bchg(M68kCpu* cpu, u16 opcode) {
     u32 mask = get_bit_mask(bit_num, is_register);
 
     if (is_register) {
-        u32 data = cpu->d_regs[reg];
+        u32 data = cpu->d_regs[reg].l;
         if (data & mask)
             cpu->sr &= ~M68K_SR_Z;
         else
             cpu->sr |= M68K_SR_Z;
-        cpu->d_regs[reg] = data ^ mask;
+        cpu->d_regs[reg].l = data ^ mask;
     } else {
         M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_BYTE);
         u8 data = ea.value & 0xFF;
@@ -161,7 +161,7 @@ void m68k_exec_tas(M68kCpu* cpu, u16 opcode) {
     u8 data;
 
     if (ea.is_reg && !ea.is_addr) {
-        data = cpu->d_regs[ea.reg_num] & 0xFF;
+        data = cpu->d_regs[ea.reg_num].l & 0xFF;
     } else {
         data = m68k_read_8(cpu, ea.address);
     }
@@ -179,7 +179,7 @@ void m68k_exec_tas(M68kCpu* cpu, u16 opcode) {
 
     if (allow_write) {
         if (ea.is_reg && !ea.is_addr) {
-            cpu->d_regs[ea.reg_num] = (cpu->d_regs[ea.reg_num] & 0xFFFFFF00) | data;
+            cpu->d_regs[ea.reg_num].l = (cpu->d_regs[ea.reg_num].l & 0xFFFFFF00) | data;
         } else {
             m68k_write_8(cpu, ea.address, data);
         }

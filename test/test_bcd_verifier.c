@@ -63,13 +63,13 @@ static bool verify_abcd(FILE* table, M68kCpu* cpu, int* mismatches, int* reporte
                         return false;
                     }
 
-                    cpu->d_regs[0] = (uint8_t)jj;
-                    cpu->d_regs[1] = (uint8_t)ii;
+                    cpu->d_regs[0].l = (uint8_t)jj;
+                    cpu->d_regs[1].l = (uint8_t)ii;
                     set_input_flags(cpu, carry_in, zero_in);
 
                     m68k_exec_abcd(cpu, opcode);
 
-                    uint8_t got_result = (uint8_t)(cpu->d_regs[0] & 0xFF);
+                    uint8_t got_result = (uint8_t)(cpu->d_regs[0].l & 0xFF);
                     uint8_t got_flags = (uint8_t)(cpu->sr & FLAG_MASK);
                     uint8_t expected_masked = expected_flags & 0x1F;
 
@@ -100,13 +100,13 @@ static bool verify_sbcd(FILE* table, M68kCpu* cpu, int* mismatches, int* reporte
                         return false;
                     }
 
-                    cpu->d_regs[0] = (uint8_t)jj;
-                    cpu->d_regs[1] = (uint8_t)ii;
+                    cpu->d_regs[0].l = (uint8_t)jj;
+                    cpu->d_regs[1].l = (uint8_t)ii;
                     set_input_flags(cpu, carry_in, zero_in);
 
                     m68k_exec_sbcd(cpu, opcode);
 
-                    uint8_t got_result = (uint8_t)(cpu->d_regs[0] & 0xFF);
+                    uint8_t got_result = (uint8_t)(cpu->d_regs[0].l & 0xFF);
                     uint8_t got_flags = (uint8_t)(cpu->sr & FLAG_MASK);
                     uint8_t expected_masked = expected_flags & 0x1F;
 
@@ -136,12 +136,12 @@ static bool verify_nbcd(FILE* table, M68kCpu* cpu, int* mismatches, int* reporte
                     return false;
                 }
 
-                cpu->d_regs[0] = (uint8_t)ii;
+                cpu->d_regs[0].l = (uint8_t)ii;
                 set_input_flags(cpu, carry_in, zero_in);
 
                 m68k_exec_nbcd(cpu, opcode);
 
-                uint8_t got_result = (uint8_t)(cpu->d_regs[0] & 0xFF);
+                uint8_t got_result = (uint8_t)(cpu->d_regs[0].l & 0xFF);
                 uint8_t got_flags = (uint8_t)(cpu->sr & FLAG_MASK);
                 uint8_t expected_masked = expected_flags & 0x1F;
 

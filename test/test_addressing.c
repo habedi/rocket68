@@ -11,8 +11,8 @@ void test_addressing_mode_6() {
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
 
-    cpu.a_regs[0] = 0x100;
-    cpu.d_regs[0] = 0x02;
+    cpu.a_regs[0].l = 0x100;
+    cpu.d_regs[0].l = 0x02;
     memory[0x103] = 0x55;
 
     m68k_write_16(&cpu, 0, 0x1230);
@@ -21,7 +21,7 @@ void test_addressing_mode_6() {
 
     m68k_step(&cpu);
 
-    assert((cpu.d_regs[1] & 0xFF) == 0x55);
+    assert((cpu.d_regs[1].l & 0xFF) == 0x55);
 
     printf("Addressing Mode 6 test passed!\n");
 }
@@ -39,7 +39,7 @@ void test_pcrel() {
 
     m68k_step(&cpu);
 
-    assert((cpu.d_regs[0] & 0xFF) == 0x55);
+    assert((cpu.d_regs[0].l & 0xFF) == 0x55);
 
     printf("PC-Relative Addressing test passed!\n");
 }

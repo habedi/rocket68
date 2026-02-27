@@ -12,7 +12,7 @@ void test_fibonacci() {
     memset(memory, 0, sizeof(memory));
     m68k_init(&cpu, memory, sizeof(memory));
     cpu.sr = 0x2700;
-    cpu.a_regs[7] = 0x1000;
+    cpu.a_regs[7].l = 0x1000;
 
     u32 pc = 0x100;
 
@@ -48,7 +48,7 @@ void test_fibonacci() {
         m68k_step(&cpu);
     }
     assert(max_steps > 0);
-    assert(cpu.d_regs[1] == 55);
+    assert(cpu.d_regs[1].l == 55);
 
     printf("Integration: Fibonacci test passed!\n");
 }
@@ -59,7 +59,7 @@ void test_string_copy() {
     memset(memory, 0, sizeof(memory));
     m68k_init(&cpu, memory, sizeof(memory));
     cpu.sr = 0x2700;
-    cpu.a_regs[7] = 0x1000;
+    cpu.a_regs[7].l = 0x1000;
 
     const char* hello = "Hello";
     for (int i = 0; i <= 5; i++) memory[0x200 + i] = hello[i];
@@ -103,7 +103,7 @@ void test_exception_handler() {
     memset(memory, 0, sizeof(memory));
     m68k_init(&cpu, memory, sizeof(memory));
     cpu.sr = 0x2700;
-    cpu.a_regs[7] = 0x1000;
+    cpu.a_regs[7].l = 0x1000;
 
     m68k_write_32(&cpu, 32 * 4, 0x400);
 
@@ -124,7 +124,7 @@ void test_exception_handler() {
         m68k_step(&cpu);
     }
     assert(max_steps > 0);
-    assert(cpu.d_regs[7] == 42);
+    assert(cpu.d_regs[7].l == 42);
     assert(cpu.pc == 0x104);
 
     printf("Integration: Exception handler test passed!\n");
