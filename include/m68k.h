@@ -63,6 +63,7 @@ typedef enum {
 
 typedef union {
     u32 l;
+
     struct {
 #if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
         u16 high;
@@ -105,7 +106,9 @@ typedef struct M68kCpu {
     M68kResetCallback reset_cb;
     M68kTasCallback tas_cb;
     M68kIllgCallback illg_cb;
-} __attribute__((aligned(64))) M68kCpu;
+} __attribute__((aligned(64)
+
+                     )) M68kCpu;
 
 #define M68K_SR_C (1 << 0)
 #define M68K_SR_V (1 << 1)

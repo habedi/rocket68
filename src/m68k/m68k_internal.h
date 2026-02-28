@@ -5,7 +5,8 @@
 
 #include "../../include/m68k.h"
 
-typedef struct {
+typedef struct
+{
     u32 value;
     u32 address;
     bool is_reg;
@@ -38,14 +39,14 @@ void m68k_write_size(M68kCpu* cpu, u32 address, u32 value, M68kSize size);
 
 int m68k_ea_cycles(int mode, int reg, M68kSize size);
 
-u16 m68k_fetch(M68kCpu* cpu);
-u32 fetch_extension(M68kCpu* cpu);
+u16 m68k_fetch(M68kCpu * cpu);
+u32 fetch_extension(M68kCpu * cpu);
 M68kEA m68k_calc_ea(M68kCpu* cpu, int mode, int reg, M68kSize size);
 
 void m68k_push_32(M68kCpu* cpu, u32 value);
-u32 m68k_pop_32(M68kCpu* cpu);
+u32 m68k_pop_32(M68kCpu * cpu);
 void m68k_push_16(M68kCpu* cpu, u16 value);
-u16 m68k_pop_16(M68kCpu* cpu);
+u16 m68k_pop_16(M68kCpu * cpu);
 
 #include <stdnoreturn.h>
 

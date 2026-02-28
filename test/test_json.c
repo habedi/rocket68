@@ -29,6 +29,7 @@ typedef struct {
     uint32_t pc;
     uint32_t prefetch[2];
     uint32_t ram_count;
+
     struct {
         uint32_t addr;
         uint32_t data;
