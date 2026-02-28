@@ -7,5 +7,5 @@ The benchmarks can be run with the following command:
 make bench
 ```
 
-> [NOTE]
+> [!NOTE]
 > At the moment, benchmarks only compare the performance of Rocket 68 with the [Musashi emulator](https://github.com/kstenerud/Musashi).
