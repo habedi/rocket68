@@ -9,11 +9,11 @@
 [![Tests](https://img.shields.io/github/actions/workflow/status/habedi/rocket68/tests.yml?label=tests&style=flat&labelColor=282c34&logo=github)](https://github.com/habedi/rocket68/actions/workflows/tests.yml)
 [![Benchmarks](https://img.shields.io/github/actions/workflow/status/habedi/rocket68/benchmarks.yml?label=benchmarks&style=flat&labelColor=282c34&logo=github)](https://github.com/habedi/rocket68/actions/workflows/benchmarks.yml)
 [![Code Coverage](https://img.shields.io/codecov/c/github/habedi/rocket68?label=coverage&style=flat&labelColor=282c34&logo=codecov)](https://codecov.io/gh/habedi/rocket68)
-[![Docs](https://img.shields.io/badge/docs-latest-007ec6?label=docs&style=flat&labelColor=282c34&logo=readthedocs)](docs)
+[![Docs](https://img.shields.io/badge/docs-latest-007ec6?label=docs&style=flat&labelColor=282c34&logo=readthedocs)](https://habedi.github.io/rocket68/)
 [![License](https://img.shields.io/badge/license-MIT-007ec6?label=license&style=flat&labelColor=282c34&logo=open-source-initiative)](LICENSE)
 [![Release](https://img.shields.io/github/release/habedi/rocket68.svg?label=release&style=flat&labelColor=282c34&logo=github)](https://github.com/habedi/rocket68/releases/latest)
 
-A fast and accurate Motorola 68000 CPU emulator in C
+A Motorola 68000 CPU emulator in C
 
 </div>
 
@@ -21,11 +21,11 @@ A fast and accurate Motorola 68000 CPU emulator in C
 
 Rocket 68 is a Motorola 68000 CPU emulator written in pure C11.
 It supports all the instructions and addressing modes of the 68000 CPU, plus system control features like supervisor mode, interrupts, and exceptions.
-It is also runs as a similar clock cycle to the real 68000 CPU with good accuracy.
+It is also runs as a similar clock cycle to the real 68000 CPU with very good accuracy.
 
 ### Features
 
-- Have a clean API and easy to integrate into other projects
+- Have a simple API and easy to integrate into other projects
 - Supports all Motorola 68000 instructions and different addressing modes
 - Near-exact cycle timing (which means emulation speed is very close to the real 68000 CPU clock speed)
 - Full hardware interrupt support (with auto-vectoring, address error traps, trace mode, and halted states)
@@ -47,7 +47,12 @@ To be added.
 
 ### Documentation
 
-To be added.
+The project documentation is available [here](https://habedi.github.io/rocket68/).
+The detailed API documentation (generated with Doxygen) is available [here](https://habedi.github.io/rocket68/doxygen/index.html).
+
+### Benchmarks
+
+The [benches](benches) directory contains benchmarks for comparing Rocket 68 with other emulators.
 
 ---
 

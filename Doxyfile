@@ -4,28 +4,29 @@
 #---------------------------------------------------------------------------
 # Project related settings
 #---------------------------------------------------------------------------
-PROJECT_NAME       = "My Project"
-OUTPUT_DIRECTORY   = docs
+PROJECT_NAME       = "Rocket 68"
+PROJECT_BRIEF      = "A Motorola 68000 CPU emulator in C"
+OUTPUT_DIRECTORY   = site
 CREATE_SUBDIRS     = NO
 
 #---------------------------------------------------------------------------
 # Input settings
 #---------------------------------------------------------------------------
 INPUT              = .
-FILE_PATTERNS      = *.c *.h *.cpp *.hpp
+FILE_PATTERNS      = *.c *.h
 RECURSIVE          = YES
 EXTRACT_ALL        = YES
-EXCLUDE_PATTERNS   = tests tmp
+EXCLUDE_PATTERNS   = test benches external tmp
 
 #---------------------------------------------------------------------------
 # Output formats
 #---------------------------------------------------------------------------
-# HTML output will be placed in docs/html
+# HTML output will be placed in `site/doxygen`
 GENERATE_HTML      = YES
-HTML_OUTPUT        = html
+HTML_OUTPUT        = doxygen
 
 # LaTeX output will be placed in docs/latex
-GENERATE_LATEX     = YES
+GENERATE_LATEX     = NO
 LATEX_OUTPUT       = latex
 
 #---------------------------------------------------------------------------

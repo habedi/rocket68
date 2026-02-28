@@ -148,3 +148,4 @@ tmp_test/
 obj_coverage/
 bin_coverage/
 core.*
+site/

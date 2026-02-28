@@ -191,9 +191,15 @@ lint: ## Run linter checks
 	fi
 
 .PHONY: docs
-docs: ## Generate documentation with Doxygen
+docs: ## Generate project documentation (Doxygen and MkDocs)
 	@echo "Generating documentation..."
+	mkdocs build
 	doxygen Doxyfile
+
+.PHONY: docs-serve
+docs-serve: docs ## Serve Vq MkDocs locally
+	@echo "Serving documentation locally..."
+	python -m http.server --directory ./site
 
 .PHONY: coverage
 coverage: $(COVERAGE_TEST_BINARY) ## Generate code coverage report
@@ -237,7 +243,7 @@ zig-bench: ## Run benchmarks using Zig build system
 clean: ## Remove all build artifacts
 	@echo "Cleaning up..."
 	rm -rf $(BIN_DIR) $(TARGET_DIR) $(LIB_DIR) $(COVERAGE_BIN_DIR) $(COVERAGE_TARGET_DIR) *.gcno *.gcda *.gcov *.out *.o *.a *.so *.d
-	rm -rf $(DOC_DIR)/html $(DOC_DIR)/latex Doxyfile.bak
+	rm -rf site Doxyfile.bak zig-out .zig-cache
 
 .PHONY: clean-coverage
 clean-coverage: ## Remove coverage build artifacts only
@@ -248,7 +254,9 @@ clean-coverage: ## Remove coverage build artifacts only
 install-deps: ## Install system and development dependencies (for Debian-based OSes)
 	@echo "Installing system dependencies..."
 	sudo apt-get update
-	sudo apt-get install -y gcc g++ clang clang-format clang-tidy doxygen cppcheck valgrind gdb
+	sudo apt-get install -y gcc g++ clang clang-format clang-tidy doxygen cppcheck valgrind gdb python3-pip snap
+	pip install uv
+	sudo snap install --classic --beta zig
 
 .PHONY: setup-hooks
 setup-hooks: ## Install Git hooks (pre-commit and pre-push)
