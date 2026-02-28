@@ -61,7 +61,7 @@ cd rocket68
 BUILD_TYPE=release make all
 ```
 
-3. Include the header file (from `include` directory) in your project and link against the files in the `lib` directory:
+3. Include the header file (from `include` directory) in your project and link against the library file in the `lib` directory:
 
 ```
 # Example compilation command on Linux:

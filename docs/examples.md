@@ -1,13 +1,12 @@
 # Real-World Scenario
 
-Below is an example of setting up a tiny, self-contained run cycle for `rocket68`. In a real emulator like an Amiga or Sega Genesis, your bus and
-interrupt callbacks would coordinate access to video RAM, cartridges, or sound chips instead of using a flat RAM allocation.
+This example sets up a minimal execution loop for Rocket 68 with host callbacks.
 
 ```c
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "m68k.h"
+#include "rocket68.h"
 
 // 1) Define a simple interrupt system
 int my_int_ack(M68kCpu* cpu, int level) {
@@ -24,8 +23,11 @@ int my_illg_cb(M68kCpu* cpu, int opcode) {
 int main() {
     u32 memory_size = 64 * 1024; // 64 KB
     u8* ram = calloc(memory_size, 1);
+    if (!ram) {
+        return 1;
+    }
 
-    // Mock an instruction at address 0x1000:
+    // Place instructions at 0x1000:
     // 0x1000: NOP (0x4e71)
     // 0x1002: STOP #$2000 (0x4e72, 0x2000)
     ram[0x1000] = 0x4e; ram[0x1001] = 0x71; 
@@ -39,9 +41,9 @@ int main() {
     m68k_set_int_ack_callback(&core, my_int_ack);
     m68k_set_illg_callback(&core, my_illg_cb);
 
-    // Simulate bootloader dropping us at 0x1000
+    // Set initial state directly for this example
     m68k_set_pc(&core, 0x1000);
-    m68k_set_sr(&core, 0x2700); // Supervisor, interrupts masked
+    m68k_set_sr(&core, 0x2700);
 
     int cycles_burned = m68k_execute(&core, 100);
 

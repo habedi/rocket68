@@ -1,7 +1,7 @@
 # API Reference
 
-The primary interaction with Rocket 68 revolves around the `M68kCpu` struct and its management functions. Since Rocket is purely decoupled, all API
-signatures require a pointer to the context being emulated.
+The primary interaction with Rocket 68 uses `M68kCpu` and API functions from `include/m68k.h`.
+Most API functions take `M68kCpu* cpu`. The exception is `m68k_context_size(void)`.
 
 ---
 
@@ -9,27 +9,36 @@ signatures require a pointer to the context being emulated.
 
 ### `M68kCpu`
 
-The `M68kCpu` is a 64-byte aligned data structure representing the entire state of a single Motorola 68000 microchip.
+`M68kCpu` is a 64-byte aligned structure that stores one emulated CPU instance.
 
 ```c
 typedef struct M68kCpu {
     M68kRegister d_regs[8]; // Data registers D0-D7
     M68kRegister a_regs[8]; // Address registers A0-A7
     u32 pc;                 // Program Counter
+    u32 ppc;                // Previous Program Counter
     u16 sr;                 // Status Register
+    u16 ir;                 // Current instruction register
     // ... Internal execution state
 } __attribute__((aligned(64))) M68kCpu;
 ```
 
 ### `M68kRegister`
 
-A standard C11 anonymous union used to quickly extract 16-bit or 32-bit components natively based on platform endianness.
+`M68kRegister` stores one register value with 32-bit and 16-bit access.
+The `w` field maps to the low 16 bits.
 
 ```c
 typedef union {
     u32 l;
     struct {
+#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+        u16 high;
         u16 w;
+#else
+        u16 w;    // low 16 bits
+        u16 high; // high 16 bits
+#endif
     };
 } M68kRegister;
 ```
@@ -49,7 +58,7 @@ Usage:
 void m68k_init(M68kCpu* cpu, u8* memory, u32 memory_size);
 ```
 
-Initializes the CPU struct and binds it to a standard flat byte array representing physical RAM boundaries.
+Initializes CPU state and binds the CPU instance to a flat memory buffer.
 
 ### `m68k_reset`
 
@@ -57,8 +66,8 @@ Initializes the CPU struct and binds it to a standard flat byte array representi
 void m68k_reset(M68kCpu* cpu);
 ```
 
-Executes a hard reset. Populates the `pc` and `ssp` registers by fetching 32-bit vectors from address `0x00` and `0x04` respectively.
-Executes a hard reset. Populates the `ssp` and `pc` registers by fetching 32-bit vectors from address `0x00` and `0x04` respectively.
+Executes a reset sequence.
+Loads `A7` (supervisor stack pointer) from `0x00000000` and `PC` from `0x00000004`.
 
 ### `m68k_execute`
 
@@ -66,14 +75,25 @@ Executes a hard reset. Populates the `ssp` and `pc` registers by fetching 32-bit
 int m68k_execute(M68kCpu* cpu, int cycles);
 ```
 
-Burns CPU cycles by executing instructions. The emulator will run until `cycles` drops to or below zero. Returns the total number of cycles actually
-consumed.
+Executes instructions until the current timeslice is exhausted.
+Returns the number of cycles consumed by this call.
+
+### Other frequently used APIs
+
+```c
+void m68k_set_pc(M68kCpu* cpu, u32 pc);
+u32 m68k_get_pc(M68kCpu* cpu);
+void m68k_set_sr(M68kCpu* cpu, u16 new_sr);
+void m68k_set_irq(M68kCpu* cpu, int level);
+int m68k_cycles_run(M68kCpu* cpu);
+int m68k_cycles_remaining(M68kCpu* cpu);
+```
 
 ---
 
 ## I/O Callbacks
 
-Rocket 68 achieves architectural decoupling through callbacks installed directly on the CPU structure. None of these are globally bound.
+Callbacks are stored per CPU instance. They are not global.
 
 ```c
 // Emulate wait states on the bus
@@ -87,4 +107,10 @@ void m68k_set_fc_callback(M68kCpu* cpu, void (*fn)(M68kCpu* c, unsigned int fc))
 
 // Trace PC changes
 void m68k_set_pc_changed_callback(M68kCpu* cpu, void (*fn)(M68kCpu* c, u32 pc));
+
+// Other callbacks
+void m68k_set_instr_hook_callback(M68kCpu* cpu, void (*fn)(M68kCpu* c, u32 pc));
+void m68k_set_reset_callback(M68kCpu* cpu, void (*fn)(M68kCpu* c));
+void m68k_set_tas_callback(M68kCpu* cpu, int (*fn)(M68kCpu* c));
+void m68k_set_illg_callback(M68kCpu* cpu, int (*fn)(M68kCpu* c, int opcode));
 ```

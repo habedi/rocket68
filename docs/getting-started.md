@@ -1,25 +1,25 @@
 # Getting Started
 
-Rocket 68 can be used as a standalone Motorola 68000 emulator or integrated into other projects.
+Rocket 68 can run standalone or inside a host emulator.
 
 ## 1. Integration
 
-The simplest way to use Rocket 68 is to just drop the source files into your build system.
+You can add Rocket 68 source files to your build system.
 
 **Required files:**
 
-- `include/m68k.h` (The primary API header)
-- `src/m68k/*.c` (The core execution units and opcodes)
+- `include/m68k.h` (primary CPU API)
+- `src/m68k/*.c` (CPU core implementation)
 
 Compile it with any C11-compliant compiler:
 
 ```bash
-gcc -std=c11 -O3 -c src/m68k/*.c
+gcc -std=c11 -O3 -Iinclude -c src/m68k/*.c
 ```
 
 ## 2. Initialization
 
-Before the emulator can run, you must instantiate the `M68kCpu` context object and provide it with memory.
+Before execution, create `M68kCpu` and bind memory.
 
 ```c
 #include "m68k.h"
@@ -29,11 +29,14 @@ int main() {
     // 1. Allocate your memory map (e.g., 16 MB of RAM)
     u32 mem_size = 16 * 1024 * 1024;
     u8* ram = malloc(mem_size);
+    if (!ram) {
+        return 1;
+    }
 
     // 2. Instantiate the CPU state
     M68kCpu cpu;
 
-    // 3. Initialize the emulator internals
+    // 3. Initialize CPU state
     m68k_init(&cpu, ram, mem_size);
 
     return 0;
@@ -42,15 +45,16 @@ int main() {
 
 ## 3. Hooking up the I/O Bus
 
-Rocket 68 knows how to execute instructions, but it relies on your host application to handle physical hardware mapping. You must wire up the
-callbacks to interface with the outside world.
+Rocket 68 executes instructions and calls host callbacks for bus and platform behavior.
 
-Because Rocket 68 is fully decoupled, every callback function takes the `cpu` instance as its first argument.
+Each callback takes `M68kCpu* cpu` as its first argument.
 
 ```c
-// Define your custom bus logic
+// Define bus timing behavior
 void my_wait_bus(M68kCpu* cpu, u32 address, M68kSize size) {
-    // Determine how many cycles were burned accessing this memory
+    (void)address;
+    (void)size;
+    // Account for memory access wait states
     cpu->cycles_remaining -= 2; 
 }
 
@@ -65,11 +69,13 @@ int main() {
 
 ## 4. Execution
 
-Once initialized, the emulator simply fetches and executes instructions in a loop.
-A "Reset" must be issued first to boot the CPU from its reset vectors (SSP at `0x00`, PC at `0x04`).
+After initialization, start execution by either:
+
+1. calling `m68k_reset` to load vectors from memory address `0x00000000` and `0x00000004`, or
+2. setting registers manually (`m68k_set_pc`, `m68k_set_sr`, and stack state as needed).
 
 ```c
-// Force a hardware reset to load PC and SSP
+// Load initial A7/PC vectors from memory
 m68k_reset(&cpu);
 
 // Execute roughly 100,000 cycles
