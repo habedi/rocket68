@@ -1,3 +1,7 @@
+/**
+ * @file ops_bit.c
+ * @brief Bit manipulation opcode implementations.
+ */
 #include "m68k_internal.h"
 
 static u32 get_bit_mask(int bit_num, bool is_register) {

@@ -1,3 +1,7 @@
+/**
+ * @file m68k_internal.h
+ * @brief Internal declarations for opcode handlers and core helpers.
+ */
 #ifndef M68K_INTERNAL_H
 #define M68K_INTERNAL_H
 
@@ -5,12 +9,13 @@
 
 #include "../../include/m68k.h"
 
+/** @brief Effective-address resolution result used by opcode handlers. */
 typedef struct {
-    u32 value;
-    u32 address;
-    bool is_reg;
-    int reg_num;
-    bool is_addr;
+    u32 value;    /**< Loaded EA value. */
+    u32 address;  /**< Computed EA address when applicable. */
+    bool is_reg;  /**< True when EA targets a register. */
+    int reg_num;  /**< Register index for register EAs. */
+    bool is_addr; /**< True when register EA is an address register. */
 } M68kEA;
 
 u8 m68k_read_8(M68kCpu* cpu, u32 address);

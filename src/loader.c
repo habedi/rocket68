@@ -1,3 +1,7 @@
+/**
+ * @file loader.c
+ * @brief S-record and binary loader implementation.
+ */
 #include "loader.h"
 
 #include <ctype.h>

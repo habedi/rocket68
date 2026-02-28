@@ -1,3 +1,7 @@
+/**
+ * @file ops_control.c
+ * @brief Control-flow and privileged opcode implementations.
+ */
 #include "m68k_internal.h"
 
 bool m68k_check_condition(M68kCpu* cpu, int condition) {

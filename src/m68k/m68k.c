@@ -1,3 +1,7 @@
+/**
+ * @file m68k.c
+ * @brief Core CPU state, memory access, execution, and exception handling.
+ */
 #include <stdio.h>
 #include <string.h>
 

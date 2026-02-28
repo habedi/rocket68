@@ -1,3 +1,7 @@
+/**
+ * @file ops_logic.c
+ * @brief Logical and bitwise opcode implementations.
+ */
 #include "m68k_internal.h"
 
 void m68k_exec_and(M68kCpu* cpu, u16 opcode) {

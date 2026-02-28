@@ -1,3 +1,7 @@
+/**
+ * @file ops_arith.c
+ * @brief Arithmetic opcode implementations.
+ */
 #include "m68k_internal.h"
 
 void m68k_exec_add(M68kCpu* cpu, u16 opcode) {
