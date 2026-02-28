@@ -258,6 +258,16 @@ install-deps: ## Install system and development dependencies (for Debian-based O
 	pip install uv
 	sudo snap install --classic --beta zig
 
+.PHONY: nix-shell
+nix-shell: ## Enter the Nix development environment
+	@echo "Entering Nix development shell..."
+	nix develop
+
+.PHONY: nix-build
+nix-build: ## Build the project using Nix
+	@echo "Building project with Nix..."
+	nix build
+
 .PHONY: setup-hooks
 setup-hooks: ## Install Git hooks (pre-commit and pre-push)
 	@echo "Installing Git hooks..."
