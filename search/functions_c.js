@@ -1,8 +1,0 @@
-var searchData=
-[
-  ['perror_5fexit_0',['perror_exit',['../example_2m68kmake_8c.html#ae1135d8bdba98deecf14685ab8f12786',1,'perror_exit(const char *fmt,...):&#160;m68kmake.c'],['../m68kmake_8c.html#ae1135d8bdba98deecf14685ab8f12786',1,'perror_exit(const char *fmt,...):&#160;m68kmake.c']]],
-  ['pmmu_5ftranslate_5faddr_1',['pmmu_translate_addr',['../example_2m68kcpu_8h.html#a57fc470329f8411341503d526dba6d29',1,'pmmu_translate_addr(uint addr_in):&#160;m68kmmu.h'],['../example_2m68kmmu_8h.html#a57fc470329f8411341503d526dba6d29',1,'pmmu_translate_addr(uint addr_in):&#160;m68kmmu.h'],['../m68kcpu_8h.html#a57fc470329f8411341503d526dba6d29',1,'pmmu_translate_addr(uint addr_in):&#160;m68kmmu.h'],['../m68kmmu_8h.html#a57fc470329f8411341503d526dba6d29',1,'pmmu_translate_addr(uint addr_in):&#160;m68kmmu.h']]],
-  ['populate_5ftable_2',['populate_table',['../example_2m68kmake_8c.html#aa2245619cdbb46b0632cfbf8c8415238',1,'populate_table(void):&#160;m68kmake.c'],['../m68kmake_8c.html#aa2245619cdbb46b0632cfbf8c8415238',1,'populate_table(void):&#160;m68kmake.c']]],
-  ['print_5fopcode_5foutput_5ftable_3',['print_opcode_output_table',['../example_2m68kmake_8c.html#aa474a09e2961bde23858a1a34c845928',1,'print_opcode_output_table(FILE *filep):&#160;m68kmake.c'],['../m68kmake_8c.html#aa474a09e2961bde23858a1a34c845928',1,'print_opcode_output_table(FILE *filep):&#160;m68kmake.c']]],
-  ['process_5fopcode_5fhandlers_4',['process_opcode_handlers',['../example_2m68kmake_8c.html#ac172254e4fb8f08b03d009d4901ce1dc',1,'process_opcode_handlers(FILE *filep):&#160;m68kmake.c'],['../m68kmake_8c.html#ac172254e4fb8f08b03d009d4901ce1dc',1,'process_opcode_handlers(FILE *filep):&#160;m68kmake.c']]]
-];
