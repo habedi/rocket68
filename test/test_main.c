@@ -66,6 +66,16 @@ int main() {
     test_logic_ccr_sr();
     test_logic_not();
 
+    test_movec();
+    test_trapv();
+    test_rtd();
+    test_bkpt();
+    test_move_sr();
+    test_move_ccr();
+    test_move_usp();
+    test_moves();
+    test_andi_ori_eori();
+
     extern void run_loader_tests();
     run_loader_tests();
 
