@@ -100,8 +100,8 @@ Please consider the following when reviewing code contributions.
 
 ### Testing
 
-* Ensure all new opcodes or execution workflows have corresponding tests. **We do not merge code without tests.**
-* Run `make bench` on any core loop changes to ensure 68k emulation speeds do not regress.
+* Make sure all new opcodes or execution workflows have corresponding tests. **We do not merge code without tests.**
+* Run `make bench` on any core loop changes to make sure 68k emulation speeds do not regress.
 
 ### Documentation
 
