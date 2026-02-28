@@ -64,7 +64,7 @@ BUILD_TYPE=release make all
 3. Include the header file (from `include` directory) in your project and link with the files in the `lib` directory:
 
 ```
-// Example compilation command on Linux:
+# Example compilation command on Linux:
 gcc -o main main.c -Iinclude lib/librocket68.a
 ```
 
