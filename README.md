@@ -81,7 +81,7 @@ int main(void) {
     if (!ram) return 1;
 
     M68kCpu cpu;
-    m68k_init(&cpu, ram, mem_size); 
+    m68k_init(&cpu, ram, mem_size);
 
     // A tiny M68k program (machine code)
     u8 program[] = {
@@ -95,7 +95,7 @@ int main(void) {
         0x13, 0xFC, 0x00, 'i', 0x00, 0x00, 0x01, 0x01,
         // MOVE.B #'\n', $00000102
         0x13, 0xFC, 0x00, '\n', 0x00, 0x00, 0x01, 0x02,
-        
+
         // STOP #$2700 -> Halt the CPU
         0x4E, 0x72, 0x27, 0x00
     };

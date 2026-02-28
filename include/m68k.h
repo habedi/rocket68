@@ -79,7 +79,9 @@ typedef struct M68kCpu {
     M68kRegister d_regs[8];
     M68kRegister a_regs[8];
     u32 pc;
+    u32 ppc;
     u16 sr;
+    u16 ir;
 
     u8* memory;
     u32 memory_size;
@@ -92,6 +94,11 @@ typedef struct M68kCpu {
     int exception_thrown;
     bool in_address_error;
     bool in_bus_error;
+    u32 fault_address;
+    u16 fault_ir;
+    u16 fault_ssw;
+    bool fault_program_access;
+    bool fault_valid;
 
     u32 vbr;
     u32 sfc;
