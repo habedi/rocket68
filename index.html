@@ -67,7 +67,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-orange" data-md-color-accent="amber">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -123,7 +123,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-orange" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -133,7 +133,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-orange" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -415,28 +415,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#why-c11" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Why C11?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
-      
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -563,28 +541,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#why-c11" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Why C11?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
-      
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -610,22 +566,17 @@
   <img src="https://raw.githubusercontent.com/habedi/rocket68/main/logo.svg" alt="Project Logo" width="200" />
 </p>
 
-<p><strong>Rocket 68</strong> is a modern, fast, and cycle-accurate emulator core for the Motorola 68000 microprocessor, written entirely in standard C11. </p>
-<p>Designed for both embedded systems and advanced multi-threaded emulation environments, Rocket 68 prioritizes <strong>cache locality</strong>, <strong>safety</strong>, and <strong>architectural decoupling</strong> to serve as the perfect powerhouse for your next retro console or homebrew project.</p>
-<hr />
-<h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
+<p>Rocket 68 is a Motorola 68000 CPU emulator written in pure C11.
+It supports all the instructions and addressing modes of the 68000 CPU, plus system control features like supervisor mode, interrupts, and exceptions.
+It is also runs as a similar clock cycle to the real 68000 CPU with very good accuracy.</p>
+<h3 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Strict C11 Modernization:</strong> Built using standard <code>&lt;assert.h&gt;</code> sizing checks, anonymous register unions for safe endianness abstraction, and type-safe <code>_Generic</code> macros for clean memory access.</li>
-<li><strong>Architecturally Decoupled:</strong> Unlike older emulators that rely on messy global states, Rocket 68 explicitly passes an <code>M68kCpu*</code> context instance to every single cycle and I/O callback. You can securely run a dozen virtual machines in the same process on different threads without cross-contamination.</li>
-<li><strong>Cache Aligned:</strong> The core <code>M68kCpu</code> struct is enforced with 64-byte <code>__attribute__((aligned(64)))</code> boundary padding to prevent cache-line thrashing and hardware penalties during the hot emulation loop.</li>
-<li><strong>Cycle-Accurate Precision:</strong> Carefully tested timings and execution sequences mirroring the exact pipeline delays of real M68k silicon.</li>
-<li><strong>Save State Ready:</strong> Native context block serialization for rapid game freeze and resume capabilities.</li>
+<li>Have a simple API and easy to integrate into other projects</li>
+<li>Supports all Motorola 68000 instructions and different addressing modes</li>
+<li>Near-exact cycle timing (which means emulation speed is very close to the real 68000 CPU clock speed)</li>
+<li>Full hardware interrupt support (with auto-vectoring, address error traps, trace mode, and halted states)</li>
+<li>Built-in instruction disassembler and support for loading binary and S-record programs</li>
 </ul>
-<h2 id="why-c11">Why C11?<a class="headerlink" href="#why-c11" title="Permanent link">&para;</a></h2>
-<p>Rocket 68 was heavily refactored from legacy C99 definitions into standardized C11 functionality. This allows developers to construct concurrent emulation environments using <code>&lt;stdatomic.h&gt;</code> and <code>_Thread_local</code> without worrying about legacy compiler undefined behaviors or clashing global execution vectors.</p>
-<hr />
-<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
-<p>Head over to the <a href="getting-started/">Getting Started</a> guide to learn how to hook the emulator up to your own memory maps and I/O bus!</p>
 
 
 
