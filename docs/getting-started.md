@@ -63,7 +63,7 @@ int main() {
 ## 4. Execution
 
 Once initialized, the emulator simply fetches and executes instructions in a loop.
-A "Reset" must be issued first to boot the CPU from its reset vectors (Address `0x00` and `0x04`).
+A "Reset" must be issued first to boot the CPU from its reset vectors (SSP at `0x00`, PC at `0x04`).
 
 ```c
 // Force a hardware reset to load PC and SSP
