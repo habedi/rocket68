@@ -1,3 +1,7 @@
+/**
+ * @file ops_move.c
+ * @brief Data movement opcode implementations.
+ */
 #include "m68k_internal.h"
 
 void m68k_exec_move(M68kCpu* cpu, u16 opcode) {
@@ -23,7 +27,7 @@ void m68k_exec_move(M68kCpu* cpu, u16 opcode) {
     int src_reg = opcode & 0x7;
 
     M68kEA src_ea = m68k_calc_ea(cpu, src_mode, src_reg, size);
-    M68kEA dest_ea = m68k_calc_ea(cpu, dest_mode, dest_reg, size);
+    M68kEA dest_ea = m68k_calc_ea_addr(cpu, dest_mode, dest_reg, size);
 
     if (dest_ea.is_reg && !dest_ea.is_addr) {
         u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
@@ -68,7 +72,7 @@ void m68k_exec_lea(M68kCpu* cpu, u16 opcode) {
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
 
-    M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_LONG);
+    M68kEA ea = m68k_calc_ea_addr(cpu, mode, reg, SIZE_LONG);
     cpu->a_regs[reg_idx].l = ea.address;
 }
 
@@ -76,7 +80,7 @@ void m68k_exec_pea(M68kCpu* cpu, u16 opcode) {
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
 
-    M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_LONG);
+    M68kEA ea = m68k_calc_ea_addr(cpu, mode, reg, SIZE_LONG);
     m68k_push_32(cpu, ea.address);
 }
 
@@ -117,7 +121,8 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
         cpu->a_regs[reg].l -= count * step;
         addr = cpu->a_regs[reg].l;
     } else {
-        ea = m68k_calc_ea(cpu, mode, reg, size);
+        ea = dir_mem_to_reg ? m68k_calc_ea(cpu, mode, reg, size)
+                            : m68k_calc_ea_addr(cpu, mode, reg, size);
         addr = ea.address;
     }
 
@@ -219,7 +224,7 @@ void m68k_exec_move_sr(M68kCpu* cpu, u16 opcode) {
     if ((opcode & 0xFFC0) == 0x40C0) {
         int mode = (opcode >> 3) & 0x7;
         int reg = opcode & 0x7;
-        M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_WORD);
+        M68kEA ea = m68k_calc_ea_addr(cpu, mode, reg, SIZE_WORD);
 
         if (ea.is_reg && !ea.is_addr) {
             cpu->d_regs[ea.reg_num].l = (cpu->d_regs[ea.reg_num].l & 0xFFFF0000) | cpu->sr;
@@ -318,7 +323,8 @@ void m68k_exec_moves(M68kCpu* cpu, u16 opcode) {
 
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
-    M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
+    M68kEA ea =
+        to_ea ? m68k_calc_ea_addr(cpu, mode, reg, size) : m68k_calc_ea(cpu, mode, reg, size);
 
     if (to_ea) {
         u32 val = is_addr ? cpu->a_regs[reg_num].l : cpu->d_regs[reg_num].l;

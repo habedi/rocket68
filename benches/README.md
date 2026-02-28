@@ -8,4 +8,4 @@ make bench
 ```
 
 > [!NOTE]
-> At the moment, benchmarks only compare the performance of Rocket 68 with the [Musashi emulator](https://github.com/kstenerud/Musashi).
+> At the moment, benchmarks only compare the performance of Rocket 68 with the [Musashi](https://github.com/kstenerud/Musashi) emulator.

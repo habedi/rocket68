@@ -1,3 +1,7 @@
+/**
+ * @file ops_logic.c
+ * @brief Logical and bitwise opcode implementations.
+ */
 #include "m68k_internal.h"
 
 void m68k_exec_and(M68kCpu* cpu, u16 opcode) {
@@ -218,7 +222,12 @@ void m68k_exec_clr(M68kCpu* cpu, u16 opcode) {
             return;
     }
 
-    M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
+    M68kEA ea = m68k_calc_ea_addr(cpu, mode, reg, size);
 
     if (ea.is_reg && !ea.is_addr) {
         u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;

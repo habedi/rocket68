@@ -44,7 +44,7 @@ See [ROADMAP.md](ROADMAP.md) for the list of implemented and planned features.
 1. Clone the repository
 
 ```bash
-git https://github.com/habedi/rocket68
+git clone https://github.com/habedi/rocket68
 cd rocket68
 ```
 
@@ -61,7 +61,7 @@ cd rocket68
 BUILD_TYPE=release make all
 ```
 
-3. Include the header file (from `include` directory) in your project and link with the files in the `lib` directory:
+3. Include the header file (from `include` directory) in your project and link against the library file in the `lib` directory:
 
 ```
 # Example compilation command on Linux:
@@ -72,30 +72,52 @@ gcc -o main main.c -Iinclude lib/librocket68.a
 // main.c
 #include <rocket68.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 int main(void) {
     u32 mem_size = 1024 * 1024; // 1 MB
     u8* ram = calloc(mem_size, 1);
     if (!ram) return 1;
 
-    M68kCpu cpu; // Create a new CPU instance
-    m68k_init(&cpu, ram, mem_size); // Initialize the CPU
+    M68kCpu cpu;
+    m68k_init(&cpu, ram, mem_size);
 
-    // Reset vector layout:
-    //   0x00000000: initial SSP (32-bit)
-    //   0x00000004: initial PC  (32-bit)
+    // A tiny M68k program (machine code)
+    u8 program[] = {
+        // Initial SSP = 0x00080000, Initial PC = 0x00000008
+        0x00, 0x08, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x08,
+
+        // MOVE.B #'H', $00000100
+        0x13, 0xFC, 0x00, 'H', 0x00, 0x00, 0x01, 0x00,
+        // MOVE.B #'i', $00000101
+        0x13, 0xFC, 0x00, 'i', 0x00, 0x00, 0x01, 0x01,
+        // MOVE.B #'\n', $00000102
+        0x13, 0xFC, 0x00, '\n', 0x00, 0x00, 0x01, 0x02,
+
+        // STOP #$2700 -> Halt the CPU
+        0x4E, 0x72, 0x27, 0x00
+    };
+
+    // Load the program into the beginning of RAM
+    memcpy(ram, program, sizeof(program));
+
+    // Reset CPU (this causes it to read the SSP and PC from address 0)
     m68k_reset(&cpu);
 
-    // Execute a time slice of 1000 cycles
+    // Execute up to 1000 cycles (or until STOP instruction)
     int cycles_executed = m68k_execute(&cpu, 1000);
-    (void)cycles_executed;
+
+    printf("Guest wrote: %c%c%c", ram[0x100], ram[0x101], ram[0x102]);
+    printf("Finished in %d cycles. CPU halted at PC: 0x%08X\n", cycles_executed, (unsigned int)cpu.pc);
 
     free(ram);
     return 0;
 }
 ```
 
-4. Check out the Makefile (optional)
+4. Check out the [Makefile](Makefile) (optional)
 
 You can run the `make help` command to see the available targets and options including the targets for running different tests suites.
 
@@ -110,12 +132,12 @@ The detailed API documentation (generated with Doxygen) is available [here](http
 
 This project includes the following header files (available in the [include](include) directory):
 
-| File | Description |
-| --- | --- |
-| `m68k.h` | This is the main API header for the CPU core execution, callbacks, and management. |
-| `disasm.h` | The built-in instruction disassembler API for formatting opcodes into text. |
-| `loader.h` | Utilities for loading raw binaries and Motorola S-record files into memory for execution. |
-| `rocket68.h` | A header that includes all the components (CPU, disassembler, and loader) in one file. |
+| File                             | Description                                                                               |
+|----------------------------------|-------------------------------------------------------------------------------------------|
+| [m68k.h](include/m68k.h)         | This is the main API header for the CPU core execution, callbacks, and management.        |
+| [disasm.h](include/disasm.h)     | The built-in instruction disassembler API for formatting opcodes into text.               |
+| [loader.h](include/loader.h)     | Utilities for loading raw binaries and Motorola S-record files into memory for execution. |
+| [rocket68.h](include/rocket68.h) | A header that includes all the components (CPU, disassembler, and loader) in one file.    |
 
 > [!NOTE]
 > It's recommended to use the `rocket68.h` header file instead of including the individual header files for most use cases.

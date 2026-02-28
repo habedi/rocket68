@@ -225,6 +225,7 @@ void test_interrupts() {
 }
 
 static int mock_iack_vector = 0;
+
 static int mock_int_ack_cb(M68kCpu* cpu, int level) {
     (void)level;
     return mock_iack_vector;
@@ -405,6 +406,7 @@ void test_hooks() {
 }
 
 static M68kCpu* timeslice_test_cpu = NULL;
+
 static void timeslice_hook(M68kCpu* cpu, u32 pc) {
     (void)pc;
     m68k_end_timeslice(timeslice_test_cpu);

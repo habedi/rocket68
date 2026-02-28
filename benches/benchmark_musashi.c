@@ -10,17 +10,21 @@
 uint8_t memory[0x10000];
 
 unsigned int m68k_read_memory_8(unsigned int address) { return memory[address & 0xFFFF]; }
+
 unsigned int m68k_read_memory_16(unsigned int address) {
     return (memory[address & 0xFFFF] << 8) | memory[(address + 1) & 0xFFFF];
 }
+
 unsigned int m68k_read_memory_32(unsigned int address) {
     return (m68k_read_memory_16(address) << 16) | m68k_read_memory_16(address + 2);
 }
 
 unsigned int m68k_read_disassembler_8(unsigned int address) { return m68k_read_memory_8(address); }
+
 unsigned int m68k_read_disassembler_16(unsigned int address) {
     return m68k_read_memory_16(address);
 }
+
 unsigned int m68k_read_disassembler_32(unsigned int address) {
     return m68k_read_memory_32(address);
 }
@@ -28,10 +32,12 @@ unsigned int m68k_read_disassembler_32(unsigned int address) {
 void m68k_write_memory_8(unsigned int address, unsigned int value) {
     memory[address & 0xFFFF] = value & 0xFF;
 }
+
 void m68k_write_memory_16(unsigned int address, unsigned int value) {
     memory[address & 0xFFFF] = (value >> 8) & 0xFF;
     memory[(address + 1) & 0xFFFF] = value & 0xFF;
 }
+
 void m68k_write_memory_32(unsigned int address, unsigned int value) {
     m68k_write_memory_16(address, value >> 16);
     m68k_write_memory_16(address + 2, value & 0xFFFF);

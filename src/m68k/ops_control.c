@@ -1,3 +1,7 @@
+/**
+ * @file ops_control.c
+ * @brief Control-flow and privileged opcode implementations.
+ */
 #include "m68k_internal.h"
 
 bool m68k_check_condition(M68kCpu* cpu, int condition) {
@@ -96,7 +100,7 @@ void m68k_exec_scc(M68kCpu* cpu, u16 opcode) {
     bool result = m68k_check_condition(cpu, condition);
     u8 val = result ? 0xFF : 0x00;
 
-    M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_BYTE);
+    M68kEA ea = m68k_calc_ea_addr(cpu, mode, reg, SIZE_BYTE);
     if (ea.is_reg && !ea.is_addr) {
         cpu->d_regs[ea.reg_num].l = (cpu->d_regs[ea.reg_num].l & 0xFFFFFF00) | val;
     } else {
@@ -110,7 +114,7 @@ void m68k_exec_jmp(M68kCpu* cpu, u16 opcode) {
 
     bool is_jsr = ((opcode >> 6) & 1) == 0;
 
-    M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_LONG);
+    M68kEA ea = m68k_calc_ea_addr(cpu, mode, reg, SIZE_LONG);
 
     if (is_jsr) {
         m68k_push_32(cpu, cpu->pc);
@@ -193,7 +197,6 @@ void m68k_exec_stop(M68kCpu* cpu, u16 opcode) {
     u16 imm = m68k_fetch(cpu);
     m68k_set_sr(cpu, imm);
     cpu->stopped = true;
-    cpu->pc -= 4;
 }
 
 void m68k_exec_reset(M68kCpu* cpu, u16 opcode) {
