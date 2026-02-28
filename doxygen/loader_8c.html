@@ -79,6 +79,9 @@ $(function() {
   <div class="headertitle"><div class="title">loader.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>S-record and binary loader implementation.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="loader_8h_source.html">loader.h</a>&quot;</code><br />
 <code>#include &lt;ctype.h&gt;</code><br />
 <code>#include &lt;stdio.h&gt;</code><br />
@@ -93,11 +96,15 @@ Include dependency graph for loader.c:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a6210f3ac4701c3cf3fd64ad518a8b62c" id="r_a6210f3ac4701c3cf3fd64ad518a8b62c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loader_8c.html#a6210f3ac4701c3cf3fd64ad518a8b62c">m68k_load_srec</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, const char *filename)</td></tr>
+<tr class="memdesc:a6210f3ac4701c3cf3fd64ad518a8b62c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load Motorola S-record data into CPU memory.  <br /></td></tr>
 <tr class="separator:a6210f3ac4701c3cf3fd64ad518a8b62c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0a1e351c3c99665e88ad62f752935f31" id="r_a0a1e351c3c99665e88ad62f752935f31"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="loader_8c.html#a0a1e351c3c99665e88ad62f752935f31">m68k_load_bin</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, const char *filename, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address)</td></tr>
+<tr class="memdesc:a0a1e351c3c99665e88ad62f752935f31"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load a raw binary file into CPU memory.  <br /></td></tr>
 <tr class="separator:a0a1e351c3c99665e88ad62f752935f31"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>S-record and binary loader implementation. </p>
+</div><h2 class="groupheader">Function Documentation</h2>
 <a id="a0a1e351c3c99665e88ad62f752935f31" name="a0a1e351c3c99665e88ad62f752935f31"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0a1e351c3c99665e88ad62f752935f31">&#9670;&#160;</a></span>m68k_load_bin()</h2>
 
@@ -130,6 +137,17 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Load a raw binary file into CPU memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU instance with bound memory. </td></tr>
+    <tr><td class="paramname">filename</td><td>Path to a binary file. </td></tr>
+    <tr><td class="paramname">address</td><td>Start address in emulated memory. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true on success, false on failure. </dd></dl>
+
 </div>
 </div>
 <a id="a6210f3ac4701c3cf3fd64ad518a8b62c" name="a6210f3ac4701c3cf3fd64ad518a8b62c"></a>
@@ -157,6 +175,16 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Load Motorola S-record data into CPU memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU instance with bound memory. </td></tr>
+    <tr><td class="paramname">filename</td><td>Path to an S-record file. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true on success, false on failure. </dd></dl>
 
 </div>
 </div>

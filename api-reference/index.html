@@ -569,6 +569,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#other-frequently-used-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Other frequently used APIs
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -703,6 +714,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#other-frequently-used-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Other frequently used APIs
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -740,60 +762,87 @@
 
 
 <h1 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
-<p>The primary interaction with Rocket 68 revolves around the <code>M68kCpu</code> struct and its management functions. Since Rocket is purely decoupled, all API signatures require a pointer to the context being emulated.</p>
+<p>The primary interaction with Rocket 68 uses <code>M68kCpu</code> and API functions from <code>include/m68k.h</code>.
+Most API functions take <code>M68kCpu* cpu</code>. The exception is <code>m68k_context_size(void)</code>.</p>
 <hr />
 <h2 id="core-structures">Core Structures<a class="headerlink" href="#core-structures" title="Permanent link">&para;</a></h2>
 <h3 id="m68kcpu"><code>M68kCpu</code><a class="headerlink" href="#m68kcpu" title="Permanent link">&para;</a></h3>
-<p>The <code>M68kCpu</code> is a 64-byte aligned data structure representing the entire state of a single Motorola 68000 microchip.</p>
+<p><code>M68kCpu</code> is a 64-byte aligned structure that stores one emulated CPU instance.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">M68kCpu</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">M68kRegister</span><span class="w"> </span><span class="n">d_regs</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span><span class="w"> </span><span class="c1">// Data registers D0-D7</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="n">M68kRegister</span><span class="w"> </span><span class="n">a_regs</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span><span class="w"> </span><span class="c1">// Address registers A0-A7</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">pc</span><span class="p">;</span><span class="w">                 </span><span class="c1">// Program Counter</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="n">u16</span><span class="w"> </span><span class="n">sr</span><span class="p">;</span><span class="w">                 </span><span class="c1">// Status Register</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="c1">// ... Internal execution state</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">}</span><span class="w"> </span><span class="n">__attribute__</span><span class="p">((</span><span class="n">aligned</span><span class="p">(</span><span class="mi">64</span><span class="p">)))</span><span class="w"> </span><span class="n">M68kCpu</span><span class="p">;</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">ppc</span><span class="p">;</span><span class="w">                </span><span class="c1">// Previous Program Counter</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="n">u16</span><span class="w"> </span><span class="n">sr</span><span class="p">;</span><span class="w">                 </span><span class="c1">// Status Register</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="n">u16</span><span class="w"> </span><span class="n">ir</span><span class="p">;</span><span class="w">                 </span><span class="c1">// Current instruction register</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="c1">// ... Internal execution state</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">}</span><span class="w"> </span><span class="n">__attribute__</span><span class="p">((</span><span class="n">aligned</span><span class="p">(</span><span class="mi">64</span><span class="p">)))</span><span class="w"> </span><span class="n">M68kCpu</span><span class="p">;</span>
 </code></pre></div>
 <h3 id="m68kregister"><code>M68kRegister</code><a class="headerlink" href="#m68kregister" title="Permanent link">&para;</a></h3>
-<p>A standard C11 anonymous union used to quickly extract 16-bit or 32-bit components natively based on platform endianness.
+<p><code>M68kRegister</code> stores one register value with 32-bit and 16-bit access.
+The <code>w</code> field maps to the low 16 bits.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">typedef</span><span class="w"> </span><span class="k">union</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">l</span><span class="p">;</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">        </span><span class="n">u16</span><span class="w"> </span><span class="n">w</span><span class="p">;</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="p">};</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="p">}</span><span class="w"> </span><span class="n">M68kRegister</span><span class="p">;</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="cp">#if defined(__BYTE_ORDER__) &amp;&amp; __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="n">u16</span><span class="w"> </span><span class="n">high</span><span class="p">;</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="n">u16</span><span class="w"> </span><span class="n">w</span><span class="p">;</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="cp">#else</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">        </span><span class="n">u16</span><span class="w"> </span><span class="n">w</span><span class="p">;</span><span class="w">    </span><span class="c1">// low 16 bits</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span><span class="n">u16</span><span class="w"> </span><span class="n">high</span><span class="p">;</span><span class="w"> </span><span class="c1">// high 16 bits</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="cp">#endif</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">    </span><span class="p">};</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="p">}</span><span class="w"> </span><span class="n">M68kRegister</span><span class="p">;</span>
 </code></pre></div>
-Usage:
-- <code>cpu-&gt;d_regs[0].l = 0xFFFF; // Write 32 bits</code>
-- <code>cpu-&gt;d_regs[0].w = 0x00FF; // Write lower 16 bits</code></p>
+<p>Usage:</p>
+<ul>
+<li><code>cpu-&gt;d_regs[0].l = 0xFFFF; // Write 32 bits</code></li>
+<li><code>cpu-&gt;d_regs[0].w = 0x00FF; // Write lower 16 bits</code></li>
+</ul>
 <hr />
 <h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
 <h3 id="m68k_init"><code>m68k_init</code><a class="headerlink" href="#m68k_init" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_init</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="n">u8</span><span class="o">*</span><span class="w"> </span><span class="n">memory</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">memory_size</span><span class="p">);</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_init</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="n">u8</span><span class="o">*</span><span class="w"> </span><span class="n">memory</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">memory_size</span><span class="p">);</span>
 </code></pre></div>
-Initializes the CPU struct and binds it to a standard flat byte array representing physical RAM boundaries.</p>
+<p>Initializes CPU state and binds the CPU instance to a flat memory buffer.</p>
 <h3 id="m68k_reset"><code>m68k_reset</code><a class="headerlink" href="#m68k_reset" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_reset</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">);</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_reset</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">);</span>
 </code></pre></div>
-Executes a hard reset. Populates the <code>pc</code> and <code>ssp</code> registers by fetching 32-bit vectors from address <code>0x00</code> and <code>0x04</code> respectively.
-Executes a hard reset. Populates the <code>ssp</code> and <code>pc</code> registers by fetching 32-bit vectors from address <code>0x00</code> and <code>0x04</code> respectively.</p>
+<p>Executes a reset sequence.
+Loads <code>A7</code> (supervisor stack pointer) from <code>0x00000000</code> and <code>PC</code> from <code>0x00000004</code>.</p>
 <h3 id="m68k_execute"><code>m68k_execute</code><a class="headerlink" href="#m68k_execute" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">int</span><span class="w"> </span><span class="nf">m68k_execute</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">cycles</span><span class="p">);</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">int</span><span class="w"> </span><span class="nf">m68k_execute</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">cycles</span><span class="p">);</span>
 </code></pre></div>
-Burns CPU cycles by executing instructions. The emulator will run until <code>cycles</code> drops to or below zero. Returns the total number of cycles actually consumed.</p>
+<p>Executes instructions until the current timeslice is exhausted.
+Returns the number of cycles consumed by this call.</p>
+<h3 id="other-frequently-used-apis">Other frequently used APIs<a class="headerlink" href="#other-frequently-used-apis" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_pc</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">pc</span><span class="p">);</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">u32</span><span class="w"> </span><span class="nf">m68k_get_pc</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">);</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_sr</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="n">u16</span><span class="w"> </span><span class="n">new_sr</span><span class="p">);</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_irq</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">level</span><span class="p">);</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="kt">int</span><span class="w"> </span><span class="nf">m68k_cycles_run</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">);</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="kt">int</span><span class="w"> </span><span class="nf">m68k_cycles_remaining</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">);</span>
+</code></pre></div>
 <hr />
 <h2 id="io-callbacks">I/O Callbacks<a class="headerlink" href="#io-callbacks" title="Permanent link">&para;</a></h2>
-<p>Rocket 68 achieves architectural decoupling through callbacks installed directly on the CPU structure. None of these are globally bound.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1">// Emulate wait states on the bus</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_wait_bus_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">addr</span><span class="p">,</span><span class="w"> </span><span class="n">M68kSize</span><span class="w"> </span><span class="n">sz</span><span class="p">));</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1">// Respond to Interrupt Acknowledge cycles</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_int_ack_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">level</span><span class="p">));</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1">// Respond to Function Code (FC) changes</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_fc_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">fc</span><span class="p">));</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="c1">// Trace PC changes</span>
-<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_pc_changed_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">pc</span><span class="p">));</span>
+<p>Callbacks are stored per CPU instance. They are not global.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1">// Emulate wait states on the bus</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_wait_bus_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">addr</span><span class="p">,</span><span class="w"> </span><span class="n">M68kSize</span><span class="w"> </span><span class="n">sz</span><span class="p">));</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1">// Respond to Interrupt Acknowledge cycles</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_int_ack_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">level</span><span class="p">));</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1">// Respond to Function Code (FC) changes</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_fc_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">fc</span><span class="p">));</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="c1">// Trace PC changes</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_pc_changed_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">pc</span><span class="p">));</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="c1">// Other callbacks</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_instr_hook_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">pc</span><span class="p">));</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_reset_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">));</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_tas_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">));</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_illg_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">opcode</span><span class="p">));</span>
 </code></pre></div>
 
 

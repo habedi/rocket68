@@ -79,6 +79,9 @@ $(function() {
   <div class="headertitle"><div class="title">disasm.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Public disassembler API for Rocket 68.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="m68k_8h_source.html">m68k.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for disasm.h:</div>
@@ -96,9 +99,12 @@ This graph shows which files directly or indirectly include this file:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ae3bcad34cf6b3944ba23d2b1e5948180" id="r_ae3bcad34cf6b3944ba23d2b1e5948180"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="disasm_8h.html#ae3bcad34cf6b3944ba23d2b1e5948180">m68k_disasm</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> <a class="el" href="m68k_8h.html#aeca957d5c7a44fcc66d1b27fcad72b5d">pc</a>, char *buffer, int buf_size)</td></tr>
+<tr class="memdesc:ae3bcad34cf6b3944ba23d2b1e5948180"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disassemble one instruction at a program counter.  <br /></td></tr>
 <tr class="separator:ae3bcad34cf6b3944ba23d2b1e5948180"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Public disassembler API for Rocket 68. </p>
+</div><h2 class="groupheader">Function Documentation</h2>
 <a id="ae3bcad34cf6b3944ba23d2b1e5948180" name="ae3bcad34cf6b3944ba23d2b1e5948180"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae3bcad34cf6b3944ba23d2b1e5948180">&#9670;&#160;</a></span>m68k_disasm()</h2>
 
@@ -136,6 +142,18 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Disassemble one instruction at a program counter. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU instance used for instruction fetches. </td></tr>
+    <tr><td class="paramname">pc</td><td>Program counter to disassemble from. </td></tr>
+    <tr><td class="paramname">buffer</td><td>Destination text buffer. </td></tr>
+    <tr><td class="paramname">buf_size</td><td>Size of <code>buffer</code> in bytes. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Number of bytes consumed by the instruction, or a negative value on error. </dd></dl>
 
 </div>
 </div>

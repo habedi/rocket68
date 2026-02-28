@@ -84,6 +84,9 @@ $(function() {
   <div class="headertitle"><div class="title">m68k.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Public CPU core API for Rocket 68.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;stdalign.h&gt;</code><br />
 <code>#include &lt;stdbool.h&gt;</code><br />
@@ -104,70 +107,100 @@ This graph shows which files directly or indirectly include this file:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">union &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="unionM68kRegister.html">M68kRegister</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">68000 general register view.  <a href="unionM68kRegister.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html">M68kCpu</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Full CPU context for one emulated 68000 instance.  <a href="structM68kCpu.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:a364686f02f943ef0036959c8694b009a" id="r_a364686f02f943ef0036959c8694b009a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a364686f02f943ef0036959c8694b009a">M68K_INT_ACK_AUTOVECTOR</a>&#160;&#160;&#160;0xffffffff</td></tr>
+<tr class="memdesc:a364686f02f943ef0036959c8694b009a"><td class="mdescLeft">&#160;</td><td class="mdescRight">INT ACK callback return value for autovector.  <br /></td></tr>
 <tr class="separator:a364686f02f943ef0036959c8694b009a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a666e7888606afc869c44ae44210561a3" id="r_a666e7888606afc869c44ae44210561a3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a666e7888606afc869c44ae44210561a3">M68K_INT_ACK_SPURIOUS</a>&#160;&#160;&#160;0xfffffffe</td></tr>
+<tr class="memdesc:a666e7888606afc869c44ae44210561a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">INT ACK callback return value for spurious interrupt.  <br /></td></tr>
 <tr class="separator:a666e7888606afc869c44ae44210561a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a240a7c23f37cbd3c61cc2daa1d808c40" id="r_a240a7c23f37cbd3c61cc2daa1d808c40"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a240a7c23f37cbd3c61cc2daa1d808c40">M68K_FC_USER_DATA</a>&#160;&#160;&#160;1</td></tr>
+<tr class="memdesc:a240a7c23f37cbd3c61cc2daa1d808c40"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function code for user data access.  <br /></td></tr>
 <tr class="separator:a240a7c23f37cbd3c61cc2daa1d808c40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae94347aaaa17722c1933c0669c1ed9b3" id="r_ae94347aaaa17722c1933c0669c1ed9b3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ae94347aaaa17722c1933c0669c1ed9b3">M68K_FC_USER_PROG</a>&#160;&#160;&#160;2</td></tr>
+<tr class="memdesc:ae94347aaaa17722c1933c0669c1ed9b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function code for user program access.  <br /></td></tr>
 <tr class="separator:ae94347aaaa17722c1933c0669c1ed9b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afaf08324b38979aca42d5c0caf65520d" id="r_afaf08324b38979aca42d5c0caf65520d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#afaf08324b38979aca42d5c0caf65520d">M68K_FC_SUPV_DATA</a>&#160;&#160;&#160;5</td></tr>
+<tr class="memdesc:afaf08324b38979aca42d5c0caf65520d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function code for supervisor data access.  <br /></td></tr>
 <tr class="separator:afaf08324b38979aca42d5c0caf65520d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abf747f5e921befefa53d29a181495db8" id="r_abf747f5e921befefa53d29a181495db8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#abf747f5e921befefa53d29a181495db8">M68K_FC_SUPV_PROG</a>&#160;&#160;&#160;6</td></tr>
+<tr class="memdesc:abf747f5e921befefa53d29a181495db8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function code for supervisor program access.  <br /></td></tr>
 <tr class="separator:abf747f5e921befefa53d29a181495db8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a941d8f18bc7027dfcfc221d33d11e57b" id="r_a941d8f18bc7027dfcfc221d33d11e57b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a941d8f18bc7027dfcfc221d33d11e57b">M68K_FC_INT_ACK</a>&#160;&#160;&#160;7</td></tr>
+<tr class="memdesc:a941d8f18bc7027dfcfc221d33d11e57b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function code for interrupt acknowledge cycle.  <br /></td></tr>
 <tr class="separator:a941d8f18bc7027dfcfc221d33d11e57b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abadca78a34b10147c7bce334d151e59e" id="r_abadca78a34b10147c7bce334d151e59e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#abadca78a34b10147c7bce334d151e59e">M68K_SR_C</a>&#160;&#160;&#160;(1 &lt;&lt; 0)</td></tr>
+<tr class="memdesc:abadca78a34b10147c7bce334d151e59e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Carry flag bit mask in SR.  <br /></td></tr>
 <tr class="separator:abadca78a34b10147c7bce334d151e59e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae94618c1445a13b4557f7a17ed5610de" id="r_ae94618c1445a13b4557f7a17ed5610de"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ae94618c1445a13b4557f7a17ed5610de">M68K_SR_V</a>&#160;&#160;&#160;(1 &lt;&lt; 1)</td></tr>
+<tr class="memdesc:ae94618c1445a13b4557f7a17ed5610de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Overflow flag bit mask in SR.  <br /></td></tr>
 <tr class="separator:ae94618c1445a13b4557f7a17ed5610de"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeccf33bbd6d7ce2ec47b687ad2d3a88a" id="r_aeccf33bbd6d7ce2ec47b687ad2d3a88a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aeccf33bbd6d7ce2ec47b687ad2d3a88a">M68K_SR_Z</a>&#160;&#160;&#160;(1 &lt;&lt; 2)</td></tr>
+<tr class="memdesc:aeccf33bbd6d7ce2ec47b687ad2d3a88a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Zero flag bit mask in SR.  <br /></td></tr>
 <tr class="separator:aeccf33bbd6d7ce2ec47b687ad2d3a88a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8515ed2dbe644867a1f9e714295890df" id="r_a8515ed2dbe644867a1f9e714295890df"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a8515ed2dbe644867a1f9e714295890df">M68K_SR_N</a>&#160;&#160;&#160;(1 &lt;&lt; 3)</td></tr>
+<tr class="memdesc:a8515ed2dbe644867a1f9e714295890df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Negative flag bit mask in SR.  <br /></td></tr>
 <tr class="separator:a8515ed2dbe644867a1f9e714295890df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed268eeff8064eea52afe4be433e9fd4" id="r_aed268eeff8064eea52afe4be433e9fd4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aed268eeff8064eea52afe4be433e9fd4">M68K_SR_X</a>&#160;&#160;&#160;0x0010</td></tr>
+<tr class="memdesc:aed268eeff8064eea52afe4be433e9fd4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extend flag bit mask in SR.  <br /></td></tr>
 <tr class="separator:aed268eeff8064eea52afe4be433e9fd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad29715f61542bde7dbfb56a3535f0008" id="r_ad29715f61542bde7dbfb56a3535f0008"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ad29715f61542bde7dbfb56a3535f0008">M68K_SR_S</a>&#160;&#160;&#160;0x2000</td></tr>
+<tr class="memdesc:ad29715f61542bde7dbfb56a3535f0008"><td class="mdescLeft">&#160;</td><td class="mdescRight">Supervisor state bit mask in SR.  <br /></td></tr>
 <tr class="separator:ad29715f61542bde7dbfb56a3535f0008"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
 <tr class="memitem:a92c50087ca0e64fa93fc59402c55f8ca" id="r_a92c50087ca0e64fa93fc59402c55f8ca"><td class="memItemLeft" align="right" valign="top">typedef uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a></td></tr>
+<tr class="memdesc:a92c50087ca0e64fa93fc59402c55f8ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unsigned 8-bit integer type.  <br /></td></tr>
 <tr class="separator:a92c50087ca0e64fa93fc59402c55f8ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ace9d960e74685e2cd84b36132dbbf8aa" id="r_ace9d960e74685e2cd84b36132dbbf8aa"><td class="memItemLeft" align="right" valign="top">typedef uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a></td></tr>
+<tr class="memdesc:ace9d960e74685e2cd84b36132dbbf8aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unsigned 16-bit integer type.  <br /></td></tr>
 <tr class="separator:ace9d960e74685e2cd84b36132dbbf8aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afaa62991928fb9fb18ff0db62a040aba" id="r_afaa62991928fb9fb18ff0db62a040aba"><td class="memItemLeft" align="right" valign="top">typedef uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a></td></tr>
+<tr class="memdesc:afaa62991928fb9fb18ff0db62a040aba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unsigned 32-bit integer type.  <br /></td></tr>
 <tr class="separator:afaa62991928fb9fb18ff0db62a040aba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e382f207c65ca13ab4ae98363aeda80" id="r_a9e382f207c65ca13ab4ae98363aeda80"><td class="memItemLeft" align="right" valign="top">typedef int8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a9e382f207c65ca13ab4ae98363aeda80">s8</a></td></tr>
+<tr class="memdesc:a9e382f207c65ca13ab4ae98363aeda80"><td class="mdescLeft">&#160;</td><td class="mdescRight">Signed 8-bit integer type.  <br /></td></tr>
 <tr class="separator:a9e382f207c65ca13ab4ae98363aeda80"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa980e2c02ba2305e0f489d5650655425" id="r_aa980e2c02ba2305e0f489d5650655425"><td class="memItemLeft" align="right" valign="top">typedef int16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aa980e2c02ba2305e0f489d5650655425">s16</a></td></tr>
+<tr class="memdesc:aa980e2c02ba2305e0f489d5650655425"><td class="mdescLeft">&#160;</td><td class="mdescRight">Signed 16-bit integer type.  <br /></td></tr>
 <tr class="separator:aa980e2c02ba2305e0f489d5650655425"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9b1af5c037e57a98884758875d3a7c4" id="r_ae9b1af5c037e57a98884758875d3a7c4"><td class="memItemLeft" align="right" valign="top">typedef int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ae9b1af5c037e57a98884758875d3a7c4">s32</a></td></tr>
+<tr class="memdesc:ae9b1af5c037e57a98884758875d3a7c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Signed 32-bit integer type.  <br /></td></tr>
 <tr class="separator:ae9b1af5c037e57a98884758875d3a7c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeaa67a71feeeff4727a8b740b267df3f" id="r_aeaa67a71feeeff4727a8b740b267df3f"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structM68kCpu.html">M68kCpu</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aeaa67a71feeeff4727a8b740b267df3f">M68kCpu</a></td></tr>
+<tr class="memdesc:aeaa67a71feeeff4727a8b740b267df3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Forward declaration of the CPU context.  <br /></td></tr>
 <tr class="separator:aeaa67a71feeeff4727a8b740b267df3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad062cae7336e832272370f1de005ce09" id="r_ad062cae7336e832272370f1de005ce09"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ad062cae7336e832272370f1de005ce09">M68kWaitBusCallback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#a71dd7bbc3e91d469b620b09b81fbf936">M68kSize</a> size)</td></tr>
+<tr class="memdesc:ad062cae7336e832272370f1de005ce09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bus wait callback.  <br /></td></tr>
 <tr class="separator:ad062cae7336e832272370f1de005ce09"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b812bcc496591f8b1c352e0971e5f8f" id="r_a6b812bcc496591f8b1c352e0971e5f8f"><td class="memItemLeft" align="right" valign="top">typedef int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a6b812bcc496591f8b1c352e0971e5f8f">M68kIntAckCallback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, int level)</td></tr>
+<tr class="memdesc:a6b812bcc496591f8b1c352e0971e5f8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interrupt acknowledge callback.  <br /></td></tr>
 <tr class="separator:a6b812bcc496591f8b1c352e0971e5f8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae1564ec78f2c3850601e15b187ca742c" id="r_ae1564ec78f2c3850601e15b187ca742c"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ae1564ec78f2c3850601e15b187ca742c">M68kFcCallback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, unsigned int new_fc)</td></tr>
+<tr class="memdesc:ae1564ec78f2c3850601e15b187ca742c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function code change callback.  <br /></td></tr>
 <tr class="separator:ae1564ec78f2c3850601e15b187ca742c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8d6f176c71707bd8d0dd2897b74d200d" id="r_a8d6f176c71707bd8d0dd2897b74d200d"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a8d6f176c71707bd8d0dd2897b74d200d">M68kInstrHookCallback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> <a class="el" href="m68k_8h.html#aeca957d5c7a44fcc66d1b27fcad72b5d">pc</a>)</td></tr>
+<tr class="memdesc:a8d6f176c71707bd8d0dd2897b74d200d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instruction hook callback executed before instruction decode/execute.  <br /></td></tr>
 <tr class="separator:a8d6f176c71707bd8d0dd2897b74d200d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a15d686bd57e22214945d8a87b41c1946" id="r_a15d686bd57e22214945d8a87b41c1946"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a15d686bd57e22214945d8a87b41c1946">M68kPcChangedCallback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> new_pc)</td></tr>
+<tr class="memdesc:a15d686bd57e22214945d8a87b41c1946"><td class="mdescLeft">&#160;</td><td class="mdescRight">Program counter changed callback.  <br /></td></tr>
 <tr class="separator:a15d686bd57e22214945d8a87b41c1946"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a52ed09b4cf386ffd760712049d3d5271" id="r_a52ed09b4cf386ffd760712049d3d5271"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a52ed09b4cf386ffd760712049d3d5271">M68kResetCallback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu)</td></tr>
+<tr class="memdesc:a52ed09b4cf386ffd760712049d3d5271"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset callback.  <br /></td></tr>
 <tr class="separator:a52ed09b4cf386ffd760712049d3d5271"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4bc37481c221d5f07ea8ff73ad5e7629" id="r_a4bc37481c221d5f07ea8ff73ad5e7629"><td class="memItemLeft" align="right" valign="top">typedef int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a4bc37481c221d5f07ea8ff73ad5e7629">M68kTasCallback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu)</td></tr>
+<tr class="memdesc:a4bc37481c221d5f07ea8ff73ad5e7629"><td class="mdescLeft">&#160;</td><td class="mdescRight">TAS callback. Return non-zero to request TAS read-modify-write behavior override.  <br /></td></tr>
 <tr class="separator:a4bc37481c221d5f07ea8ff73ad5e7629"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a50006589848a459ad5f7bf6a625cdb5f" id="r_a50006589848a459ad5f7bf6a625cdb5f"><td class="memItemLeft" align="right" valign="top">typedef int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a50006589848a459ad5f7bf6a625cdb5f">M68kIllgCallback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, int opcode)</td></tr>
+<tr class="memdesc:a50006589848a459ad5f7bf6a625cdb5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Illegal instruction callback. Return non-zero to signal handled/halt behavior in host policy.  <br /></td></tr>
 <tr class="separator:a50006589848a459ad5f7bf6a625cdb5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
@@ -176,6 +209,7 @@ Enumerations</h2></td></tr>
 , <a class="el" href="m68k_8h.html#a71dd7bbc3e91d469b620b09b81fbf936a5efe0d29e4e4e93e954a8017c73ac538">SIZE_WORD</a> = 2
 , <a class="el" href="m68k_8h.html#a71dd7bbc3e91d469b620b09b81fbf936aca6664f9b02d1aa5f47cea13609f8447">SIZE_LONG</a> = 4
  }</td></tr>
+<tr class="memdesc:a71dd7bbc3e91d469b620b09b81fbf936"><td class="mdescLeft">&#160;</td><td class="mdescRight">Operand size in bytes.  <a href="m68k_8h.html#a71dd7bbc3e91d469b620b09b81fbf936">More...</a><br /></td></tr>
 <tr class="separator:a71dd7bbc3e91d469b620b09b81fbf936"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a124c8defd3d694c08919e9f49c2b6cb3" id="r_a124c8defd3d694c08919e9f49c2b6cb3"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3">M68kAddrMode</a> { <br />
 &#160;&#160;<a class="el" href="m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3a2c45d8ac3bed3b162e2f59a4e789b06d">ADDR_MODE_DATA_REG_DIRECT</a>
@@ -194,79 +228,115 @@ Enumerations</h2></td></tr>
 , <a class="el" href="m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3a590b442e092ec46c282c853b92cb05a1">ADDR_MODE_IMMEDIATE</a>
 <br />
  }</td></tr>
+<tr class="memdesc:a124c8defd3d694c08919e9f49c2b6cb3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Effective address mode encoding used by internal helpers and opcode decoding.  <a href="m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3">More...</a><br /></td></tr>
 <tr class="separator:a124c8defd3d694c08919e9f49c2b6cb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a999eea4a0b2231b6dd115fcce68365bc" id="r_a999eea4a0b2231b6dd115fcce68365bc"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structM68kCpu.html">M68kCpu</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a999eea4a0b2231b6dd115fcce68365bc">__attribute__</a> ((aligned(64))) <a class="el" href="structM68kCpu.html">M68kCpu</a></td></tr>
+<tr class="memdesc:a999eea4a0b2231b6dd115fcce68365bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Full CPU context for one emulated 68000 instance.  <br /></td></tr>
 <tr class="separator:a999eea4a0b2231b6dd115fcce68365bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5e3a7dcd8fd3a0211c67489fc0fe1093" id="r_a5e3a7dcd8fd3a0211c67489fc0fe1093"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a5e3a7dcd8fd3a0211c67489fc0fe1093">m68k_init</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a> *<a class="el" href="m68k_8h.html#aac286a29c2b63f7be786c955821b690c">memory</a>, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> <a class="el" href="m68k_8h.html#a637a569114fcd4e32683e32be9fe636b">memory_size</a>)</td></tr>
+<tr class="memdesc:a5e3a7dcd8fd3a0211c67489fc0fe1093"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a CPU context and bind memory.  <br /></td></tr>
 <tr class="separator:a5e3a7dcd8fd3a0211c67489fc0fe1093"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2770e956d2435dd4fe19c709234e5c19" id="r_a2770e956d2435dd4fe19c709234e5c19"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a2770e956d2435dd4fe19c709234e5c19">m68k_reset</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu)</td></tr>
+<tr class="memdesc:a2770e956d2435dd4fe19c709234e5c19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset CPU state and load initial vectors from memory.  <br /></td></tr>
 <tr class="separator:a2770e956d2435dd4fe19c709234e5c19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aec6fb371ff1e65d582205ff4bf1be22a" id="r_aec6fb371ff1e65d582205ff4bf1be22a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aec6fb371ff1e65d582205ff4bf1be22a">m68k_set_pc</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> <a class="el" href="m68k_8h.html#aeca957d5c7a44fcc66d1b27fcad72b5d">pc</a>)</td></tr>
+<tr class="memdesc:aec6fb371ff1e65d582205ff4bf1be22a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the program counter.  <br /></td></tr>
 <tr class="separator:aec6fb371ff1e65d582205ff4bf1be22a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0a356227b28d3a64def57da190055ec1" id="r_a0a356227b28d3a64def57da190055ec1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a0a356227b28d3a64def57da190055ec1">m68k_get_pc</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu)</td></tr>
+<tr class="memdesc:a0a356227b28d3a64def57da190055ec1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the current program counter.  <br /></td></tr>
 <tr class="separator:a0a356227b28d3a64def57da190055ec1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a81b481c7ac60dd4ea2c1eebbd701f9f6" id="r_a81b481c7ac60dd4ea2c1eebbd701f9f6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a81b481c7ac60dd4ea2c1eebbd701f9f6">m68k_set_dr</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, int reg, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> value)</td></tr>
+<tr class="memdesc:a81b481c7ac60dd4ea2c1eebbd701f9f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set data register value.  <br /></td></tr>
 <tr class="separator:a81b481c7ac60dd4ea2c1eebbd701f9f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a343bec1891629beb4ebfcfb9066b5580" id="r_a343bec1891629beb4ebfcfb9066b5580"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a343bec1891629beb4ebfcfb9066b5580">m68k_get_dr</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, int reg)</td></tr>
+<tr class="memdesc:a343bec1891629beb4ebfcfb9066b5580"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get data register value.  <br /></td></tr>
 <tr class="separator:a343bec1891629beb4ebfcfb9066b5580"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a28f8423452d5751190eac9d516152022" id="r_a28f8423452d5751190eac9d516152022"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a28f8423452d5751190eac9d516152022">m68k_set_ar</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, int reg, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> value)</td></tr>
+<tr class="memdesc:a28f8423452d5751190eac9d516152022"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set address register value.  <br /></td></tr>
 <tr class="separator:a28f8423452d5751190eac9d516152022"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b2eb94482a7c08f0c05ea0d2fc6b845" id="r_a6b2eb94482a7c08f0c05ea0d2fc6b845"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a6b2eb94482a7c08f0c05ea0d2fc6b845">m68k_get_ar</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, int reg)</td></tr>
+<tr class="memdesc:a6b2eb94482a7c08f0c05ea0d2fc6b845"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get address register value.  <br /></td></tr>
 <tr class="separator:a6b2eb94482a7c08f0c05ea0d2fc6b845"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5254b3f5352044e81ec5388e93689615" id="r_a5254b3f5352044e81ec5388e93689615"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a5254b3f5352044e81ec5388e93689615">m68k_step_ex</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, bool check_exceptions)</td></tr>
+<tr class="memdesc:a5254b3f5352044e81ec5388e93689615"><td class="mdescLeft">&#160;</td><td class="mdescRight">Execute one instruction with optional trace/exception processing toggle.  <br /></td></tr>
 <tr class="separator:a5254b3f5352044e81ec5388e93689615"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac61e5a01d04b0cbef046764d1404434d" id="r_ac61e5a01d04b0cbef046764d1404434d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ac61e5a01d04b0cbef046764d1404434d">m68k_step</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu)</td></tr>
+<tr class="memdesc:ac61e5a01d04b0cbef046764d1404434d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Execute one instruction step.  <br /></td></tr>
 <tr class="separator:ac61e5a01d04b0cbef046764d1404434d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c534d82e8b9ca83324c4439aaa1baca" id="r_a8c534d82e8b9ca83324c4439aaa1baca"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a8c534d82e8b9ca83324c4439aaa1baca">m68k_execute</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, int cycles)</td></tr>
+<tr class="memdesc:a8c534d82e8b9ca83324c4439aaa1baca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Execute instructions for a cycle budget.  <br /></td></tr>
 <tr class="separator:a8c534d82e8b9ca83324c4439aaa1baca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a437b4439cbe53bd46a451ae8cf393b34" id="r_a437b4439cbe53bd46a451ae8cf393b34"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a437b4439cbe53bd46a451ae8cf393b34">m68k_cycles_run</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu)</td></tr>
+<tr class="memdesc:a437b4439cbe53bd46a451ae8cf393b34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get cycles consumed in the active timeslice accounting model.  <br /></td></tr>
 <tr class="separator:a437b4439cbe53bd46a451ae8cf393b34"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeb28d4893605879419662b72e9f94354" id="r_aeb28d4893605879419662b72e9f94354"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aeb28d4893605879419662b72e9f94354">m68k_cycles_remaining</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu)</td></tr>
+<tr class="memdesc:aeb28d4893605879419662b72e9f94354"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get remaining cycles in the current timeslice.  <br /></td></tr>
 <tr class="separator:aeb28d4893605879419662b72e9f94354"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a868afdc9a47bd7521461b7f04ead14bb" id="r_a868afdc9a47bd7521461b7f04ead14bb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a868afdc9a47bd7521461b7f04ead14bb">m68k_modify_timeslice</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, int cycles)</td></tr>
+<tr class="memdesc:a868afdc9a47bd7521461b7f04ead14bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add cycles to current timeslice.  <br /></td></tr>
 <tr class="separator:a868afdc9a47bd7521461b7f04ead14bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a047f07af5b4401aee2e5355de1f421c7" id="r_a047f07af5b4401aee2e5355de1f421c7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a047f07af5b4401aee2e5355de1f421c7">m68k_end_timeslice</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu)</td></tr>
+<tr class="memdesc:a047f07af5b4401aee2e5355de1f421c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">End current timeslice immediately.  <br /></td></tr>
 <tr class="separator:a047f07af5b4401aee2e5355de1f421c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6118597119bccfd1d4d310d4a447de09" id="r_a6118597119bccfd1d4d310d4a447de09"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a6118597119bccfd1d4d310d4a447de09">m68k_set_sr</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a> new_sr)</td></tr>
+<tr class="memdesc:a6118597119bccfd1d4d310d4a447de09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the status register.  <br /></td></tr>
 <tr class="separator:a6118597119bccfd1d4d310d4a447de09"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa2240161117c6e48cabb3fa5f231a095" id="r_aa2240161117c6e48cabb3fa5f231a095"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aa2240161117c6e48cabb3fa5f231a095">m68k_set_irq</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, int level)</td></tr>
+<tr class="memdesc:aa2240161117c6e48cabb3fa5f231a095"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set pending interrupt level.  <br /></td></tr>
 <tr class="separator:aa2240161117c6e48cabb3fa5f231a095"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab374773173992ba63a812792ace838c" id="r_aab374773173992ba63a812792ace838c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aab374773173992ba63a812792ace838c">m68k_read_8</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address)</td></tr>
+<tr class="memdesc:aab374773173992ba63a812792ace838c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read one byte from emulated memory.  <br /></td></tr>
 <tr class="separator:aab374773173992ba63a812792ace838c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac73409aa78dc554b44737cddcc2d814b" id="r_ac73409aa78dc554b44737cddcc2d814b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ac73409aa78dc554b44737cddcc2d814b">m68k_read_16</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address)</td></tr>
+<tr class="memdesc:ac73409aa78dc554b44737cddcc2d814b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read one word from emulated memory.  <br /></td></tr>
 <tr class="separator:ac73409aa78dc554b44737cddcc2d814b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac6927ec34c6dd9657ca726126ba180bc" id="r_ac6927ec34c6dd9657ca726126ba180bc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ac6927ec34c6dd9657ca726126ba180bc">m68k_read_32</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address)</td></tr>
+<tr class="memdesc:ac6927ec34c6dd9657ca726126ba180bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read one longword from emulated memory.  <br /></td></tr>
 <tr class="separator:ac6927ec34c6dd9657ca726126ba180bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0698b9148f643cb0f091326a6d2765a6" id="r_a0698b9148f643cb0f091326a6d2765a6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a0698b9148f643cb0f091326a6d2765a6">m68k_write_8</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a> value)</td></tr>
+<tr class="memdesc:a0698b9148f643cb0f091326a6d2765a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write one byte to emulated memory.  <br /></td></tr>
 <tr class="separator:a0698b9148f643cb0f091326a6d2765a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a47035498cba91b2549a63cadc983284e" id="r_a47035498cba91b2549a63cadc983284e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a47035498cba91b2549a63cadc983284e">m68k_write_16</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a> value)</td></tr>
+<tr class="memdesc:a47035498cba91b2549a63cadc983284e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write one word to emulated memory.  <br /></td></tr>
 <tr class="separator:a47035498cba91b2549a63cadc983284e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a84bebd2fb1bcb64f1fbe36da8d1f1b3b" id="r_a84bebd2fb1bcb64f1fbe36da8d1f1b3b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a84bebd2fb1bcb64f1fbe36da8d1f1b3b">m68k_write_32</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> value)</td></tr>
+<tr class="memdesc:a84bebd2fb1bcb64f1fbe36da8d1f1b3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write one longword to emulated memory.  <br /></td></tr>
 <tr class="separator:a84bebd2fb1bcb64f1fbe36da8d1f1b3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab0c68b6ad033a61b6ff3e0dff0cda990" id="r_ab0c68b6ad033a61b6ff3e0dff0cda990"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ab0c68b6ad033a61b6ff3e0dff0cda990">m68k_set_wait_bus_callback</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#ad062cae7336e832272370f1de005ce09">M68kWaitBusCallback</a> callback)</td></tr>
+<tr class="memdesc:ab0c68b6ad033a61b6ff3e0dff0cda990"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install wait bus callback.  <br /></td></tr>
 <tr class="separator:ab0c68b6ad033a61b6ff3e0dff0cda990"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab15a68eb16bda76c9d218d84ac875735" id="r_ab15a68eb16bda76c9d218d84ac875735"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ab15a68eb16bda76c9d218d84ac875735">m68k_set_int_ack_callback</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#a6b812bcc496591f8b1c352e0971e5f8f">M68kIntAckCallback</a> callback)</td></tr>
+<tr class="memdesc:ab15a68eb16bda76c9d218d84ac875735"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install interrupt acknowledge callback.  <br /></td></tr>
 <tr class="separator:ab15a68eb16bda76c9d218d84ac875735"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5bccc1ca5baefa2300eb12ebe41b701a" id="r_a5bccc1ca5baefa2300eb12ebe41b701a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a5bccc1ca5baefa2300eb12ebe41b701a">m68k_set_fc_callback</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#ae1564ec78f2c3850601e15b187ca742c">M68kFcCallback</a> callback)</td></tr>
+<tr class="memdesc:a5bccc1ca5baefa2300eb12ebe41b701a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install function code callback.  <br /></td></tr>
 <tr class="separator:a5bccc1ca5baefa2300eb12ebe41b701a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a651bc5ab07b1f1b785fb949a91b96073" id="r_a651bc5ab07b1f1b785fb949a91b96073"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a651bc5ab07b1f1b785fb949a91b96073">m68k_set_instr_hook_callback</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#a8d6f176c71707bd8d0dd2897b74d200d">M68kInstrHookCallback</a> callback)</td></tr>
+<tr class="memdesc:a651bc5ab07b1f1b785fb949a91b96073"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install instruction hook callback.  <br /></td></tr>
 <tr class="separator:a651bc5ab07b1f1b785fb949a91b96073"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af3e24b941fb94e74523db17128dc41a2" id="r_af3e24b941fb94e74523db17128dc41a2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#af3e24b941fb94e74523db17128dc41a2">m68k_set_pc_changed_callback</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#a15d686bd57e22214945d8a87b41c1946">M68kPcChangedCallback</a> callback)</td></tr>
+<tr class="memdesc:af3e24b941fb94e74523db17128dc41a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install PC-changed callback.  <br /></td></tr>
 <tr class="separator:af3e24b941fb94e74523db17128dc41a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1f2dbe2a3aed79f97ec7ce1cc26ffe4e" id="r_a1f2dbe2a3aed79f97ec7ce1cc26ffe4e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a1f2dbe2a3aed79f97ec7ce1cc26ffe4e">m68k_set_reset_callback</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#a52ed09b4cf386ffd760712049d3d5271">M68kResetCallback</a> callback)</td></tr>
+<tr class="memdesc:a1f2dbe2a3aed79f97ec7ce1cc26ffe4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install reset callback.  <br /></td></tr>
 <tr class="separator:a1f2dbe2a3aed79f97ec7ce1cc26ffe4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ae04140a959cbb027c6ce50f3fbeaf1" id="r_a0ae04140a959cbb027c6ce50f3fbeaf1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a0ae04140a959cbb027c6ce50f3fbeaf1">m68k_set_tas_callback</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#a4bc37481c221d5f07ea8ff73ad5e7629">M68kTasCallback</a> callback)</td></tr>
+<tr class="memdesc:a0ae04140a959cbb027c6ce50f3fbeaf1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install TAS callback.  <br /></td></tr>
 <tr class="separator:a0ae04140a959cbb027c6ce50f3fbeaf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad1d4460f9b63b37494b9265bdaecf837" id="r_ad1d4460f9b63b37494b9265bdaecf837"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ad1d4460f9b63b37494b9265bdaecf837">m68k_set_illg_callback</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#a50006589848a459ad5f7bf6a625cdb5f">M68kIllgCallback</a> callback)</td></tr>
+<tr class="memdesc:ad1d4460f9b63b37494b9265bdaecf837"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install illegal opcode callback.  <br /></td></tr>
 <tr class="separator:ad1d4460f9b63b37494b9265bdaecf837"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add146fec61c6610e890ee60050b64bc9" id="r_add146fec61c6610e890ee60050b64bc9"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#add146fec61c6610e890ee60050b64bc9">m68k_context_size</a> (void)</td></tr>
+<tr class="memdesc:add146fec61c6610e890ee60050b64bc9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get serialized context size.  <br /></td></tr>
 <tr class="separator:add146fec61c6610e890ee60050b64bc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab1c44f0c81e2b0c6b4d507dd0a708a56" id="r_ab1c44f0c81e2b0c6b4d507dd0a708a56"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ab1c44f0c81e2b0c6b4d507dd0a708a56">m68k_get_context</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, void *dst)</td></tr>
+<tr class="memdesc:ab1c44f0c81e2b0c6b4d507dd0a708a56"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy CPU context into an external buffer.  <br /></td></tr>
 <tr class="separator:ab1c44f0c81e2b0c6b4d507dd0a708a56"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a855ea7c0b147b4be3bd343d62293dd89" id="r_a855ea7c0b147b4be3bd343d62293dd89"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a855ea7c0b147b4be3bd343d62293dd89">m68k_set_context</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, const void *src)</td></tr>
+<tr class="memdesc:a855ea7c0b147b4be3bd343d62293dd89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Restore CPU context from an external buffer.  <br /></td></tr>
 <tr class="separator:a855ea7c0b147b4be3bd343d62293dd89"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
@@ -277,8 +347,12 @@ Variables</h2></td></tr>
 <tr class="separator:a841c04da362c589335c2d78b81314c8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeca957d5c7a44fcc66d1b27fcad72b5d" id="r_aeca957d5c7a44fcc66d1b27fcad72b5d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aeca957d5c7a44fcc66d1b27fcad72b5d">pc</a></td></tr>
 <tr class="separator:aeca957d5c7a44fcc66d1b27fcad72b5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad5d9adc820df2c837b5988418a1e7010" id="r_ad5d9adc820df2c837b5988418a1e7010"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ad5d9adc820df2c837b5988418a1e7010">ppc</a></td></tr>
+<tr class="separator:ad5d9adc820df2c837b5988418a1e7010"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac25f360c975270c321d8fd1f2cd65065" id="r_ac25f360c975270c321d8fd1f2cd65065"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ac25f360c975270c321d8fd1f2cd65065">sr</a></td></tr>
 <tr class="separator:ac25f360c975270c321d8fd1f2cd65065"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe092f7fc7d58356962df3fc30cad4d1" id="r_abe092f7fc7d58356962df3fc30cad4d1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#abe092f7fc7d58356962df3fc30cad4d1">ir</a></td></tr>
+<tr class="separator:abe092f7fc7d58356962df3fc30cad4d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aac286a29c2b63f7be786c955821b690c" id="r_aac286a29c2b63f7be786c955821b690c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aac286a29c2b63f7be786c955821b690c">memory</a></td></tr>
 <tr class="separator:aac286a29c2b63f7be786c955821b690c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a637a569114fcd4e32683e32be9fe636b" id="r_a637a569114fcd4e32683e32be9fe636b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a637a569114fcd4e32683e32be9fe636b">memory_size</a></td></tr>
@@ -295,6 +369,20 @@ Variables</h2></td></tr>
 <tr class="separator:abb04b2a46c7da42fa0c3320e3c190b4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa1576e83bbe9e6d3eb761f26e4477b36" id="r_aa1576e83bbe9e6d3eb761f26e4477b36"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aa1576e83bbe9e6d3eb761f26e4477b36">exception_thrown</a></td></tr>
 <tr class="separator:aa1576e83bbe9e6d3eb761f26e4477b36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aefe8e4027b56b38a1eea0dc117d50381" id="r_aefe8e4027b56b38a1eea0dc117d50381"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aefe8e4027b56b38a1eea0dc117d50381">in_address_error</a></td></tr>
+<tr class="separator:aefe8e4027b56b38a1eea0dc117d50381"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59db740cb36a71726c881fd1e9c26e15" id="r_a59db740cb36a71726c881fd1e9c26e15"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a59db740cb36a71726c881fd1e9c26e15">in_bus_error</a></td></tr>
+<tr class="separator:a59db740cb36a71726c881fd1e9c26e15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67152aa9db6f0a5ebef935377996546a" id="r_a67152aa9db6f0a5ebef935377996546a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a67152aa9db6f0a5ebef935377996546a">fault_address</a></td></tr>
+<tr class="separator:a67152aa9db6f0a5ebef935377996546a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a37a0ca32fe1ca487341b9680bd4375ad" id="r_a37a0ca32fe1ca487341b9680bd4375ad"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a37a0ca32fe1ca487341b9680bd4375ad">fault_ir</a></td></tr>
+<tr class="separator:a37a0ca32fe1ca487341b9680bd4375ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa5ad97efdeb28a5bb7583628cdf0f71" id="r_afa5ad97efdeb28a5bb7583628cdf0f71"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#afa5ad97efdeb28a5bb7583628cdf0f71">fault_ssw</a></td></tr>
+<tr class="separator:afa5ad97efdeb28a5bb7583628cdf0f71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56affe0b617f1bbbb1a699862d0f6cb8" id="r_a56affe0b617f1bbbb1a699862d0f6cb8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a56affe0b617f1bbbb1a699862d0f6cb8">fault_program_access</a></td></tr>
+<tr class="separator:a56affe0b617f1bbbb1a699862d0f6cb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a704263244445d3071697dc99bd656bdd" id="r_a704263244445d3071697dc99bd656bdd"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a704263244445d3071697dc99bd656bdd">fault_valid</a></td></tr>
+<tr class="separator:a704263244445d3071697dc99bd656bdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac1851598ae7d978cb7f0cdca7eb71eed" id="r_ac1851598ae7d978cb7f0cdca7eb71eed"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ac1851598ae7d978cb7f0cdca7eb71eed">vbr</a></td></tr>
 <tr class="separator:ac1851598ae7d978cb7f0cdca7eb71eed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a76558f7c6bfced15235af8907f4409d2" id="r_a76558f7c6bfced15235af8907f4409d2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a76558f7c6bfced15235af8907f4409d2">sfc</a></td></tr>
@@ -322,7 +410,9 @@ Variables</h2></td></tr>
 <tr class="memitem:a40cdbe683ffb8bb6ccd446d0565743a4" id="r_a40cdbe683ffb8bb6ccd446d0565743a4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#a50006589848a459ad5f7bf6a625cdb5f">M68kIllgCallback</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a40cdbe683ffb8bb6ccd446d0565743a4">illg_cb</a></td></tr>
 <tr class="separator:a40cdbe683ffb8bb6ccd446d0565743a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Macro Definition Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Public CPU core API for Rocket 68. </p>
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a941d8f18bc7027dfcfc221d33d11e57b" name="a941d8f18bc7027dfcfc221d33d11e57b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a941d8f18bc7027dfcfc221d33d11e57b">&#9670;&#160;</a></span>M68K_FC_INT_ACK</h2>
 
@@ -334,6 +424,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Function code for interrupt acknowledge cycle. </p>
 
 </div>
 </div>
@@ -349,6 +441,8 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Function code for supervisor data access. </p>
+
 </div>
 </div>
 <a id="abf747f5e921befefa53d29a181495db8" name="abf747f5e921befefa53d29a181495db8"></a>
@@ -362,6 +456,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Function code for supervisor program access. </p>
 
 </div>
 </div>
@@ -377,6 +473,8 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Function code for user data access. </p>
+
 </div>
 </div>
 <a id="ae94347aaaa17722c1933c0669c1ed9b3" name="ae94347aaaa17722c1933c0669c1ed9b3"></a>
@@ -390,6 +488,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Function code for user program access. </p>
 
 </div>
 </div>
@@ -405,6 +505,8 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>INT ACK callback return value for autovector. </p>
+
 </div>
 </div>
 <a id="a666e7888606afc869c44ae44210561a3" name="a666e7888606afc869c44ae44210561a3"></a>
@@ -418,6 +520,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>INT ACK callback return value for spurious interrupt. </p>
 
 </div>
 </div>
@@ -433,6 +537,8 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Carry flag bit mask in SR. </p>
+
 </div>
 </div>
 <a id="a8515ed2dbe644867a1f9e714295890df" name="a8515ed2dbe644867a1f9e714295890df"></a>
@@ -446,6 +552,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Negative flag bit mask in SR. </p>
 
 </div>
 </div>
@@ -461,6 +569,8 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Supervisor state bit mask in SR. </p>
+
 </div>
 </div>
 <a id="ae94618c1445a13b4557f7a17ed5610de" name="ae94618c1445a13b4557f7a17ed5610de"></a>
@@ -474,6 +584,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Overflow flag bit mask in SR. </p>
 
 </div>
 </div>
@@ -489,6 +601,8 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Extend flag bit mask in SR. </p>
+
 </div>
 </div>
 <a id="aeccf33bbd6d7ce2ec47b687ad2d3a88a" name="aeccf33bbd6d7ce2ec47b687ad2d3a88a"></a>
@@ -502,6 +616,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Zero flag bit mask in SR. </p>
 
 </div>
 </div>
@@ -518,6 +634,8 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Forward declaration of the CPU context. </p>
+
 </div>
 </div>
 <a id="ae1564ec78f2c3850601e15b187ca742c" name="ae1564ec78f2c3850601e15b187ca742c"></a>
@@ -531,6 +649,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Function code change callback. </p>
 
 </div>
 </div>
@@ -546,6 +666,8 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Illegal instruction callback. Return non-zero to signal handled/halt behavior in host policy. </p>
+
 </div>
 </div>
 <a id="a8d6f176c71707bd8d0dd2897b74d200d" name="a8d6f176c71707bd8d0dd2897b74d200d"></a>
@@ -559,6 +681,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Instruction hook callback executed before instruction decode/execute. </p>
 
 </div>
 </div>
@@ -574,6 +698,9 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Interrupt acknowledge callback. </p>
+<p>Return a vector number, <a class="el" href="m68k_8h.html#a364686f02f943ef0036959c8694b009a">M68K_INT_ACK_AUTOVECTOR</a>, or <a class="el" href="m68k_8h.html#a666e7888606afc869c44ae44210561a3">M68K_INT_ACK_SPURIOUS</a>. </p>
+
 </div>
 </div>
 <a id="a15d686bd57e22214945d8a87b41c1946" name="a15d686bd57e22214945d8a87b41c1946"></a>
@@ -587,6 +714,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Program counter changed callback. </p>
 
 </div>
 </div>
@@ -602,6 +731,8 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Reset callback. </p>
+
 </div>
 </div>
 <a id="a4bc37481c221d5f07ea8ff73ad5e7629" name="a4bc37481c221d5f07ea8ff73ad5e7629"></a>
@@ -615,6 +746,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>TAS callback. Return non-zero to request TAS read-modify-write behavior override. </p>
 
 </div>
 </div>
@@ -630,6 +763,9 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Bus wait callback. </p>
+<p>Called on memory accesses to model wait states. </p>
+
 </div>
 </div>
 <a id="aa980e2c02ba2305e0f489d5650655425" name="aa980e2c02ba2305e0f489d5650655425"></a>
@@ -643,6 +779,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Signed 16-bit integer type. </p>
 
 </div>
 </div>
@@ -658,6 +796,8 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Signed 32-bit integer type. </p>
+
 </div>
 </div>
 <a id="a9e382f207c65ca13ab4ae98363aeda80" name="a9e382f207c65ca13ab4ae98363aeda80"></a>
@@ -671,6 +811,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Signed 8-bit integer type. </p>
 
 </div>
 </div>
@@ -686,6 +828,8 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Unsigned 16-bit integer type. </p>
+
 </div>
 </div>
 <a id="afaa62991928fb9fb18ff0db62a040aba" name="afaa62991928fb9fb18ff0db62a040aba"></a>
@@ -699,6 +843,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Unsigned 32-bit integer type. </p>
 
 </div>
 </div>
@@ -714,6 +860,8 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Unsigned 8-bit integer type. </p>
+
 </div>
 </div>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
@@ -728,6 +876,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Effective address mode encoding used by internal helpers and opcode decoding. </p>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a124c8defd3d694c08919e9f49c2b6cb3a2c45d8ac3bed3b162e2f59a4e789b06d" name="a124c8defd3d694c08919e9f49c2b6cb3a2c45d8ac3bed3b162e2f59a4e789b06d"></a>ADDR_MODE_DATA_REG_DIRECT&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a124c8defd3d694c08919e9f49c2b6cb3a838714077bd5873ceca0542e811fabbc" name="a124c8defd3d694c08919e9f49c2b6cb3a838714077bd5873ceca0542e811fabbc"></a>ADDR_MODE_ADDR_REG_DIRECT&#160;</td><td class="fielddoc"></td></tr>
@@ -756,6 +906,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Operand size in bytes. </p>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a71dd7bbc3e91d469b620b09b81fbf936a2af59cc8d2cffb61fa568d33c9fed51a" name="a71dd7bbc3e91d469b620b09b81fbf936a2af59cc8d2cffb61fa568d33c9fed51a"></a>SIZE_BYTE&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a71dd7bbc3e91d469b620b09b81fbf936a5efe0d29e4e4e93e954a8017c73ac538" name="a71dd7bbc3e91d469b620b09b81fbf936a5efe0d29e4e4e93e954a8017c73ac538"></a>SIZE_WORD&#160;</td><td class="fielddoc"></td></tr>
@@ -781,6 +933,8 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Full CPU context for one emulated 68000 instance. </p>
+
 </div>
 </div>
 <a id="add146fec61c6610e890ee60050b64bc9" name="add146fec61c6610e890ee60050b64bc9"></a>
@@ -798,6 +952,9 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Get serialized context size. </p>
+<dl class="section return"><dt>Returns</dt><dd>Number of bytes required for context copy buffer. </dd></dl>
 
 </div>
 </div>
@@ -817,6 +974,15 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Get remaining cycles in the current timeslice. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Remaining cycles. </dd></dl>
+
 </div>
 </div>
 <a id="a437b4439cbe53bd46a451ae8cf393b34" name="a437b4439cbe53bd46a451ae8cf393b34"></a>
@@ -835,6 +1001,15 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Get cycles consumed in the active timeslice accounting model. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Consumed cycle count. </dd></dl>
+
 </div>
 </div>
 <a id="a047f07af5b4401aee2e5355de1f421c7" name="a047f07af5b4401aee2e5355de1f421c7"></a>
@@ -852,6 +1027,14 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>End current timeslice immediately. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -881,6 +1064,16 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Execute instructions for a cycle budget. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">cycles</td><td>Requested number of cycles to add to the current timeslice. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Number of cycles consumed by this call. </dd></dl>
+
 </div>
 </div>
 <a id="a6b2eb94482a7c08f0c05ea0d2fc6b845" name="a6b2eb94482a7c08f0c05ea0d2fc6b845"></a>
@@ -908,6 +1101,16 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Get address register value. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">reg</td><td>Address register index [0,7]. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Register value, or 0 for invalid index. </dd></dl>
 
 </div>
 </div>
@@ -937,6 +1140,16 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Copy CPU context into an external buffer. </p>
+<p>Memory pointer and size are copied as part of the context payload.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">dst</td><td>Destination buffer with at least <a class="el" href="m68k_8h.html#add146fec61c6610e890ee60050b64bc9">m68k_context_size</a> bytes. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a343bec1891629beb4ebfcfb9066b5580" name="a343bec1891629beb4ebfcfb9066b5580"></a>
@@ -965,6 +1178,16 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Get data register value. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">reg</td><td>Data register index [0,7]. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Register value, or 0 for invalid index. </dd></dl>
+
 </div>
 </div>
 <a id="a0a356227b28d3a64def57da190055ec1" name="a0a356227b28d3a64def57da190055ec1"></a>
@@ -982,6 +1205,15 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Get the current program counter. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Current PC. </dd></dl>
 
 </div>
 </div>
@@ -1017,6 +1249,16 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Initialize a CPU context and bind memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context to initialize. </td></tr>
+    <tr><td class="paramname">memory</td><td>Pointer to emulated memory. </td></tr>
+    <tr><td class="paramname">memory_size</td><td>Size of <code>memory</code> in bytes. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a868afdc9a47bd7521461b7f04ead14bb" name="a868afdc9a47bd7521461b7f04ead14bb"></a>
@@ -1044,6 +1286,15 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Add cycles to current timeslice. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">cycles</td><td>Number of cycles to add. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1073,6 +1324,16 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Read one word from emulated memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">address</td><td>Emulated address. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Read value. </dd></dl>
+
 </div>
 </div>
 <a id="ac6927ec34c6dd9657ca726126ba180bc" name="ac6927ec34c6dd9657ca726126ba180bc"></a>
@@ -1100,6 +1361,16 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Read one longword from emulated memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">address</td><td>Emulated address. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Read value. </dd></dl>
 
 </div>
 </div>
@@ -1129,6 +1400,16 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Read one byte from emulated memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">address</td><td>Emulated address. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Read value. </dd></dl>
+
 </div>
 </div>
 <a id="a2770e956d2435dd4fe19c709234e5c19" name="a2770e956d2435dd4fe19c709234e5c19"></a>
@@ -1146,6 +1427,14 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Reset CPU state and load initial vectors from memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1181,6 +1470,16 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Set address register value. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">reg</td><td>Address register index [0,7]. </td></tr>
+    <tr><td class="paramname">value</td><td>New 32-bit value. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a855ea7c0b147b4be3bd343d62293dd89" name="a855ea7c0b147b4be3bd343d62293dd89"></a>
@@ -1208,6 +1507,16 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Restore CPU context from an external buffer. </p>
+<p>The bound memory pointer and memory size from the destination context are preserved.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">src</td><td>Source buffer with at least <a class="el" href="m68k_8h.html#add146fec61c6610e890ee60050b64bc9">m68k_context_size</a> bytes. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1243,6 +1552,16 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Set data register value. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">reg</td><td>Data register index [0,7]. </td></tr>
+    <tr><td class="paramname">value</td><td>New 32-bit value. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a5bccc1ca5baefa2300eb12ebe41b701a" name="a5bccc1ca5baefa2300eb12ebe41b701a"></a>
@@ -1270,6 +1589,15 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Install function code callback. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">callback</td><td>Callback function pointer or NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1299,6 +1627,15 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Install illegal opcode callback. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">callback</td><td>Callback function pointer or NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a651bc5ab07b1f1b785fb949a91b96073" name="a651bc5ab07b1f1b785fb949a91b96073"></a>
@@ -1326,6 +1663,15 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Install instruction hook callback. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">callback</td><td>Callback function pointer or NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1355,6 +1701,15 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Install interrupt acknowledge callback. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">callback</td><td>Callback function pointer or NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="aa2240161117c6e48cabb3fa5f231a095" name="aa2240161117c6e48cabb3fa5f231a095"></a>
@@ -1382,6 +1737,15 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Set pending interrupt level. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">level</td><td>Interrupt level in range [0,7]. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1411,6 +1775,15 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Set the program counter. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">pc</td><td>New program counter value. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="af3e24b941fb94e74523db17128dc41a2" name="af3e24b941fb94e74523db17128dc41a2"></a>
@@ -1438,6 +1811,15 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Install PC-changed callback. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">callback</td><td>Callback function pointer or NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1467,6 +1849,15 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Install reset callback. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">callback</td><td>Callback function pointer or NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a6118597119bccfd1d4d310d4a447de09" name="a6118597119bccfd1d4d310d4a447de09"></a>
@@ -1494,6 +1885,15 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Set the status register. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">new_sr</td><td>New status register value. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1523,6 +1923,15 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Install TAS callback. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">callback</td><td>Callback function pointer or NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="ab0c68b6ad033a61b6ff3e0dff0cda990" name="ab0c68b6ad033a61b6ff3e0dff0cda990"></a>
@@ -1551,6 +1960,15 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Install wait bus callback. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">callback</td><td>Callback function pointer or NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="ac61e5a01d04b0cbef046764d1404434d" name="ac61e5a01d04b0cbef046764d1404434d"></a>
@@ -1568,6 +1986,14 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Execute one instruction step. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1596,6 +2022,15 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Execute one instruction with optional trace/exception processing toggle. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">check_exceptions</td><td>If true, perform exception checks for this step. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1631,6 +2066,16 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Write one word to emulated memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">address</td><td>Emulated address. </td></tr>
+    <tr><td class="paramname">value</td><td>Value to write. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a84bebd2fb1bcb64f1fbe36da8d1f1b3b" name="a84bebd2fb1bcb64f1fbe36da8d1f1b3b"></a>
@@ -1664,6 +2109,16 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Write one longword to emulated memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">address</td><td>Emulated address. </td></tr>
+    <tr><td class="paramname">value</td><td>Value to write. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1699,6 +2154,16 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Write one byte to emulated memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">address</td><td>Emulated address. </td></tr>
+    <tr><td class="paramname">value</td><td>Value to write. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
@@ -1713,6 +2178,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Address registers A0-A7. </p>
 
 </div>
 </div>
@@ -1727,6 +2193,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Remaining cycles in current timeslice. </p>
 
 </div>
 </div>
@@ -1741,6 +2208,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Data registers D0-D7. </p>
 
 </div>
 </div>
@@ -1755,6 +2223,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Destination function code register (model extension path). </p>
 
 </div>
 </div>
@@ -1769,6 +2238,82 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Exception state marker. </p>
+
+</div>
+</div>
+<a id="a67152aa9db6f0a5ebef935377996546a" name="a67152aa9db6f0a5ebef935377996546a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a67152aa9db6f0a5ebef935377996546a">&#9670;&#160;</a></span>fault_address</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> fault_address</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Fault address latched for exception frames. </p>
+
+</div>
+</div>
+<a id="a37a0ca32fe1ca487341b9680bd4375ad" name="a37a0ca32fe1ca487341b9680bd4375ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a37a0ca32fe1ca487341b9680bd4375ad">&#9670;&#160;</a></span>fault_ir</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a> fault_ir</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Fault IR latched for exception frames. </p>
+
+</div>
+</div>
+<a id="a56affe0b617f1bbbb1a699862d0f6cb8" name="a56affe0b617f1bbbb1a699862d0f6cb8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a56affe0b617f1bbbb1a699862d0f6cb8">&#9670;&#160;</a></span>fault_program_access</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fault_program_access</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Fault access type marker. </p>
+
+</div>
+</div>
+<a id="afa5ad97efdeb28a5bb7583628cdf0f71" name="afa5ad97efdeb28a5bb7583628cdf0f71"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afa5ad97efdeb28a5bb7583628cdf0f71">&#9670;&#160;</a></span>fault_ssw</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a> fault_ssw</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Fault status word for exception frames. </p>
+
+</div>
+</div>
+<a id="a704263244445d3071697dc99bd656bdd" name="a704263244445d3071697dc99bd656bdd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a704263244445d3071697dc99bd656bdd">&#9670;&#160;</a></span>fault_valid</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool fault_valid</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Fault information validity flag. </p>
 
 </div>
 </div>
@@ -1783,6 +2328,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Function code callback. </p>
 
 </div>
 </div>
@@ -1797,6 +2343,37 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Illegal opcode callback. </p>
+
+</div>
+</div>
+<a id="aefe8e4027b56b38a1eea0dc117d50381" name="aefe8e4027b56b38a1eea0dc117d50381"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aefe8e4027b56b38a1eea0dc117d50381">&#9670;&#160;</a></span>in_address_error</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool in_address_error</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Address error re-entry guard. </p>
+
+</div>
+</div>
+<a id="a59db740cb36a71726c881fd1e9c26e15" name="a59db740cb36a71726c881fd1e9c26e15"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59db740cb36a71726c881fd1e9c26e15">&#9670;&#160;</a></span>in_bus_error</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool in_bus_error</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Bus error re-entry guard. </p>
 
 </div>
 </div>
@@ -1811,6 +2388,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Instruction hook callback. </p>
 
 </div>
 </div>
@@ -1825,6 +2403,22 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Interrupt acknowledge callback. </p>
+
+</div>
+</div>
+<a id="abe092f7fc7d58356962df3fc30cad4d1" name="abe092f7fc7d58356962df3fc30cad4d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abe092f7fc7d58356962df3fc30cad4d1">&#9670;&#160;</a></span>ir</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a> ir</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Current instruction register. </p>
 
 </div>
 </div>
@@ -1839,6 +2433,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Pending interrupt level (0-7). </p>
 
 </div>
 </div>
@@ -1853,6 +2448,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Bound flat memory pointer. </p>
 
 </div>
 </div>
@@ -1867,6 +2463,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Size of bound memory in bytes. </p>
 
 </div>
 </div>
@@ -1881,6 +2478,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Program counter. </p>
 
 </div>
 </div>
@@ -1895,6 +2493,22 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>PC changed callback. </p>
+
+</div>
+</div>
+<a id="ad5d9adc820df2c837b5988418a1e7010" name="ad5d9adc820df2c837b5988418a1e7010"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad5d9adc820df2c837b5988418a1e7010">&#9670;&#160;</a></span>ppc</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> ppc</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Previous program counter. </p>
 
 </div>
 </div>
@@ -1909,6 +2523,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Reset callback. </p>
 
 </div>
 </div>
@@ -1923,6 +2538,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Source function code register (model extension path). </p>
 
 </div>
 </div>
@@ -1937,6 +2553,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Status register. </p>
 
 </div>
 </div>
@@ -1951,6 +2568,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Supervisor stack pointer shadow. </p>
 
 </div>
 </div>
@@ -1965,6 +2583,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>STOP state latch. </p>
 
 </div>
 </div>
@@ -1979,6 +2598,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Timeslice target cycles accumulator. </p>
 
 </div>
 </div>
@@ -1993,6 +2613,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>TAS callback. </p>
 
 </div>
 </div>
@@ -2007,6 +2628,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Trace pending latch. </p>
 
 </div>
 </div>
@@ -2021,6 +2643,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>User stack pointer. </p>
 
 </div>
 </div>
@@ -2035,6 +2658,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Vector base register (model extension path). </p>
 
 </div>
 </div>
@@ -2049,6 +2673,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Wait/bus callback. </p>
 
 </div>
 </div>

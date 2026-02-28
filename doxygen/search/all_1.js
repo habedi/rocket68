@@ -13,5 +13,7 @@ var searchData=
   ['addr_5fmode_5fimmediate_10',['ADDR_MODE_IMMEDIATE',['../m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3a590b442e092ec46c282c853b92cb05a1',1,'m68k.h']]],
   ['addr_5fmode_5fpc_5fdisp_11',['ADDR_MODE_PC_DISP',['../m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3ad64657f7f49d63ce54bf654aaed2bb0e',1,'m68k.h']]],
   ['addr_5fmode_5fpc_5findex_12',['ADDR_MODE_PC_INDEX',['../m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3ab4aba1847934889876ce362d62951cd3',1,'m68k.h']]],
-  ['address_13',['address',['../structM68kEA.html#a92293d03c36a7b71ecf7245e8393f3a9',1,'M68kEA']]]
+  ['address_13',['address',['../structM68kEA.html#a92293d03c36a7b71ecf7245e8393f3a9',1,'M68kEA']]],
+  ['aerr_5finstruction_5fno_14',['AERR_INSTRUCTION_NO',['../m68k_8c.html#aa8ac45904dd15ae758022a04808ab7c9',1,'m68k.c']]],
+  ['aerr_5fmode_5fread_15',['AERR_MODE_READ',['../m68k_8c.html#a51fedca375583cdee626df395f42b2cd',1,'m68k.c']]]
 ];

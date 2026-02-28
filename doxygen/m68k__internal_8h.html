@@ -81,6 +81,9 @@ $(function() {
   <div class="headertitle"><div class="title">m68k_internal.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Internal declarations for opcode handlers and core helpers.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="m68k_8h_source.html">../../include/m68k.h</a>&quot;</code><br />
 <code>#include &lt;stdnoreturn.h&gt;</code><br />
@@ -100,28 +103,35 @@ This graph shows which files directly or indirectly include this file:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kEA.html">M68kEA</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Effective-address resolution result used by opcode handlers.  <a href="structM68kEA.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a8dee7333c8024a0bc24cc4e94630188f" id="r_a8dee7333c8024a0bc24cc4e94630188f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k__internal_8h.html#a8dee7333c8024a0bc24cc4e94630188f">m68k_read</a>(cpu,  addr,  type)</td></tr>
+<tr class="memitem:a8dee7333c8024a0bc24cc4e94630188f" id="r_a8dee7333c8024a0bc24cc4e94630188f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k__internal_8h.html#a8dee7333c8024a0bc24cc4e94630188f">m68k_read</a>(cpu,  addr,  type)&#160;&#160;&#160;    _Generic((type), u8: <a class="el" href="m68k_8h.html#aab374773173992ba63a812792ace838c">m68k_read_8</a>, u16: <a class="el" href="m68k_8h.html#ac73409aa78dc554b44737cddcc2d814b">m68k_read_16</a>, u32: <a class="el" href="m68k_8h.html#ac6927ec34c6dd9657ca726126ba180bc">m68k_read_32</a>)(cpu, addr)</td></tr>
 <tr class="separator:a8dee7333c8024a0bc24cc4e94630188f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6d35cf348fe2483ad21ac848a413e28a" id="r_a6d35cf348fe2483ad21ac848a413e28a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k__internal_8h.html#a6d35cf348fe2483ad21ac848a413e28a">m68k_write</a>(cpu,  addr,  value)</td></tr>
+<tr class="memitem:a6d35cf348fe2483ad21ac848a413e28a" id="r_a6d35cf348fe2483ad21ac848a413e28a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k__internal_8h.html#a6d35cf348fe2483ad21ac848a413e28a">m68k_write</a>(cpu,  addr,  value)&#160;&#160;&#160;    _Generic((value), u8: <a class="el" href="m68k_8h.html#a0698b9148f643cb0f091326a6d2765a6">m68k_write_8</a>, u16: <a class="el" href="m68k_8h.html#a47035498cba91b2549a63cadc983284e">m68k_write_16</a>, u32: <a class="el" href="m68k_8h.html#a84bebd2fb1bcb64f1fbe36da8d1f1b3b">m68k_write_32</a>)(cpu, addr, value)</td></tr>
 <tr class="separator:a6d35cf348fe2483ad21ac848a413e28a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:aab374773173992ba63a812792ace838c" id="r_aab374773173992ba63a812792ace838c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k__internal_8h.html#aab374773173992ba63a812792ace838c">m68k_read_8</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address)</td></tr>
+<tr class="memdesc:aab374773173992ba63a812792ace838c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read one byte from emulated memory.  <br /></td></tr>
 <tr class="separator:aab374773173992ba63a812792ace838c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac73409aa78dc554b44737cddcc2d814b" id="r_ac73409aa78dc554b44737cddcc2d814b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k__internal_8h.html#ac73409aa78dc554b44737cddcc2d814b">m68k_read_16</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address)</td></tr>
+<tr class="memdesc:ac73409aa78dc554b44737cddcc2d814b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read one word from emulated memory.  <br /></td></tr>
 <tr class="separator:ac73409aa78dc554b44737cddcc2d814b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac6927ec34c6dd9657ca726126ba180bc" id="r_ac6927ec34c6dd9657ca726126ba180bc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k__internal_8h.html#ac6927ec34c6dd9657ca726126ba180bc">m68k_read_32</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address)</td></tr>
+<tr class="memdesc:ac6927ec34c6dd9657ca726126ba180bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read one longword from emulated memory.  <br /></td></tr>
 <tr class="separator:ac6927ec34c6dd9657ca726126ba180bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0698b9148f643cb0f091326a6d2765a6" id="r_a0698b9148f643cb0f091326a6d2765a6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k__internal_8h.html#a0698b9148f643cb0f091326a6d2765a6">m68k_write_8</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a> value)</td></tr>
+<tr class="memdesc:a0698b9148f643cb0f091326a6d2765a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write one byte to emulated memory.  <br /></td></tr>
 <tr class="separator:a0698b9148f643cb0f091326a6d2765a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a47035498cba91b2549a63cadc983284e" id="r_a47035498cba91b2549a63cadc983284e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k__internal_8h.html#a47035498cba91b2549a63cadc983284e">m68k_write_16</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a> value)</td></tr>
+<tr class="memdesc:a47035498cba91b2549a63cadc983284e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write one word to emulated memory.  <br /></td></tr>
 <tr class="separator:a47035498cba91b2549a63cadc983284e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a84bebd2fb1bcb64f1fbe36da8d1f1b3b" id="r_a84bebd2fb1bcb64f1fbe36da8d1f1b3b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k__internal_8h.html#a84bebd2fb1bcb64f1fbe36da8d1f1b3b">m68k_write_32</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> value)</td></tr>
+<tr class="memdesc:a84bebd2fb1bcb64f1fbe36da8d1f1b3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write one longword to emulated memory.  <br /></td></tr>
 <tr class="separator:a84bebd2fb1bcb64f1fbe36da8d1f1b3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9cdc66070b4a46896fc169532fc04134" id="r_a9cdc66070b4a46896fc169532fc04134"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k__internal_8h.html#a9cdc66070b4a46896fc169532fc04134">m68k_read_size</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#a71dd7bbc3e91d469b620b09b81fbf936">M68kSize</a> size)</td></tr>
 <tr class="separator:a9cdc66070b4a46896fc169532fc04134"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -133,8 +143,12 @@ Functions</h2></td></tr>
 <tr class="separator:a73397c9e90d14e0c16f75f1fe85257e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae88d9b5b03cb5d5906aeee0bab2c8e11" id="r_ae88d9b5b03cb5d5906aeee0bab2c8e11"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k__internal_8h.html#ae88d9b5b03cb5d5906aeee0bab2c8e11">fetch_extension</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu)</td></tr>
 <tr class="separator:ae88d9b5b03cb5d5906aeee0bab2c8e11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb8b34578d1609abc5cc92f97cddae80" id="r_afb8b34578d1609abc5cc92f97cddae80"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structM68kEA.html">M68kEA</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k__internal_8h.html#afb8b34578d1609abc5cc92f97cddae80">m68k_calc_ea_ex</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, int mode, int reg, <a class="el" href="m68k_8h.html#a71dd7bbc3e91d469b620b09b81fbf936">M68kSize</a> size, bool fetch_value)</td></tr>
+<tr class="separator:afb8b34578d1609abc5cc92f97cddae80"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a08e81c8cc52244884bca346a3e48d193" id="r_a08e81c8cc52244884bca346a3e48d193"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structM68kEA.html">M68kEA</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k__internal_8h.html#a08e81c8cc52244884bca346a3e48d193">m68k_calc_ea</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, int mode, int reg, <a class="el" href="m68k_8h.html#a71dd7bbc3e91d469b620b09b81fbf936">M68kSize</a> size)</td></tr>
 <tr class="separator:a08e81c8cc52244884bca346a3e48d193"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8872343c4d4dde5bb19314ff15e6df64" id="r_a8872343c4d4dde5bb19314ff15e6df64"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structM68kEA.html">M68kEA</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k__internal_8h.html#a8872343c4d4dde5bb19314ff15e6df64">m68k_calc_ea_addr</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, int mode, int reg, <a class="el" href="m68k_8h.html#a71dd7bbc3e91d469b620b09b81fbf936">M68kSize</a> size)</td></tr>
+<tr class="separator:a8872343c4d4dde5bb19314ff15e6df64"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab5c841127bbca60f5b4b88b557d337d0" id="r_ab5c841127bbca60f5b4b88b557d337d0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k__internal_8h.html#ab5c841127bbca60f5b4b88b557d337d0">m68k_push_32</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> value)</td></tr>
 <tr class="separator:ab5c841127bbca60f5b4b88b557d337d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a144d96685a18276669496792ceff922e" id="r_a144d96685a18276669496792ceff922e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k__internal_8h.html#a144d96685a18276669496792ceff922e">m68k_pop_32</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu)</td></tr>
@@ -284,7 +298,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a61df2f9931406ba7ffb3a1713373ccd0" id="r_a61df2f9931406ba7ffb3a1713373ccd0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k__internal_8h.html#a61df2f9931406ba7ffb3a1713373ccd0">m68k_swap_sp</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, bool new_supervisor)</td></tr>
 <tr class="separator:a61df2f9931406ba7ffb3a1713373ccd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Macro Definition Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Internal declarations for opcode handlers and core helpers. </p>
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a8dee7333c8024a0bc24cc4e94630188f" name="a8dee7333c8024a0bc24cc4e94630188f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8dee7333c8024a0bc24cc4e94630188f">&#9670;&#160;</a></span>m68k_read</h2>
 
@@ -312,22 +328,11 @@ Functions</h2></td></tr>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td>
+          <td></td><td>&#160;&#160;&#160;    _Generic((type), u8: <a class="el" href="m68k_8h.html#aab374773173992ba63a812792ace838c">m68k_read_8</a>, u16: <a class="el" href="m68k_8h.html#ac73409aa78dc554b44737cddcc2d814b">m68k_read_16</a>, u32: <a class="el" href="m68k_8h.html#ac6927ec34c6dd9657ca726126ba180bc">m68k_read_32</a>)(cpu, addr)</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">    _Generic((type), \</div>
-<div class="line">    <a class="code hl_typedef" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a>: <a class="code hl_function" href="m68k__internal_8h.html#aab374773173992ba63a812792ace838c">m68k_read_8</a>, \</div>
-<div class="line">    <a class="code hl_typedef" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a>: <a class="code hl_function" href="m68k__internal_8h.html#ac73409aa78dc554b44737cddcc2d814b">m68k_read_16</a>, \</div>
-<div class="line">    <a class="code hl_typedef" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>: <a class="code hl_function" href="m68k__internal_8h.html#ac6927ec34c6dd9657ca726126ba180bc">m68k_read_32</a> \</div>
-<div class="line">)(cpu, addr)</div>
-<div class="ttc" id="am68k_8h_html_a92c50087ca0e64fa93fc59402c55f8ca"><div class="ttname"><a href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a></div><div class="ttdeci">uint8_t u8</div><div class="ttdef"><b>Definition</b> m68k.h:13</div></div>
-<div class="ttc" id="am68k_8h_html_ace9d960e74685e2cd84b36132dbbf8aa"><div class="ttname"><a href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a></div><div class="ttdeci">uint16_t u16</div><div class="ttdef"><b>Definition</b> m68k.h:14</div></div>
-<div class="ttc" id="am68k_8h_html_afaa62991928fb9fb18ff0db62a040aba"><div class="ttname"><a href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a></div><div class="ttdeci">uint32_t u32</div><div class="ttdef"><b>Definition</b> m68k.h:15</div></div>
-<div class="ttc" id="am68k__internal_8h_html_aab374773173992ba63a812792ace838c"><div class="ttname"><a href="m68k__internal_8h.html#aab374773173992ba63a812792ace838c">m68k_read_8</a></div><div class="ttdeci">u8 m68k_read_8(M68kCpu *cpu, u32 address)</div><div class="ttdef"><b>Definition</b> m68k.c:140</div></div>
-<div class="ttc" id="am68k__internal_8h_html_ac6927ec34c6dd9657ca726126ba180bc"><div class="ttname"><a href="m68k__internal_8h.html#ac6927ec34c6dd9657ca726126ba180bc">m68k_read_32</a></div><div class="ttdeci">u32 m68k_read_32(M68kCpu *cpu, u32 address)</div><div class="ttdef"><b>Definition</b> m68k.c:174</div></div>
-<div class="ttc" id="am68k__internal_8h_html_ac73409aa78dc554b44737cddcc2d814b"><div class="ttname"><a href="m68k__internal_8h.html#ac73409aa78dc554b44737cddcc2d814b">m68k_read_16</a></div><div class="ttdeci">u16 m68k_read_16(M68kCpu *cpu, u32 address)</div><div class="ttdef"><b>Definition</b> m68k.c:154</div></div>
-</div><!-- fragment -->
+
 </div>
 </div>
 <a id="a6d35cf348fe2483ad21ac848a413e28a" name="a6d35cf348fe2483ad21ac848a413e28a"></a>
@@ -357,19 +362,11 @@ Functions</h2></td></tr>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td>
+          <td></td><td>&#160;&#160;&#160;    _Generic((value), u8: <a class="el" href="m68k_8h.html#a0698b9148f643cb0f091326a6d2765a6">m68k_write_8</a>, u16: <a class="el" href="m68k_8h.html#a47035498cba91b2549a63cadc983284e">m68k_write_16</a>, u32: <a class="el" href="m68k_8h.html#a84bebd2fb1bcb64f1fbe36da8d1f1b3b">m68k_write_32</a>)(cpu, addr, value)</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">    _Generic((value), \</div>
-<div class="line">    <a class="code hl_typedef" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a>: <a class="code hl_function" href="m68k__internal_8h.html#a0698b9148f643cb0f091326a6d2765a6">m68k_write_8</a>, \</div>
-<div class="line">    <a class="code hl_typedef" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a>: <a class="code hl_function" href="m68k__internal_8h.html#a47035498cba91b2549a63cadc983284e">m68k_write_16</a>, \</div>
-<div class="line">    <a class="code hl_typedef" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>: <a class="code hl_function" href="m68k__internal_8h.html#a84bebd2fb1bcb64f1fbe36da8d1f1b3b">m68k_write_32</a> \</div>
-<div class="line">)(cpu, addr, value)</div>
-<div class="ttc" id="am68k__internal_8h_html_a0698b9148f643cb0f091326a6d2765a6"><div class="ttname"><a href="m68k__internal_8h.html#a0698b9148f643cb0f091326a6d2765a6">m68k_write_8</a></div><div class="ttdeci">void m68k_write_8(M68kCpu *cpu, u32 address, u8 value)</div><div class="ttdef"><b>Definition</b> m68k.c:195</div></div>
-<div class="ttc" id="am68k__internal_8h_html_a47035498cba91b2549a63cadc983284e"><div class="ttname"><a href="m68k__internal_8h.html#a47035498cba91b2549a63cadc983284e">m68k_write_16</a></div><div class="ttdeci">void m68k_write_16(M68kCpu *cpu, u32 address, u16 value)</div><div class="ttdef"><b>Definition</b> m68k.c:210</div></div>
-<div class="ttc" id="am68k__internal_8h_html_a84bebd2fb1bcb64f1fbe36da8d1f1b3b"><div class="ttname"><a href="m68k__internal_8h.html#a84bebd2fb1bcb64f1fbe36da8d1f1b3b">m68k_write_32</a></div><div class="ttdeci">void m68k_write_32(M68kCpu *cpu, u32 address, u32 value)</div><div class="ttdef"><b>Definition</b> m68k.c:229</div></div>
-</div><!-- fragment -->
+
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
@@ -420,6 +417,92 @@ Functions</h2></td></tr>
           <td></td>
           <td class="paramtype"><a class="el" href="m68k_8h.html#a71dd7bbc3e91d469b620b09b81fbf936">M68kSize</a>&#160;</td>
           <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a8872343c4d4dde5bb19314ff15e6df64" name="a8872343c4d4dde5bb19314ff15e6df64"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8872343c4d4dde5bb19314ff15e6df64">&#9670;&#160;</a></span>m68k_calc_ea_addr()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structM68kEA.html">M68kEA</a> m68k_calc_ea_addr </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structM68kCpu.html">M68kCpu</a> *&#160;</td>
+          <td class="paramname"><em>cpu</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>mode</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>reg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="m68k_8h.html#a71dd7bbc3e91d469b620b09b81fbf936">M68kSize</a>&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="afb8b34578d1609abc5cc92f97cddae80" name="afb8b34578d1609abc5cc92f97cddae80"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afb8b34578d1609abc5cc92f97cddae80">&#9670;&#160;</a></span>m68k_calc_ea_ex()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structM68kEA.html">M68kEA</a> m68k_calc_ea_ex </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structM68kCpu.html">M68kCpu</a> *&#160;</td>
+          <td class="paramname"><em>cpu</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>mode</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>reg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="m68k_8h.html#a71dd7bbc3e91d469b620b09b81fbf936">M68kSize</a>&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>fetch_value</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -2421,6 +2504,16 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Read one word from emulated memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">address</td><td>Emulated address. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Read value. </dd></dl>
+
 </div>
 </div>
 <a id="ac6927ec34c6dd9657ca726126ba180bc" name="ac6927ec34c6dd9657ca726126ba180bc"></a>
@@ -2449,6 +2542,16 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Read one longword from emulated memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">address</td><td>Emulated address. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Read value. </dd></dl>
+
 </div>
 </div>
 <a id="aab374773173992ba63a812792ace838c" name="aab374773173992ba63a812792ace838c"></a>
@@ -2476,6 +2579,16 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Read one byte from emulated memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">address</td><td>Emulated address. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Read value. </dd></dl>
 
 </div>
 </div>
@@ -2573,6 +2686,16 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Write one word to emulated memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">address</td><td>Emulated address. </td></tr>
+    <tr><td class="paramname">value</td><td>Value to write. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a84bebd2fb1bcb64f1fbe36da8d1f1b3b" name="a84bebd2fb1bcb64f1fbe36da8d1f1b3b"></a>
@@ -2607,6 +2730,16 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Write one longword to emulated memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">address</td><td>Emulated address. </td></tr>
+    <tr><td class="paramname">value</td><td>Value to write. </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a0698b9148f643cb0f091326a6d2765a6" name="a0698b9148f643cb0f091326a6d2765a6"></a>
@@ -2640,6 +2773,16 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Write one byte to emulated memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">address</td><td>Emulated address. </td></tr>
+    <tr><td class="paramname">value</td><td>Value to write. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

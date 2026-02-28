@@ -77,6 +77,9 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
+<p>Full CPU context for one emulated 68000 instance.  
+ <a href="structM68kCpu.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="m68k_8h_source.html">m68k.h</a>&gt;</code></p>
 <div class="dynheader">
 Collaboration diagram for M68kCpu:</div>
@@ -92,8 +95,12 @@ Public Attributes</h2></td></tr>
 <tr class="separator:afe9d05a40e5fc126f72cb9c00c307d6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3dc53ea0dd304f63ff5ee6f6d431a55a" id="r_a3dc53ea0dd304f63ff5ee6f6d431a55a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#a3dc53ea0dd304f63ff5ee6f6d431a55a">pc</a></td></tr>
 <tr class="separator:a3dc53ea0dd304f63ff5ee6f6d431a55a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26427f1fb97260e82beae388e21aa7ee" id="r_a26427f1fb97260e82beae388e21aa7ee"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#a26427f1fb97260e82beae388e21aa7ee">ppc</a></td></tr>
+<tr class="separator:a26427f1fb97260e82beae388e21aa7ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a72ede2fee8a1a0ef3b732592071b20f3" id="r_a72ede2fee8a1a0ef3b732592071b20f3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#a72ede2fee8a1a0ef3b732592071b20f3">sr</a></td></tr>
 <tr class="separator:a72ede2fee8a1a0ef3b732592071b20f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a566c632a70e3325a09f76f5065fe03c0" id="r_a566c632a70e3325a09f76f5065fe03c0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#a566c632a70e3325a09f76f5065fe03c0">ir</a></td></tr>
+<tr class="separator:a566c632a70e3325a09f76f5065fe03c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac284695456e2679ce65ca04ad90b2153" id="r_ac284695456e2679ce65ca04ad90b2153"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#ac284695456e2679ce65ca04ad90b2153">memory</a></td></tr>
 <tr class="separator:ac284695456e2679ce65ca04ad90b2153"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c1be8ff235b2f9f99e14eaa75abe6d8" id="r_a1c1be8ff235b2f9f99e14eaa75abe6d8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#a1c1be8ff235b2f9f99e14eaa75abe6d8">memory_size</a></td></tr>
@@ -110,6 +117,20 @@ Public Attributes</h2></td></tr>
 <tr class="separator:ad83ab257df8d486c4e0dfad61efdb947"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0aef24c642da949052876ed1c568edb5" id="r_a0aef24c642da949052876ed1c568edb5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#a0aef24c642da949052876ed1c568edb5">exception_thrown</a></td></tr>
 <tr class="separator:a0aef24c642da949052876ed1c568edb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ca668e712ebecb57971a19ad4f5a3a2" id="r_a1ca668e712ebecb57971a19ad4f5a3a2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#a1ca668e712ebecb57971a19ad4f5a3a2">in_address_error</a></td></tr>
+<tr class="separator:a1ca668e712ebecb57971a19ad4f5a3a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a32d7decb1c0221e4c7ca3188fa8c1604" id="r_a32d7decb1c0221e4c7ca3188fa8c1604"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#a32d7decb1c0221e4c7ca3188fa8c1604">in_bus_error</a></td></tr>
+<tr class="separator:a32d7decb1c0221e4c7ca3188fa8c1604"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e51705d554b30eaf23cc7e6e2faef4a" id="r_a2e51705d554b30eaf23cc7e6e2faef4a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#a2e51705d554b30eaf23cc7e6e2faef4a">fault_address</a></td></tr>
+<tr class="separator:a2e51705d554b30eaf23cc7e6e2faef4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aadc7849cde005d602c2a26e7f20f8337" id="r_aadc7849cde005d602c2a26e7f20f8337"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#aadc7849cde005d602c2a26e7f20f8337">fault_ir</a></td></tr>
+<tr class="separator:aadc7849cde005d602c2a26e7f20f8337"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a565f06e840473c973ef4bbbab85cba70" id="r_a565f06e840473c973ef4bbbab85cba70"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#a565f06e840473c973ef4bbbab85cba70">fault_ssw</a></td></tr>
+<tr class="separator:a565f06e840473c973ef4bbbab85cba70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5f90f73d24e0474e6b9678d94c8f0a3" id="r_ac5f90f73d24e0474e6b9678d94c8f0a3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#ac5f90f73d24e0474e6b9678d94c8f0a3">fault_program_access</a></td></tr>
+<tr class="separator:ac5f90f73d24e0474e6b9678d94c8f0a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa33631a9e2b7de0be8eb2a75dfd648c1" id="r_aa33631a9e2b7de0be8eb2a75dfd648c1"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#aa33631a9e2b7de0be8eb2a75dfd648c1">fault_valid</a></td></tr>
+<tr class="separator:aa33631a9e2b7de0be8eb2a75dfd648c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a177e3e8c2739b01273dfd55649fbf693" id="r_a177e3e8c2739b01273dfd55649fbf693"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#a177e3e8c2739b01273dfd55649fbf693">vbr</a></td></tr>
 <tr class="separator:a177e3e8c2739b01273dfd55649fbf693"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a70b6210fc278c15ed0faf8beded91906" id="r_a70b6210fc278c15ed0faf8beded91906"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#a70b6210fc278c15ed0faf8beded91906">sfc</a></td></tr>
@@ -137,7 +158,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:ac96b39302a4b1dd798b85480043d360b" id="r_ac96b39302a4b1dd798b85480043d360b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#a50006589848a459ad5f7bf6a625cdb5f">M68kIllgCallback</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#ac96b39302a4b1dd798b85480043d360b">illg_cb</a></td></tr>
 <tr class="separator:ac96b39302a4b1dd798b85480043d360b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Data Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Full CPU context for one emulated 68000 instance. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
 <a id="afe9d05a40e5fc126f72cb9c00c307d6b" name="afe9d05a40e5fc126f72cb9c00c307d6b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afe9d05a40e5fc126f72cb9c00c307d6b">&#9670;&#160;</a></span>a_regs</h2>
 
@@ -149,6 +172,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Address registers A0-A7. </p>
 
 </div>
 </div>
@@ -163,6 +187,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Remaining cycles in current timeslice. </p>
 
 </div>
 </div>
@@ -177,6 +202,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Data registers D0-D7. </p>
 
 </div>
 </div>
@@ -191,6 +217,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Destination function code register (model extension path). </p>
 
 </div>
 </div>
@@ -205,6 +232,82 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Exception state marker. </p>
+
+</div>
+</div>
+<a id="a2e51705d554b30eaf23cc7e6e2faef4a" name="a2e51705d554b30eaf23cc7e6e2faef4a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e51705d554b30eaf23cc7e6e2faef4a">&#9670;&#160;</a></span>fault_address</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> M68kCpu::fault_address</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Fault address latched for exception frames. </p>
+
+</div>
+</div>
+<a id="aadc7849cde005d602c2a26e7f20f8337" name="aadc7849cde005d602c2a26e7f20f8337"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aadc7849cde005d602c2a26e7f20f8337">&#9670;&#160;</a></span>fault_ir</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a> M68kCpu::fault_ir</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Fault IR latched for exception frames. </p>
+
+</div>
+</div>
+<a id="ac5f90f73d24e0474e6b9678d94c8f0a3" name="ac5f90f73d24e0474e6b9678d94c8f0a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac5f90f73d24e0474e6b9678d94c8f0a3">&#9670;&#160;</a></span>fault_program_access</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool M68kCpu::fault_program_access</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Fault access type marker. </p>
+
+</div>
+</div>
+<a id="a565f06e840473c973ef4bbbab85cba70" name="a565f06e840473c973ef4bbbab85cba70"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a565f06e840473c973ef4bbbab85cba70">&#9670;&#160;</a></span>fault_ssw</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a> M68kCpu::fault_ssw</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Fault status word for exception frames. </p>
+
+</div>
+</div>
+<a id="aa33631a9e2b7de0be8eb2a75dfd648c1" name="aa33631a9e2b7de0be8eb2a75dfd648c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa33631a9e2b7de0be8eb2a75dfd648c1">&#9670;&#160;</a></span>fault_valid</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool M68kCpu::fault_valid</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Fault information validity flag. </p>
 
 </div>
 </div>
@@ -219,6 +322,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Function code callback. </p>
 
 </div>
 </div>
@@ -233,6 +337,37 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Illegal opcode callback. </p>
+
+</div>
+</div>
+<a id="a1ca668e712ebecb57971a19ad4f5a3a2" name="a1ca668e712ebecb57971a19ad4f5a3a2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1ca668e712ebecb57971a19ad4f5a3a2">&#9670;&#160;</a></span>in_address_error</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool M68kCpu::in_address_error</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Address error re-entry guard. </p>
+
+</div>
+</div>
+<a id="a32d7decb1c0221e4c7ca3188fa8c1604" name="a32d7decb1c0221e4c7ca3188fa8c1604"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a32d7decb1c0221e4c7ca3188fa8c1604">&#9670;&#160;</a></span>in_bus_error</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool M68kCpu::in_bus_error</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Bus error re-entry guard. </p>
 
 </div>
 </div>
@@ -247,6 +382,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Instruction hook callback. </p>
 
 </div>
 </div>
@@ -261,6 +397,22 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Interrupt acknowledge callback. </p>
+
+</div>
+</div>
+<a id="a566c632a70e3325a09f76f5065fe03c0" name="a566c632a70e3325a09f76f5065fe03c0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a566c632a70e3325a09f76f5065fe03c0">&#9670;&#160;</a></span>ir</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a> M68kCpu::ir</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Current instruction register. </p>
 
 </div>
 </div>
@@ -275,6 +427,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Pending interrupt level (0-7). </p>
 
 </div>
 </div>
@@ -289,6 +442,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Bound flat memory pointer. </p>
 
 </div>
 </div>
@@ -303,6 +457,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Size of bound memory in bytes. </p>
 
 </div>
 </div>
@@ -317,6 +472,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Program counter. </p>
 
 </div>
 </div>
@@ -331,6 +487,22 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>PC changed callback. </p>
+
+</div>
+</div>
+<a id="a26427f1fb97260e82beae388e21aa7ee" name="a26427f1fb97260e82beae388e21aa7ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26427f1fb97260e82beae388e21aa7ee">&#9670;&#160;</a></span>ppc</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> M68kCpu::ppc</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Previous program counter. </p>
 
 </div>
 </div>
@@ -345,6 +517,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Reset callback. </p>
 
 </div>
 </div>
@@ -359,6 +532,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Source function code register (model extension path). </p>
 
 </div>
 </div>
@@ -373,6 +547,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Status register. </p>
 
 </div>
 </div>
@@ -387,6 +562,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Supervisor stack pointer shadow. </p>
 
 </div>
 </div>
@@ -401,6 +577,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>STOP state latch. </p>
 
 </div>
 </div>
@@ -415,6 +592,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Timeslice target cycles accumulator. </p>
 
 </div>
 </div>
@@ -429,6 +607,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>TAS callback. </p>
 
 </div>
 </div>
@@ -443,6 +622,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Trace pending latch. </p>
 
 </div>
 </div>
@@ -457,6 +637,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>User stack pointer. </p>
 
 </div>
 </div>
@@ -471,6 +652,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Vector base register (model extension path). </p>
 
 </div>
 </div>
@@ -485,6 +667,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Wait/bus callback. </p>
 
 </div>
 </div>
