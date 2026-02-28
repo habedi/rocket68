@@ -11,6 +11,8 @@ void m68k_init(M68kCpu* cpu, u8* memory, u32 memory_size) {
     cpu->usp = 0;
     cpu->stopped = false;
     cpu->trace_pending = false;
+    cpu->in_address_error = false;
+    cpu->in_bus_error = false;
 }
 
 void m68k_reset(M68kCpu* cpu) {
@@ -24,6 +26,8 @@ void m68k_reset(M68kCpu* cpu) {
     cpu->trace_pending = false;
     cpu->exception_thrown = 0;
     cpu->irq_level = 0;
+    cpu->in_address_error = false;
+    cpu->in_bus_error = false;
 
     cpu->a_regs[7].l = m68k_read_32(cpu, 0x00000000);
     cpu->pc = m68k_read_32(cpu, 0x00000004);
@@ -101,9 +105,6 @@ static inline void set_fc(M68kCpu* cpu, bool is_program) {
     }
 }
 
-static bool in_address_error = false;
-static bool in_bus_error = false;
-
 static const int ea_cycles[12][2] = {
     {0, 0},   {0, 0},  {4, 8},   {4, 8},  {6, 10},  {8, 12},
     {10, 14}, {8, 12}, {12, 16}, {8, 12}, {10, 14}, {4, 8},
@@ -143,10 +144,10 @@ u8 m68k_read_8(M68kCpu* cpu, u32 address) {
     if (is_valid_address(cpu, address)) {
         return cpu->memory[address];
     }
-    if (!in_bus_error) {
-        in_bus_error = true;
+    if (!cpu->in_bus_error) {
+        cpu->in_bus_error = true;
         m68k_exception(cpu, 2);
-        in_bus_error = false;
+        cpu->in_bus_error = false;
     }
     return 0;
 }
@@ -154,19 +155,19 @@ u8 m68k_read_8(M68kCpu* cpu, u32 address) {
 u16 m68k_read_16(M68kCpu* cpu, u32 address) {
     set_fc(cpu, false);
     if (cpu->wait_bus) cpu->wait_bus(cpu, address, SIZE_WORD);
-    if ((address & 1) && !in_address_error) {
-        in_address_error = true;
+    if ((address & 1) && !cpu->in_address_error) {
+        cpu->in_address_error = true;
         m68k_exception(cpu, 3);
-        in_address_error = false;
+        cpu->in_address_error = false;
         return 0;
     }
     if (is_valid_address(cpu, address) && is_valid_address(cpu, address + 1)) {
         return (u16)((cpu->memory[address] << 8) | cpu->memory[address + 1]);
     }
-    if (!in_bus_error) {
-        in_bus_error = true;
+    if (!cpu->in_bus_error) {
+        cpu->in_bus_error = true;
         m68k_exception(cpu, 2);
-        in_bus_error = false;
+        cpu->in_bus_error = false;
     }
     return 0;
 }
@@ -174,20 +175,20 @@ u16 m68k_read_16(M68kCpu* cpu, u32 address) {
 u32 m68k_read_32(M68kCpu* cpu, u32 address) {
     set_fc(cpu, false);
     if (cpu->wait_bus) cpu->wait_bus(cpu, address, SIZE_LONG);
-    if ((address & 1) && !in_address_error) {
-        in_address_error = true;
+    if ((address & 1) && !cpu->in_address_error) {
+        cpu->in_address_error = true;
         m68k_exception(cpu, 3);
-        in_address_error = false;
+        cpu->in_address_error = false;
         return 0;
     }
     if (is_valid_address(cpu, address) && is_valid_address(cpu, address + 3)) {
         return ((u32)cpu->memory[address] << 24) | ((u32)cpu->memory[address + 1] << 16) |
                ((u32)cpu->memory[address + 2] << 8) | (u32)cpu->memory[address + 3];
     }
-    if (!in_bus_error) {
-        in_bus_error = true;
+    if (!cpu->in_bus_error) {
+        cpu->in_bus_error = true;
         m68k_exception(cpu, 2);
-        in_bus_error = false;
+        cpu->in_bus_error = false;
     }
     return 0;
 }
@@ -200,39 +201,39 @@ void m68k_write_8(M68kCpu* cpu, u32 address, u8 value) {
     } else if (address == 0xE00000) {
         putchar(value);
         fflush(stdout);
-    } else if (!in_bus_error) {
-        in_bus_error = true;
+    } else if (!cpu->in_bus_error) {
+        cpu->in_bus_error = true;
         m68k_exception(cpu, 2);
-        in_bus_error = false;
+        cpu->in_bus_error = false;
     }
 }
 
 void m68k_write_16(M68kCpu* cpu, u32 address, u16 value) {
     set_fc(cpu, false);
     if (cpu->wait_bus) cpu->wait_bus(cpu, address, SIZE_WORD);
-    if ((address & 1) && !in_address_error) {
-        in_address_error = true;
+    if ((address & 1) && !cpu->in_address_error) {
+        cpu->in_address_error = true;
         m68k_exception(cpu, 3);
-        in_address_error = false;
+        cpu->in_address_error = false;
         return;
     }
     if (is_valid_address(cpu, address) && is_valid_address(cpu, address + 1)) {
         cpu->memory[address] = (value >> 8) & 0xFF;
         cpu->memory[address + 1] = value & 0xFF;
-    } else if (!in_bus_error) {
-        in_bus_error = true;
+    } else if (!cpu->in_bus_error) {
+        cpu->in_bus_error = true;
         m68k_exception(cpu, 2);
-        in_bus_error = false;
+        cpu->in_bus_error = false;
     }
 }
 
 void m68k_write_32(M68kCpu* cpu, u32 address, u32 value) {
     set_fc(cpu, false);
     if (cpu->wait_bus) cpu->wait_bus(cpu, address, SIZE_LONG);
-    if ((address & 1) && !in_address_error) {
-        in_address_error = true;
+    if ((address & 1) && !cpu->in_address_error) {
+        cpu->in_address_error = true;
         m68k_exception(cpu, 3);
-        in_address_error = false;
+        cpu->in_address_error = false;
         return;
     }
     if (is_valid_address(cpu, address) && is_valid_address(cpu, address + 3)) {
@@ -240,10 +241,10 @@ void m68k_write_32(M68kCpu* cpu, u32 address, u32 value) {
         cpu->memory[address + 1] = (value >> 16) & 0xFF;
         cpu->memory[address + 2] = (value >> 8) & 0xFF;
         cpu->memory[address + 3] = value & 0xFF;
-    } else if (!in_bus_error) {
-        in_bus_error = true;
+    } else if (!cpu->in_bus_error) {
+        cpu->in_bus_error = true;
         m68k_exception(cpu, 2);
-        in_bus_error = false;
+        cpu->in_bus_error = false;
     }
 }
 
@@ -252,18 +253,18 @@ u16 m68k_fetch(M68kCpu* cpu) {
     if (cpu->wait_bus) cpu->wait_bus(cpu, cpu->pc, SIZE_WORD);
     u16 opcode = 0;
 
-    if ((cpu->pc & 1) && !in_address_error) {
-        in_address_error = true;
+    if ((cpu->pc & 1) && !cpu->in_address_error) {
+        cpu->in_address_error = true;
         m68k_exception(cpu, 3);
-        in_address_error = false;
+        cpu->in_address_error = false;
         return 0;
     }
     if (is_valid_address(cpu, cpu->pc) && is_valid_address(cpu, cpu->pc + 1)) {
         opcode = (u16)((cpu->memory[cpu->pc] << 8) | cpu->memory[cpu->pc + 1]);
-    } else if (!in_bus_error) {
-        in_bus_error = true;
+    } else if (!cpu->in_bus_error) {
+        cpu->in_bus_error = true;
         m68k_exception(cpu, 2);
-        in_bus_error = false;
+        cpu->in_bus_error = false;
         return 0;
     }
 
@@ -289,7 +290,7 @@ void m68k_write_size(M68kCpu* cpu, u32 address, u32 value, M68kSize size) {
         m68k_write_32(cpu, address, value);
 }
 
-M68kEA m68k_calc_ea(M68kCpu* cpu, int mode, int reg, M68kSize size) {
+M68kEA m68k_calc_ea_ex(M68kCpu* cpu, int mode, int reg, M68kSize size, bool fetch_value) {
     M68kEA ea = {0};
 
     cpu->cycles_remaining -= m68k_ea_cycles(mode, reg, size);
@@ -309,11 +310,11 @@ M68kEA m68k_calc_ea(M68kCpu* cpu, int mode, int reg, M68kSize size) {
             break;
         case 2:
             ea.address = cpu->a_regs[reg].l;
-            ea.value = m68k_read_size(cpu, ea.address, size);
+            if (fetch_value) ea.value = m68k_read_size(cpu, ea.address, size);
             break;
         case 3:
             ea.address = cpu->a_regs[reg].l;
-            ea.value = m68k_read_size(cpu, ea.address, size);
+            if (fetch_value) ea.value = m68k_read_size(cpu, ea.address, size);
 
             cpu->a_regs[reg].l += (size == SIZE_BYTE && reg == 7) ? 2 : size;
             break;
@@ -321,24 +322,24 @@ M68kEA m68k_calc_ea(M68kCpu* cpu, int mode, int reg, M68kSize size) {
 
             cpu->a_regs[reg].l -= (size == SIZE_BYTE && reg == 7) ? 2 : size;
             ea.address = cpu->a_regs[reg].l;
-            ea.value = m68k_read_size(cpu, ea.address, size);
+            if (fetch_value) ea.value = m68k_read_size(cpu, ea.address, size);
             break;
         case 5: {
             s16 disp = (s16)fetch_extension(cpu);
             ea.address = cpu->a_regs[reg].l + disp;
-            ea.value = m68k_read_size(cpu, ea.address, size);
+            if (fetch_value) ea.value = m68k_read_size(cpu, ea.address, size);
         } break;
         case 7:
             switch (reg) {
                 case 0:
                     ea.address = (s32)(s16)fetch_extension(cpu);
-                    ea.value = m68k_read_size(cpu, ea.address, size);
+                    if (fetch_value) ea.value = m68k_read_size(cpu, ea.address, size);
                     break;
                 case 1: {
                     u32 high = fetch_extension(cpu);
                     u32 low = fetch_extension(cpu);
                     ea.address = (high << 16) | low;
-                    ea.value = m68k_read_size(cpu, ea.address, size);
+                    if (fetch_value) ea.value = m68k_read_size(cpu, ea.address, size);
                 } break;
                 case 4:
                     if (size == SIZE_LONG) {
@@ -354,7 +355,7 @@ M68kEA m68k_calc_ea(M68kCpu* cpu, int mode, int reg, M68kSize size) {
                 case 2: {
                     s16 disp = (s16)fetch_extension(cpu);
                     ea.address = (cpu->pc - 2) + disp;
-                    ea.value = m68k_read_size(cpu, ea.address, size);
+                    if (fetch_value) ea.value = m68k_read_size(cpu, ea.address, size);
                 } break;
                 case 3: {
                     u16 ext = fetch_extension(cpu);
@@ -370,7 +371,7 @@ M68kEA m68k_calc_ea(M68kCpu* cpu, int mode, int reg, M68kSize size) {
                     }
 
                     ea.address = pc_base + xn_val + disp8;
-                    ea.value = m68k_read_size(cpu, ea.address, size);
+                    if (fetch_value) ea.value = m68k_read_size(cpu, ea.address, size);
                 } break;
                 default:
                     break;
@@ -389,10 +390,18 @@ M68kEA m68k_calc_ea(M68kCpu* cpu, int mode, int reg, M68kSize size) {
             }
 
             ea.address = cpu->a_regs[reg].l + xn_val + disp8;
-            ea.value = m68k_read_size(cpu, ea.address, size);
+            if (fetch_value) ea.value = m68k_read_size(cpu, ea.address, size);
         } break;
     }
     return ea;
+}
+
+M68kEA m68k_calc_ea(M68kCpu* cpu, int mode, int reg, M68kSize size) {
+    return m68k_calc_ea_ex(cpu, mode, reg, size, true);
+}
+
+M68kEA m68k_calc_ea_addr(M68kCpu* cpu, int mode, int reg, M68kSize size) {
+    return m68k_calc_ea_ex(cpu, mode, reg, size, false);
 }
 
 void update_flags_add(M68kCpu* cpu, u32 src, u32 dest, u32 result, M68kSize size) {
@@ -1007,14 +1016,10 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
     cycles = 34;
 
 done:
-    if ((cpu->pc & 1) && !in_address_error) {
-        if ((cpu->pc & 1) && cpu->exception_thrown == 0) {
-            printf(
-                "WARNING: PC is odd %X, about to throw exception 3! exception_thrown=%d, "
-                "in_address_error=%d\n",
-                cpu->pc, cpu->exception_thrown, in_address_error);
-        }
+    if ((cpu->pc & 1) && !cpu->in_address_error) {
+        cpu->in_address_error = true;
         m68k_exception(cpu, 3);
+        cpu->in_address_error = false;
     }
 
     if (check_exceptions && trace_active && !cpu->stopped) {
@@ -1031,7 +1036,7 @@ int m68k_execute(M68kCpu* cpu, int cycles_requested) {
 
     int start_cycles_run = m68k_cycles_run(cpu);
 
-    while (cpu->cycles_remaining > 0 && !cpu->stopped) {
+    while (cpu->cycles_remaining > 0) {
         m68k_step(cpu);
     }
 

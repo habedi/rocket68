@@ -44,7 +44,7 @@ See [ROADMAP.md](ROADMAP.md) for the list of implemented and planned features.
 1. Clone the repository
 
 ```bash
-git https://github.com/habedi/rocket68
+git clone https://github.com/habedi/rocket68
 cd rocket68
 ```
 
@@ -85,22 +85,16 @@ int main(void) {
 
     // A tiny M68k program (machine code)
     u8 program[] = {
-        // --- 1. System Reset Vectors ---
-        // Address 0x0000: Initial SSP (Stack Pointer: 0x00100000)
-        0x00, 0x10, 0x00, 0x00, 
-        // Address 0x0004: Initial PC (Program Counter: 0x00000008)
-        0x00, 0x00, 0x00, 0x08, 
+        // Initial SSP = 0x00080000, Initial PC = 0x00000008
+        0x00, 0x08, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x08,
 
-        // --- 2. Code starts at 0x08 ---
-        // MOVEA.L #$E00000, A0 -> Put our terminal port into A0
-        0x20, 0x7C, 0x00, 0xE0, 0x00, 0x00,
-
-        // MOVE.B #'H', (A0) -> Write 'H' to terminal
-        0x10, 0xBC, 0x00, 'H',
-        // MOVE.B #'i', (A0) -> Write 'i' to terminal
-        0x10, 0xBC, 0x00, 'i',
-        // MOVE.B #'\n', (A0) -> Write newline to terminal
-        0x10, 0xBC, 0x00, '\n',
+        // MOVE.B #'H', $00000100
+        0x13, 0xFC, 0x00, 'H', 0x00, 0x00, 0x01, 0x00,
+        // MOVE.B #'i', $00000101
+        0x13, 0xFC, 0x00, 'i', 0x00, 0x00, 0x01, 0x01,
+        // MOVE.B #'\n', $00000102
+        0x13, 0xFC, 0x00, '\n', 0x00, 0x00, 0x01, 0x02,
         
         // STOP #$2700 -> Halt the CPU
         0x4E, 0x72, 0x27, 0x00
@@ -112,11 +106,10 @@ int main(void) {
     // Reset CPU (this causes it to read the SSP and PC from address 0)
     m68k_reset(&cpu);
 
-    printf("Executing M68k code...\n");
     // Execute up to 1000 cycles (or until STOP instruction)
     int cycles_executed = m68k_execute(&cpu, 1000);
 
-    // Another way to "show something": print the internal CPU state!
+    printf("Guest wrote: %c%c%c", ram[0x100], ram[0x101], ram[0x102]);
     printf("Finished in %d cycles. CPU halted at PC: 0x%08X\n", cycles_executed, (unsigned int)cpu.pc);
 
     free(ram);
@@ -124,7 +117,7 @@ int main(void) {
 }
 ```
 
-4. Check out the Makefile (optional)
+4. Check out the [Makefile](Makefile) (optional)
 
 You can run the `make help` command to see the available targets and options including the targets for running different tests suites.
 
@@ -141,10 +134,10 @@ This project includes the following header files (available in the [include](inc
 
 | File | Description |
 | --- | --- |
-| `m68k.h` | This is the main API header for the CPU core execution, callbacks, and management. |
-| `disasm.h` | The built-in instruction disassembler API for formatting opcodes into text. |
-| `loader.h` | Utilities for loading raw binaries and Motorola S-record files into memory for execution. |
-| `rocket68.h` | A header that includes all the components (CPU, disassembler, and loader) in one file. |
+| [m68k.h](include/m68k.h) | This is the main API header for the CPU core execution, callbacks, and management. |
+| [disasm.h](include/disasm.h) | The built-in instruction disassembler API for formatting opcodes into text. |
+| [loader.h](include/loader.h) | Utilities for loading raw binaries and Motorola S-record files into memory for execution. |
+| [rocket68.h](include/rocket68.h) | A header that includes all the components (CPU, disassembler, and loader) in one file. |
 
 > [!NOTE]
 > It's recommended to use the `rocket68.h` header file instead of including the individual header files for most use cases.

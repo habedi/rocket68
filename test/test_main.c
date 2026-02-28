@@ -47,6 +47,10 @@ int main() {
     test_regression_nbcd();
     test_regression_stop_privilege();
     test_regression_ext_dispatch();
+    test_regression_no_spurious_ea_read_on_write();
+    test_regression_stop_rte_resume_pc();
+    test_regression_execute_wakes_stopped_cpu_on_irq();
+    test_regression_exception_guards_are_per_instance();
 
     test_bit_manipulation();
     test_immediate_alu();

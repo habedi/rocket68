@@ -19,7 +19,7 @@ typedef int32_t s32;
 
 typedef enum { SIZE_BYTE = 1, SIZE_WORD = 2, SIZE_LONG = 4 } M68kSize;
 
-typedef struct M68kCpu M68kCpu;  // Forward declare
+typedef struct M68kCpu M68kCpu;
 
 typedef void (*M68kWaitBusCallback)(M68kCpu* cpu, u32 address, M68kSize size);
 
@@ -90,6 +90,8 @@ typedef struct M68kCpu {
     bool stopped;
     bool trace_pending;
     int exception_thrown;
+    bool in_address_error;
+    bool in_bus_error;
 
     u32 vbr;
     u32 sfc;
