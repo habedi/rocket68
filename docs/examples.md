@@ -1,6 +1,7 @@
 # Real-World Scenario
 
-Below is an example of setting up a tiny, self-contained run cycle for `rocket68`. In a real emulator like an Amiga or Sega Genesis, your bus and interrupt callbacks would coordinate access to video RAM, cartridges, or sound chips instead of using a flat RAM allocation.
+Below is an example of setting up a tiny, self-contained run cycle for `rocket68`. In a real emulator like an Amiga or Sega Genesis, your bus and
+interrupt callbacks would coordinate access to video RAM, cartridges, or sound chips instead of using a flat RAM allocation.
 
 ```c
 #include <stdio.h>

@@ -1,12 +1,14 @@
 # API Reference
 
-The primary interaction with Rocket 68 revolves around the `M68kCpu` struct and its management functions. Since Rocket is purely decoupled, all API signatures require a pointer to the context being emulated.
+The primary interaction with Rocket 68 revolves around the `M68kCpu` struct and its management functions. Since Rocket is purely decoupled, all API
+signatures require a pointer to the context being emulated.
 
 ---
 
 ## Core Structures
 
 ### `M68kCpu`
+
 The `M68kCpu` is a 64-byte aligned data structure representing the entire state of a single Motorola 68000 microchip.
 
 ```c
@@ -20,7 +22,9 @@ typedef struct M68kCpu {
 ```
 
 ### `M68kRegister`
+
 A standard C11 anonymous union used to quickly extract 16-bit or 32-bit components natively based on platform endianness.
+
 ```c
 typedef union {
     u32 l;
@@ -29,7 +33,9 @@ typedef union {
     };
 } M68kRegister;
 ```
+
 Usage:
+
 - `cpu->d_regs[0].l = 0xFFFF; // Write 32 bits`
 - `cpu->d_regs[0].w = 0x00FF; // Write lower 16 bits`
 
@@ -38,23 +44,30 @@ Usage:
 ## Functions
 
 ### `m68k_init`
+
 ```c
 void m68k_init(M68kCpu* cpu, u8* memory, u32 memory_size);
 ```
+
 Initializes the CPU struct and binds it to a standard flat byte array representing physical RAM boundaries.
 
 ### `m68k_reset`
+
 ```c
 void m68k_reset(M68kCpu* cpu);
 ```
+
 Executes a hard reset. Populates the `pc` and `ssp` registers by fetching 32-bit vectors from address `0x00` and `0x04` respectively.
 Executes a hard reset. Populates the `ssp` and `pc` registers by fetching 32-bit vectors from address `0x00` and `0x04` respectively.
 
 ### `m68k_execute`
+
 ```c
 int m68k_execute(M68kCpu* cpu, int cycles);
 ```
-Burns CPU cycles by executing instructions. The emulator will run until `cycles` drops to or below zero. Returns the total number of cycles actually consumed.
+
+Burns CPU cycles by executing instructions. The emulator will run until `cycles` drops to or below zero. Returns the total number of cycles actually
+consumed.
 
 ---
 

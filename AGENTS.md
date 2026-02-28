@@ -161,10 +161,10 @@ Use this review format:
 
 - Keep commits scoped to one logical change.
 - PR descriptions should include:
-  1. behavioral change summary,
-  2. tests added/updated,
-  3. benchmark impact (or "no measurable impact"),
-  4. docs updated (yes/no).
+    1. behavioral change summary,
+    2. tests added/updated,
+    3. benchmark impact (or "no measurable impact"),
+    4. docs updated (yes/no).
 
 Suggested PR checklist:
 

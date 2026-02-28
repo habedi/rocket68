@@ -5,8 +5,7 @@
 
 #include "../../include/m68k.h"
 
-typedef struct
-{
+typedef struct {
     u32 value;
     u32 address;
     bool is_reg;
@@ -18,37 +17,31 @@ u8 m68k_read_8(M68kCpu* cpu, u32 address);
 u16 m68k_read_16(M68kCpu* cpu, u32 address);
 u32 m68k_read_32(M68kCpu* cpu, u32 address);
 
-#define m68k_read(cpu, addr, type) _Generic((type), \
-    u8: m68k_read_8, \
-    u16: m68k_read_16, \
-    u32: m68k_read_32 \
-)(cpu, addr)
+#define m68k_read(cpu, addr, type) \
+    _Generic((type), u8: m68k_read_8, u16: m68k_read_16, u32: m68k_read_32)(cpu, addr)
 
 void m68k_write_8(M68kCpu* cpu, u32 address, u8 value);
 void m68k_write_16(M68kCpu* cpu, u32 address, u16 value);
 void m68k_write_32(M68kCpu* cpu, u32 address, u32 value);
 
-#define m68k_write(cpu, addr, value) _Generic((value), \
-    u8: m68k_write_8, \
-    u16: m68k_write_16, \
-    u32: m68k_write_32 \
-)(cpu, addr, value)
+#define m68k_write(cpu, addr, value) \
+    _Generic((value), u8: m68k_write_8, u16: m68k_write_16, u32: m68k_write_32)(cpu, addr, value)
 
 u32 m68k_read_size(M68kCpu* cpu, u32 address, M68kSize size);
 void m68k_write_size(M68kCpu* cpu, u32 address, u32 value, M68kSize size);
 
 int m68k_ea_cycles(int mode, int reg, M68kSize size);
 
-u16 m68k_fetch(M68kCpu * cpu);
-u32 fetch_extension(M68kCpu * cpu);
+u16 m68k_fetch(M68kCpu* cpu);
+u32 fetch_extension(M68kCpu* cpu);
 M68kEA m68k_calc_ea_ex(M68kCpu* cpu, int mode, int reg, M68kSize size, bool fetch_value);
 M68kEA m68k_calc_ea(M68kCpu* cpu, int mode, int reg, M68kSize size);
 M68kEA m68k_calc_ea_addr(M68kCpu* cpu, int mode, int reg, M68kSize size);
 
 void m68k_push_32(M68kCpu* cpu, u32 value);
-u32 m68k_pop_32(M68kCpu * cpu);
+u32 m68k_pop_32(M68kCpu* cpu);
 void m68k_push_16(M68kCpu* cpu, u16 value);
-u16 m68k_pop_16(M68kCpu * cpu);
+u16 m68k_pop_16(M68kCpu* cpu);
 
 #include <stdnoreturn.h>
 

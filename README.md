@@ -61,7 +61,7 @@ cd rocket68
 BUILD_TYPE=release make all
 ```
 
-3. Include the header file (from `include` directory) in your project and link with the files in the `lib` directory:
+3. Include the header file (from `include` directory) in your project and link against the files in the `lib` directory:
 
 ```
 # Example compilation command on Linux:
@@ -132,12 +132,12 @@ The detailed API documentation (generated with Doxygen) is available [here](http
 
 This project includes the following header files (available in the [include](include) directory):
 
-| File | Description |
-| --- | --- |
-| [m68k.h](include/m68k.h) | This is the main API header for the CPU core execution, callbacks, and management. |
-| [disasm.h](include/disasm.h) | The built-in instruction disassembler API for formatting opcodes into text. |
-| [loader.h](include/loader.h) | Utilities for loading raw binaries and Motorola S-record files into memory for execution. |
-| [rocket68.h](include/rocket68.h) | A header that includes all the components (CPU, disassembler, and loader) in one file. |
+| File                             | Description                                                                               |
+|----------------------------------|-------------------------------------------------------------------------------------------|
+| [m68k.h](include/m68k.h)         | This is the main API header for the CPU core execution, callbacks, and management.        |
+| [disasm.h](include/disasm.h)     | The built-in instruction disassembler API for formatting opcodes into text.               |
+| [loader.h](include/loader.h)     | Utilities for loading raw binaries and Motorola S-record files into memory for execution. |
+| [rocket68.h](include/rocket68.h) | A header that includes all the components (CPU, disassembler, and loader) in one file.    |
 
 > [!NOTE]
 > It's recommended to use the `rocket68.h` header file instead of including the individual header files for most use cases.

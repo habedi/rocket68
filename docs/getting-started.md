@@ -7,10 +7,12 @@ Rocket 68 can be used as a standalone Motorola 68000 emulator or integrated into
 The simplest way to use Rocket 68 is to just drop the source files into your build system.
 
 **Required files:**
+
 - `include/m68k.h` (The primary API header)
 - `src/m68k/*.c` (The core execution units and opcodes)
 
 Compile it with any C11-compliant compiler:
+
 ```bash
 gcc -std=c11 -O3 -c src/m68k/*.c
 ```
@@ -40,7 +42,8 @@ int main() {
 
 ## 3. Hooking up the I/O Bus
 
-Rocket 68 knows how to execute instructions, but it relies on your host application to handle physical hardware mapping. You must wire up the callbacks to interface with the outside world.
+Rocket 68 knows how to execute instructions, but it relies on your host application to handle physical hardware mapping. You must wire up the
+callbacks to interface with the outside world.
 
 Because Rocket 68 is fully decoupled, every callback function takes the `cpu` instance as its first argument.
 
@@ -77,9 +80,9 @@ int executed = m68k_execute(&cpu, 100000);
 
 Here is a list of the important header files provided by the project in the `include/` directory:
 
-| File | Description |
-| --- | --- |
-| `m68k.h` | The primary API header for the CPU core execution, callbacks, and management. |
-| `disasm.h` | The built-in instruction disassembler API for formatting opcodes into text. |
-| `loader.h` | Utilities for loading raw binaries and Motorola S-record files into memory. |
+| File         | Description                                                                       |
+|--------------|-----------------------------------------------------------------------------------|
+| `m68k.h`     | The primary API header for the CPU core execution, callbacks, and management.     |
+| `disasm.h`   | The built-in instruction disassembler API for formatting opcodes into text.       |
+| `loader.h`   | Utilities for loading raw binaries and Motorola S-record files into memory.       |
 | `rocket68.h` | A convenience header that includes all the necessary components for the emulator. |
