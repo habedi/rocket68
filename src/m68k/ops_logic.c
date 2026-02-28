@@ -218,6 +218,11 @@ void m68k_exec_clr(M68kCpu* cpu, u16 opcode) {
             return;
     }
 
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
     M68kEA ea = m68k_calc_ea_addr(cpu, mode, reg, size);
 
     if (ea.is_reg && !ea.is_addr) {

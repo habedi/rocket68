@@ -158,11 +158,11 @@ static bool run_test(M68kCpu* cpu, Test_Rec* test, FILE* logf) {
     cpu->trace_pending = false;
     m68k_step_ex(cpu, false);
 
-    if (cpu->exception_thrown != 0) {
-        // We skip exact byte-for-byte verification of Address Error/Bus Error
-        // 14-byte microcode exception stack frames because maintaining exact MAME pipeline IRC
-        // states offline is out of scope for instruction-level emulation.
-        return true;
+    bool skip_ram_verification = false;
+    if (cpu->exception_thrown == 2 || cpu->exception_thrown == 3) {
+        // Keep validating registers/SR/PC for bus/address errors, but relax RAM validation
+        // because stack-frame byte layout depends on micro-architectural details.
+        skip_ram_verification = true;
     }
 
     // 5. Verify against Final State
@@ -234,14 +234,16 @@ static bool run_test(M68kCpu* cpu, Test_Rec* test, FILE* logf) {
     }
 
     // 6. Verify RAM edits
-    for (uint32_t i = 0; i < test->final.ram_count; i++) {
-        uint32_t addr = test->final.ram[i].addr;
-        uint32_t exp = test->final.ram[i].data;
-        uint32_t got = cpu->memory[addr];
-        if (exp != got) {
-            ok = false;
-            fprintf(logf, "[%s] Mismatch RAM[%08X]: got %02X, exp %02X\n", test->name, addr, got,
-                    exp);
+    if (!skip_ram_verification) {
+        for (uint32_t i = 0; i < test->final.ram_count; i++) {
+            uint32_t addr = test->final.ram[i].addr;
+            uint32_t exp = test->final.ram[i].data;
+            uint32_t got = cpu->memory[addr];
+            if (exp != got) {
+                ok = false;
+                fprintf(logf, "[%s] Mismatch RAM[%08X]: got %02X, exp %02X\n", test->name, addr,
+                        got, exp);
+            }
         }
     }
 

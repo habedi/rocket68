@@ -77,7 +77,11 @@ $(COVERAGE_TARGET_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: test
-test: $(TEST_BINARY) ## Run unit tests (excluding JSON/BCD/Musashi, etc.)
+test: test-unit test-json ## Run unit tests plus JSON compatibility suite
+	@echo "All core test suites passed."
+
+.PHONY: test-unit
+test-unit: $(TEST_BINARY) ## Run unit tests (excluding JSON/BCD/Musashi, etc.)
 	@echo "Running tests..."
 	./$(TEST_BINARY)
 
@@ -95,7 +99,7 @@ $(COVERAGE_TEST_BINARY): $(UNIT_TEST_FILES) $(COVERAGE_OBJ_FILES) | $(COVERAGE_B
 test-json: $(BIN_DIR)/test_json ## Run JSON test suite
 	@if [ ! -d external/m68000-json-tests/v1 ]; then \
 		echo "JSON tests missing. Run 'git submodule update --init --recursive'"; \
-		exit 0; \
+		exit 1; \
 	fi
 	./$(BIN_DIR)/test_json external/m68000-json-tests/v1
 
@@ -113,7 +117,12 @@ test-musashi: ## Run Musashi's test suite
 		echo "Musashi submodule missing. Run 'git submodule update --init --recursive'"; \
 		exit 0; \
 	fi
-	@$(MAKE) --no-print-directory -C external/musashi test 2>&1 | grep -v "warning:" || true
+	@tmp_log=$$(mktemp); \
+	$(MAKE) --no-print-directory -C external/musashi test > "$$tmp_log" 2>&1; \
+	status=$$?; \
+	grep -v "warning:" "$$tmp_log" || true; \
+	rm -f "$$tmp_log"; \
+	exit $$status
 
 .PHONY: test-bcd
 test-bcd: ## Run BCD test suite

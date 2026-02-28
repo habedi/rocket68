@@ -374,3 +374,83 @@ void test_regression_exception_guards_are_per_instance() {
 
     printf("Regression: Exception guards are per-instance test passed!\n");
 }
+
+void test_regression_masked_irq_does_not_exit_stop() {
+    M68kCpu cpu;
+    u8 memory[4096];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    cpu.pc = 0x100;
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+
+    m68k_write_16(&cpu, 0x100, 0x4E72);
+    m68k_write_16(&cpu, 0x102, 0x2700);
+    m68k_write_16(&cpu, 0x104, 0x4E71);
+
+    m68k_step(&cpu);
+    assert(cpu.stopped == true);
+    assert(cpu.pc == 0x104);
+
+    m68k_set_irq(&cpu, 1);
+    m68k_step(&cpu);
+
+    assert(cpu.stopped == true);
+    assert(cpu.pc == 0x104);
+    assert(cpu.exception_thrown == 0);
+
+    printf("Regression: Masked IRQ does not exit STOP test passed!\n");
+}
+
+void test_regression_interrupt_stacks_original_sr() {
+    M68kCpu cpu;
+    u8 memory[4096];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    cpu.pc = 0x100;
+    cpu.sr = 0x2000;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+
+    m68k_write_16(&cpu, 0x100, 0x4E71);
+    m68k_write_32(&cpu, (24 + 4) * 4, 0x500);
+
+    m68k_set_irq(&cpu, 4);
+    m68k_step(&cpu);
+
+    assert(cpu.pc == 0x500);
+    assert(cpu.a_regs[7].l == 0x0FFA);
+
+    u16 saved_sr = ((u16)memory[cpu.a_regs[7].l] << 8) | memory[cpu.a_regs[7].l + 1];
+    assert(saved_sr == 0x2000);
+    assert((cpu.sr & 0x2700) == 0x2400);
+
+    printf("Regression: Interrupt stacks original SR test passed!\n");
+}
+
+void test_regression_clr_illegal_mode_traps() {
+    M68kCpu cpu;
+    u8 memory[4096];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    cpu.pc = 0x0000;
+    cpu.sr = 0x2700;
+    cpu.a_regs[0].l = 0x2222;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+
+    m68k_write_32(&cpu, 4 * 4, 0x300);
+    m68k_write_16(&cpu, 0x0000, 0x4248);
+
+    m68k_step(&cpu);
+
+    assert(cpu.exception_thrown == 4);
+    assert(cpu.pc == 0x300);
+    assert(m68k_read_16(&cpu, 0x0000) == 0x4248);
+
+    printf("Regression: CLR illegal mode traps test passed!\n");
+}

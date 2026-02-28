@@ -51,6 +51,9 @@ int main() {
     test_regression_stop_rte_resume_pc();
     test_regression_execute_wakes_stopped_cpu_on_irq();
     test_regression_exception_guards_are_per_instance();
+    test_regression_masked_irq_does_not_exit_stop();
+    test_regression_interrupt_stacks_original_sr();
+    test_regression_clr_illegal_mode_traps();
 
     test_bit_manipulation();
     test_immediate_alu();

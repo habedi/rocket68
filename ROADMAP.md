@@ -39,21 +39,33 @@ This document outlines the implemented features and the future goals for the pro
 - [x] System control and exceptions (`TRAP`, `RTE`, `MOVE SR`, exception processing)
 - [x] System integration and tooling (loader, disassembler, and I/O)
 - [x] Supervisor and user mode (USP/SSP dual stack switching)
-- [x] Interrupt handling (hardware IRQ with auto-vectoring)
+- [x] Interrupt handling (hardware IRQ with auto-vectoring and IACK callback)
 - [x] Address error exceptions (odd-address word/long access traps)
 - [x] Trace mode (single-step exception after each instruction)
 - [x] Stopped state (CPU halts on STOP, resumes on interrupt)
 - [x] Program loader (S-record and binary)
 - [x] Disassembler (instruction decoding to text)
-- [x] Sub-instruction cycle counting and timing bounds parity
+- [x] Baseline instruction/EA cycle accounting
 - [x] Memory wait state hooks (`M68kWaitBusCallback`)
 - [x] Interrupt acknowledge (IACK) dynamic vector callback
 - [x] Function Code (FC0-FC2) callbacks for MMU and memory access typing
-- [x] Execution debug hooks (instruction pre-fetch, PC change, and RESET/TAS/BKPT support)
+- [x] Execution debug hooks (instruction hook, PC change, RESET/TAS callbacks)
 - [x] Advanced timeslice management (voluntary yielding and dynamic cycle modification)
-- [x] Separation of program versus data memory fetch APIs
+- [x] Program/data access differentiation via FC callback
 - [x] CPU state serialization and save state support
-- [ ] Instruction supports for for 68010, 68020, 68030, and 68040 CPUs
+
+### Compatibility and Advanced CPU Features
+
+- [ ] Instruction support for 68010, 68020, 68030, and 68040 CPUs
+- [ ] CPU model selection API and per-model behavior gates (`68000`/`68010`/`68020`/`68030`/`68040`)
+- [ ] Full 68010+ exception vector base handling (`VBR` applied to exception/interrupt vector fetch)
+- [ ] 68010+ stack model completeness (ISP/MSP where applicable and model-specific exception stack frames)
+- [ ] 68020+ integer/control opcode coverage (bitfield family, `CAS/CAS2`, `CHK2/CMP2`, `CALLM/RTM`, `PACK/UNPK`, etc.)
+- [ ] PMMU emulation (68851/68030/68040 translation and PMMU instruction behavior)
+- [ ] FPU emulation (68881/68882/68040 FPU instruction set and state)
+- [ ] Additional `MOVEC` control register coverage (`CACR`, `CAAR`, and model-specific control registers)
+- [ ] Optional prefetch/bus-cycle quirks for high-compatibility emulation (e.g., documented predecrement long-write ordering)
+- [ ] Optional separate immediate and PC-relative memory access callbacks for systems that distinguish program/data fetch paths
 
 ### Development and Testing
 

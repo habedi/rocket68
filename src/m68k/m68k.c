@@ -558,10 +558,10 @@ static bool check_interrupts(M68kCpu* cpu) {
             vector = 24 + cpu->irq_level;
         }
 
+        m68k_exception(cpu, vector);
         cpu->sr &= ~0x0700;
         cpu->sr |= (cpu->irq_level << 8);
-
-        m68k_exception(cpu, vector);
+        cpu->stopped = false;
 
         return true;
     }
@@ -570,12 +570,12 @@ static bool check_interrupts(M68kCpu* cpu) {
 
 void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
     if (cpu->stopped) {
-        if (cpu->irq_level > 0) {
-            cpu->stopped = false;
-        } else {
-            cpu->cycles_remaining -= 4;
+        if (check_exceptions && check_interrupts(cpu)) {
+            cpu->cycles_remaining -= 44;
             return;
         }
+        cpu->cycles_remaining -= 4;
+        return;
     }
 
     if (check_exceptions && check_interrupts(cpu)) {
