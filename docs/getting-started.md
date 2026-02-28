@@ -1,6 +1,6 @@
 # Getting Started
 
-Rocket 68 is designed to be embedded directly into your C or C++ projects. 
+Rocket 68 can be used as a standalone Motorola 68000 emulator or integrated into other projects.
 
 ## 1. Integration
 
@@ -63,7 +63,7 @@ int main() {
 ## 4. Execution
 
 Once initialized, the emulator simply fetches and executes instructions in a loop.
-A "Reset" must be issued first to boot the CPU from its reset vectors (Address `0x00` and `0x04`).
+A "Reset" must be issued first to boot the CPU from its reset vectors (SSP at `0x00`, PC at `0x04`).
 
 ```c
 // Force a hardware reset to load PC and SSP
@@ -72,3 +72,14 @@ m68k_reset(&cpu);
 // Execute roughly 100,000 cycles
 int executed = m68k_execute(&cpu, 100000);
 ```
+
+## 5. Important Files
+
+Here is a list of the important header files provided by the project in the `include/` directory:
+
+| File | Description |
+| --- | --- |
+| `m68k.h` | The primary API header for the CPU core execution, callbacks, and management. |
+| `disasm.h` | The built-in instruction disassembler API for formatting opcodes into text. |
+| `loader.h` | Utilities for loading raw binaries and Motorola S-record files into memory. |
+| `rocket68.h` | A convenience header that includes all the necessary components for the emulator. |

@@ -48,6 +48,7 @@ Initializes the CPU struct and binds it to a standard flat byte array representi
 void m68k_reset(M68kCpu* cpu);
 ```
 Executes a hard reset. Populates the `pc` and `ssp` registers by fetching 32-bit vectors from address `0x00` and `0x04` respectively.
+Executes a hard reset. Populates the `ssp` and `pc` registers by fetching 32-bit vectors from address `0x00` and `0x04` respectively.
 
 ### `m68k_execute`
 ```c

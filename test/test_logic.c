@@ -347,3 +347,37 @@ void test_logic_ccr_sr() {
 
     printf("CCR/SR Logic test passed!\n");
 }
+
+void test_andi_ori_eori() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    // ANDI.L #0x000000FF, D0 -> 0x0280 0000 00FF
+    cpu.d_regs[0].l = 0x12345678;
+    m68k_write_16(&cpu, 0, 0x0280);
+    m68k_write_32(&cpu, 2, 0x000000FF);
+    cpu.pc = 0;
+    m68k_step(&cpu);
+    assert(cpu.d_regs[0].l == 0x00000078);
+    assert((cpu.sr & M68K_SR_Z) == 0);
+
+    // ORI.W #0x0F0F, (A0) -> 0x0050 0F0F
+    cpu.a_regs[0].l = 0x100;
+    m68k_write_16(&cpu, 6, 0x0050);
+    m68k_write_16(&cpu, 8, 0x0F0F);
+    m68k_write_16(&cpu, 0x100, 0xF0F0);
+    m68k_step(&cpu);
+    assert(m68k_read_16(&cpu, 0x100) == 0xFFFF);
+    assert((cpu.sr & M68K_SR_N) != 0);
+
+    // EORI.B #0x55, D1 -> 0x0A01 0055
+    cpu.d_regs[1].l = 0xAA;
+    m68k_write_16(&cpu, 10, 0x0A01);
+    m68k_write_16(&cpu, 12, 0x0055);
+    m68k_step(&cpu);
+    assert((cpu.d_regs[1].l & 0xFF) == 0xFF);
+
+    printf("ANDI/ORI/EORI test passed!\n");
+}

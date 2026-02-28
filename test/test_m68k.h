@@ -54,5 +54,14 @@ void test_exception_handler();
 void test_nop_bsr_rtr();
 void test_logic_ccr_sr();
 void test_logic_not();
+void test_movec();
+void test_trapv();
+void test_rtd();
+void test_bkpt();
+void test_move_sr();
+void test_move_ccr();
+void test_move_usp();
+void test_moves();
+void test_andi_ori_eori();
 
 #endif

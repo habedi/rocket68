@@ -246,3 +246,124 @@ void test_stack_frame() {
 
     printf("Stack Frame (LINK/UNLK) test passed!\n");
 }
+
+void test_move_sr() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    // MOVE to SR (0x46C0 - D0 to SR)
+    cpu.sr = M68K_SR_S;
+    cpu.d_regs[0].l = 0x270F;
+    m68k_write_16(&cpu, 0, 0x46C0);
+    cpu.pc = 0;
+    m68k_step(&cpu);
+    assert(cpu.sr == 0x270F);
+
+    // Privilege test (MOVE to SR in User mode)
+    cpu.sr = 0;
+    cpu.d_regs[0].l = 0x270F;
+    m68k_write_16(&cpu, 2, 0x46C0);
+    m68k_write_32(&cpu, 0x20, 0x100);  // Vector 8
+    cpu.a_regs[7].l = 0x400;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x100);
+
+    // MOVE from SR (0x40C0 - SR to D0)
+    m68k_reset(&cpu);
+    cpu.sr = 0x201F;
+    m68k_write_16(&cpu, 0, 0x40C0);
+    cpu.pc = 0;
+    m68k_step(&cpu);
+    assert((cpu.d_regs[0].l & 0xFFFF) == 0x201F);
+
+    printf("MOVE to/from SR test passed!\n");
+}
+
+void test_move_ccr() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    // MOVE to CCR (0x44C0 for D0)
+    cpu.sr = 0x2000;
+    cpu.d_regs[0].l = 0x0015;  // X=1, Z=1, C=1
+    m68k_write_16(&cpu, 0, 0x44C0);
+    cpu.pc = 0;
+    m68k_step(&cpu);
+    assert(cpu.sr == 0x2015);
+
+    printf("MOVE to CCR test passed!\n");
+}
+
+void test_move_usp() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    cpu.sr = M68K_SR_S;  // Supervisor mode
+
+    // MOVE USP, A0 -> 0x4E68
+    cpu.usp = 0x1000;
+    m68k_write_16(&cpu, 0, 0x4E68);
+    cpu.pc = 0;
+    m68k_step(&cpu);
+    assert(cpu.a_regs[0].l == 0x1000);
+
+    // MOVE A1, USP -> 0x4E61
+    cpu.a_regs[1].l = 0x2000;
+    m68k_write_16(&cpu, 2, 0x4E61);
+    m68k_step(&cpu);
+    assert(cpu.usp == 0x2000);
+
+    // Privilege test
+    cpu.sr = 0;
+    m68k_write_16(&cpu, 4, 0x4E68);
+    m68k_write_32(&cpu, 0x20, 0x100);  // Vector 8
+    cpu.a_regs[7].l = 0x400;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x100);
+
+    printf("MOVE USP test passed!\n");
+}
+
+void test_moves() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    cpu.sr = M68K_SR_S;  // Supervisor
+
+    // MOVES.W D0, (A0)
+    // 0000 1110 0101 0000 = 0x0E50
+    // ext: A/D=0 (D), Reg=0, to_ea=1 -> 0x0800
+    m68k_write_16(&cpu, 0, 0x0E50);
+    m68k_write_16(&cpu, 2, 0x0800);
+    cpu.d_regs[0].l = 0x1234;
+    cpu.a_regs[0].l = 0x100;
+    cpu.pc = 0;
+    m68k_step(&cpu);
+    assert(m68k_read_16(&cpu, 0x100) == 0x1234);
+
+    // MOVES.W (A0), D1
+    // ext: 0001 0000 0000 0000 = 0x1000
+    m68k_write_16(&cpu, 4, 0x0E50);
+    m68k_write_16(&cpu, 6, 0x1000);
+    m68k_step(&cpu);
+    assert((cpu.d_regs[1].l & 0xFFFF) == 0x1234);
+
+    // Privilege test
+    cpu.sr = 0;
+    m68k_write_16(&cpu, 8, 0x0E50);
+    m68k_write_16(&cpu, 10, 0x1000);
+    m68k_write_32(&cpu, 0x20, 0x200);  // Vector 8
+    cpu.a_regs[7].l = 0x400;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x200);
+
+    printf("MOVES test passed!\n");
+}

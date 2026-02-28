@@ -737,7 +737,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             goto done;
         }
 
-        if ((opcode & 0xFFF8) == 0x4E48) {
+        if ((opcode & 0xFFF8) == 0x4848) {
             m68k_exec_bkpt(cpu, opcode);
             cycles = 4;
             goto done;

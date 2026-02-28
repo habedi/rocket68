@@ -13,7 +13,7 @@ else
 endif
 
 # Common build flags
-CFLAGS   += -Wall -Wextra -pedantic -std=c11 -Iinclude
+CFLAGS   += -Wall -Wextra -pedantic -std=c11 -Iinclude -fPIC
 LDFLAGS  :=
 LIBS     :=
 
