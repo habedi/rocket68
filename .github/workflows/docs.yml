@@ -1,4 +1,4 @@
-name: Publish Doxygen Documentation
+name: Publish Documentation
 
 on:
   workflow_dispatch:
@@ -28,16 +28,20 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y make doxygen
+          sudo apt-get install -y make doxygen python3-pip
+          pip3 install uv
+          uv sync
 
       - name: Generate Documentation
-        run: make docs
+        run:  |
+          source .venv/bin/activate
+          make docs
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/html
+          publish_dir: ./site
           publish_branch: gh-pages
           user_name: ${{ github.actor }}
           user_email: ${{ github.actor }}@users.noreply.github.com
