@@ -72,23 +72,52 @@ gcc -o main main.c -Iinclude lib/librocket68.a
 // main.c
 #include <rocket68.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 int main(void) {
     u32 mem_size = 1024 * 1024; // 1 MB
     u8* ram = calloc(mem_size, 1);
     if (!ram) return 1;
 
-    M68kCpu cpu; // Create a new CPU instance
-    m68k_init(&cpu, ram, mem_size); // Initialize the CPU
+    M68kCpu cpu;
+    m68k_init(&cpu, ram, mem_size); 
 
-    // Reset vector layout:
-    //   0x00000000: initial SSP (32-bit)
-    //   0x00000004: initial PC  (32-bit)
+    // A tiny M68k program (machine code)
+    u8 program[] = {
+        // --- 1. System Reset Vectors ---
+        // Address 0x0000: Initial SSP (Stack Pointer: 0x00100000)
+        0x00, 0x10, 0x00, 0x00, 
+        // Address 0x0004: Initial PC (Program Counter: 0x00000008)
+        0x00, 0x00, 0x00, 0x08, 
+
+        // --- 2. Code starts at 0x08 ---
+        // MOVEA.L #$E00000, A0 -> Put our terminal port into A0
+        0x20, 0x7C, 0x00, 0xE0, 0x00, 0x00,
+
+        // MOVE.B #'H', (A0) -> Write 'H' to terminal
+        0x10, 0xBC, 0x00, 'H',
+        // MOVE.B #'i', (A0) -> Write 'i' to terminal
+        0x10, 0xBC, 0x00, 'i',
+        // MOVE.B #'\n', (A0) -> Write newline to terminal
+        0x10, 0xBC, 0x00, '\n',
+        
+        // STOP #$2700 -> Halt the CPU
+        0x4E, 0x72, 0x27, 0x00
+    };
+
+    // Load the program into the beginning of RAM
+    memcpy(ram, program, sizeof(program));
+
+    // Reset CPU (this causes it to read the SSP and PC from address 0)
     m68k_reset(&cpu);
 
-    // Execute a time slice of 1000 cycles
+    printf("Executing M68k code...\n");
+    // Execute up to 1000 cycles (or until STOP instruction)
     int cycles_executed = m68k_execute(&cpu, 1000);
-    (void)cycles_executed;
+
+    // Another way to "show something": print the internal CPU state!
+    printf("Finished in %d cycles. CPU halted at PC: 0x%08X\n", cycles_executed, (unsigned int)cpu.pc);
 
     free(ram);
     return 0;
