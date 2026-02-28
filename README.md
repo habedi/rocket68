@@ -41,7 +41,59 @@ See [ROADMAP.md](ROADMAP.md) for the list of implemented and planned features.
 
 ### Quickstart
 
-To be added.
+1. Clone the repository
+
+```bash
+git https://github.com/habedi/rocket68
+cd rocket68
+```
+
+> [!NOTE]
+> If you want to run the tests, benchmarks, etc., and not only use Rocket 68, you need to clone with `--recursive` to get the submodules:
+>
+> ```bash
+> git clone --recursive https://github.com/habedi/rocket68
+> ```
+
+2. Build Rocket 68
+
+```bash
+BUILD_TYPE=release make all
+```
+
+3. Include the header file (from `include` directory) in your project and link with the files in the `lib` directory:
+
+```
+// Example compilation command on Linux:
+gcc -o main main.c -Iinclude lib/librocket68.a
+```
+
+```c
+// main.c
+#include <rocket68.h>
+#include <stdlib.h>
+
+int main(void) {
+    u32 mem_size = 1024 * 1024; // 1 MB
+    u8* ram = calloc(mem_size, 1);
+    if (!ram) return 1;
+
+    M68kCpu cpu; // Create a new CPU instance
+    m68k_init(&cpu, ram, mem_size); // Initialize the CPU
+
+    // Reset vector layout:
+    //   0x00000000: initial SSP (32-bit)
+    //   0x00000004: initial PC  (32-bit)
+    m68k_reset(&cpu);
+
+    // Execute a time slice of 1000 cycles
+    int cycles_executed = m68k_execute(&cpu, 1000);
+    (void)cycles_executed;
+
+    free(ram);
+    return 0;
+}
+```
 
 ---
 
@@ -49,6 +101,21 @@ To be added.
 
 The project documentation is available [here](https://habedi.github.io/rocket68/).
 The detailed API documentation (generated with Doxygen) is available [here](https://habedi.github.io/rocket68/doxygen/index.html).
+
+### Header Files
+
+This project includes the following header files (available in the [include](include) directory):
+
+| File | Description |
+| --- | --- |
+| `m68k.h` | This is the main API header for the CPU core execution, callbacks, and management. |
+| `disasm.h` | The built-in instruction disassembler API for formatting opcodes into text. |
+| `loader.h` | Utilities for loading raw binaries and Motorola S-record files into memory for execution. |
+| `rocket68.h` | A header that includes all the components (CPU, disassembler, and loader) in one file. |
+
+> [!NOTE]
+> It's recommended to use the `rocket68.h` header file instead of including the individual header files for most use cases.
+> This header file includes the core CPU emulator, and additional components like the disassembler and loader.
 
 ### Benchmarks
 
