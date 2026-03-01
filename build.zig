@@ -43,9 +43,9 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(lib);
 
-    const test_step = b.step("test", "Run tests");
-    const test_dir = std.fs.cwd().openDir("test", .{}) catch null;
-    if (test_dir != null) {
+    const test_step = b.step("test-unit", "Run unit tests");
+    const test_exists = if (std.fs.cwd().access("test", .{})) |_| true else |_| false;
+    if (test_exists) {
         const test_files = &.{
             "test/test_addressing.c",
             "test/test_arith.c",
@@ -85,8 +85,8 @@ pub fn build(b: *std.Build) void {
     }
 
     const bench_step = b.step("bench", "Run benchmarks");
-    const bench_dir = std.fs.cwd().openDir("benches", .{}) catch null;
-    if (bench_dir != null) {
+    const bench_exists = if (std.fs.cwd().access("benches", .{})) |_| true else |_| false;
+    if (bench_exists) {
         const bench_mod = b.createModule(.{
             .target = target,
             .optimize = optimize,
@@ -113,8 +113,8 @@ pub fn build(b: *std.Build) void {
         bench_step.dependOn(&run_bench.step);
 
         // Build Musashi benchmark for comparison if the submodule is checked out
-        const musashi_dir = std.fs.cwd().openDir("external/musashi", .{}) catch null;
-        if (musashi_dir != null) {
+        const musashi_exists = if (std.fs.cwd().access("external/musashi", .{})) |_| true else |_| false;
+        if (musashi_exists) {
             const make_musashi = b.addSystemCommand(&.{ "make", "-C", "external/musashi" });
 
             const musashi_mod = b.createModule(.{

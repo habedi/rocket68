@@ -117,7 +117,7 @@ typedef union {
  * @brief Full CPU context for one emulated 68000 instance.
  */
 typedef struct M68kCpu {
-    M68kRegister d_regs[8]; /**< Data registers D0-D7. */
+    _Alignas(64) M68kRegister d_regs[8]; /**< Data registers D0-D7. */
     M68kRegister a_regs[8]; /**< Address registers A0-A7. */
     u32 pc;                 /**< Program counter. */
     u32 ppc;                /**< Previous program counter. */
@@ -158,9 +158,7 @@ typedef struct M68kCpu {
     M68kResetCallback reset_cb;          /**< Reset callback. */
     M68kTasCallback tas_cb;              /**< TAS callback. */
     M68kIllgCallback illg_cb;            /**< Illegal opcode callback. */
-} __attribute__((aligned(64)
-
-                     )) M68kCpu;
+} M68kCpu;
 
 /** @brief Carry flag bit mask in SR. */
 #define M68K_SR_C (1 << 0)
