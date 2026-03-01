@@ -118,11 +118,11 @@ typedef union {
  */
 typedef struct M68kCpu {
     _Alignas(64) M68kRegister d_regs[8]; /**< Data registers D0-D7. */
-    M68kRegister a_regs[8]; /**< Address registers A0-A7. */
-    u32 pc;                 /**< Program counter. */
-    u32 ppc;                /**< Previous program counter. */
-    u16 sr;                 /**< Status register. */
-    u16 ir;                 /**< Current instruction register. */
+    M68kRegister a_regs[8];              /**< Address registers A0-A7. */
+    u32 pc;                              /**< Program counter. */
+    u32 ppc;                             /**< Previous program counter. */
+    u16 sr;                              /**< Status register. */
+    u16 ir;                              /**< Current instruction register. */
 
     u8* memory;      /**< Bound flat memory pointer. */
     u32 memory_size; /**< Size of bound memory in bytes. */

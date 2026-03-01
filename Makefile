@@ -143,10 +143,12 @@ test-memory: $(TEST_BINARY) $(BIN_DIR)/test_json $(BCD_TEST_BINARY) ## Run the t
 	@echo "Running tests with Valgrind..."
 	valgrind --error-exitcode=1 --leak-check=full --suppressions=valgrind.supp ./$(TEST_BINARY)
 	@if [ -d external/m68000-json-tests/v1 ]; then \
-		valgrind --error-exitcode=1 --leak-check=full --suppressions=valgrind.supp ./$(BIN_DIR)/test_json external/m68000-json-tests/v1 || exit 1; \
+		valgrind --error-exitcode=1 --leak-check=full --suppressions=valgrind.supp ./$(BIN_DIR)/test_json \
+		 external/m68000-json-tests/v1 || exit 1; \
 	fi
 	@if [ -f external/bcd-test-rom/data/bcd-table.bin ]; then \
-		env BCD_TABLE_PATH=external/bcd-test-rom/data/bcd-table.bin valgrind --error-exitcode=1 --leak-check=full --suppressions=valgrind.supp ./$(BCD_TEST_BINARY) || exit 1; \
+		env BCD_TABLE_PATH=external/bcd-test-rom/data/bcd-table.bin valgrind --error-exitcode=1 --leak-check=full \
+		 --suppressions=valgrind.supp ./$(BCD_TEST_BINARY) || exit 1; \
 	fi
 
 .PHONY: test-ubsan
@@ -192,7 +194,8 @@ format: ## Format the C files
 
 .PHONY: lint
 lint: ## Run linter checks
-	cppcheck --enable=all --inconclusive --quiet --std=c11 -I$(INC_DIR) --suppress=missingIncludeSystem $(SRC_DIR) $(INC_DIR) $(TEST_DIR)
+	cppcheck --enable=all --inconclusive --quiet --std=c11 -I$(INC_DIR) --suppress=missingIncludeSystem \
+ 	$(SRC_DIR) $(INC_DIR) $(TEST_DIR)
 	@if command -v clang-tidy &> /dev/null; then \
 		clang-tidy $(SRC_FILES) -- $(CFLAGS); \
 	else \
@@ -236,12 +239,19 @@ $(BIN_DIR)/benchmark_musashi: benches/benchmark_musashi.c | $(BIN_DIR)
 		exit 1; \
 	fi
 	@$(MAKE) --no-print-directory -C external/musashi
-	@$(CC) -O3 -Iexternal/musashi $(CFLAGS) benches/benchmark_musashi.c external/musashi/m68kcpu.o external/musashi/m68kops.o external/musashi/m68kdasm.o external/musashi/softfloat/softfloat.o -lm -o $(BIN_DIR)/benchmark_musashi
+	@$(CC) -O3 -Iexternal/musashi $(CFLAGS) benches/benchmark_musashi.c external/musashi/m68kcpu.o \
+	external/musashi/m68kops.o external/musashi/m68kdasm.o external/musashi/softfloat/softfloat.o \
+	-lm -o $(BIN_DIR)/benchmark_musashi
 
-.PHONY: zig-test
-zig-test: ## Run tests using Zig build system
-	@echo "Running tests with zig build..."
-	zig build test
+.PHONY: zig-test-unit
+zig-test-unit: ## Run unit tests using Zig build system
+	@echo "Running unit tests with zig build..."
+	zig build test-unit
+
+.PHONY: zig-wasm
+zig-wasm: ## Build Rocket 68 (excluding loader/dissembler) as a WASM library using Zig build system
+	@echo "Building WASM library with zig build..."
+	zig build wasm -Doptimize=ReleaseFast
 
 .PHONY: zig-bench
 zig-bench: ## Run benchmarks using Zig build system
@@ -251,7 +261,8 @@ zig-bench: ## Run benchmarks using Zig build system
 .PHONY: clean
 clean: ## Remove all build artifacts
 	@echo "Cleaning up..."
-	rm -rf $(BIN_DIR) $(TARGET_DIR) $(LIB_DIR) $(COVERAGE_BIN_DIR) $(COVERAGE_TARGET_DIR) *.gcno *.gcda *.gcov *.out *.o *.a *.so *.d
+	rm -rf $(BIN_DIR) $(TARGET_DIR) $(LIB_DIR) $(COVERAGE_BIN_DIR) $(COVERAGE_TARGET_DIR) *.gcno *.gcda \
+ 	*.gcov *.out *.o *.a *.so *.d
 	rm -rf site Doxyfile.bak zig-out .zig-cache
 
 .PHONY: clean-coverage

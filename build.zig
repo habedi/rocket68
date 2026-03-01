@@ -43,6 +43,80 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(lib);
 
+    // --- WASM build step ---
+    const wasm_step = b.step("wasm", "Build Rocket 68 as a WASM library (wasm32-wasi)");
+
+    const wasm_target = b.resolveTargetQuery(.{
+        .cpu_arch = .wasm32,
+        .os_tag = .wasi,
+        .cpu_features_add = std.Target.wasm.featureSet(&.{.exception_handling}),
+    });
+
+    const wasm_mod = b.createModule(.{
+        .target = wasm_target,
+        .optimize = optimize,
+    });
+
+    const wasm_lib = b.addLibrary(.{
+        .linkage = .static,
+        .name = "rocket68",
+        .root_module = wasm_mod,
+    });
+
+    wasm_lib.addIncludePath(b.path("include"));
+    wasm_lib.linkLibC();
+
+    // Include core CPU files only (no loader.c and disasm.c because they use file I/O)
+    const wasm_src_files = &.{
+        "src/m68k/m68k.c",
+        "src/m68k/ops_arith.c",
+        "src/m68k/ops_bit.c",
+        "src/m68k/ops_control.c",
+        "src/m68k/ops_logic.c",
+        "src/m68k/ops_move.c",
+    };
+
+    // Enable setjmp/longjmp via WASM exception handling proposal
+    const wasm_c_flags = &.{
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-pedantic",
+        "-mllvm",
+        "-wasm-enable-sjlj",
+    };
+
+    wasm_lib.addCSourceFiles(.{
+        .files = wasm_src_files,
+        .flags = wasm_c_flags,
+    });
+
+    // Standalone .wasm module (WASI reactor — no main, all symbols exported)
+    const wasm_exe_mod = b.createModule(.{
+        .target = wasm_target,
+        .optimize = optimize,
+    });
+
+    const wasm_exe = b.addExecutable(.{
+        .name = "rocket68",
+        .root_module = wasm_exe_mod,
+    });
+
+    wasm_exe.addIncludePath(b.path("include"));
+    wasm_exe.linkLibC();
+    wasm_exe.addCSourceFiles(.{
+        .files = wasm_src_files,
+        .flags = wasm_c_flags,
+    });
+    wasm_exe.entry = .disabled; // No main — WASI reactor
+    wasm_exe.rdynamic = true; // Export all public symbols
+    wasm_exe.import_symbols = true; // Allow unresolved symbols (wasi-libc __main_void)
+
+    const wasm_static_install = b.addInstallArtifact(wasm_lib, .{});
+    const wasm_exe_install = b.addInstallArtifact(wasm_exe, .{});
+    wasm_step.dependOn(&wasm_static_install.step);
+    wasm_step.dependOn(&wasm_exe_install.step);
+
     const test_step = b.step("test-unit", "Run unit tests");
     const test_exists = if (std.fs.cwd().access("test", .{})) |_| true else |_| false;
     if (test_exists) {
