@@ -3,12 +3,17 @@
 	url = https://github.com/habedi/m68000-json-tests.git
 	branch = main
 
+[submodule "external/bcd-test-rom"]
+	path = external/bcd-test-rom
+	url = https://github.com/habedi/bcd-test-rom.git
+	branch = master
+
 [submodule "external/musashi"]
 	path = external/musashi
 	url = https://github.com/kstenerud/Musashi.git
 	branch = master
 
-[submodule "external/bcd-test-rom"]
-	path = external/bcd-test-rom
-	url = https://github.com/habedi/bcd-test-rom.git
+[submodule "external/moira"]
+	path = external/moira
+	url = https://github.com/dirkwhoffmann/Moira.git
 	branch = master

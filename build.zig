@@ -71,7 +71,7 @@ pub fn build(b: *std.Build) void {
     wasm_lib.addIncludePath(b.path("include"));
     wasm_lib.linkLibC();
 
-    // Include core CPU files only (no loader.c and disasm.c because they use file I/O)
+    // Include core CPU files only (no `loader.c` and `disasm.c` because they use file I/O)
     const wasm_src_files = &.{
         "src/m68k/m68k.c",
         "src/m68k/ops_arith.c",
@@ -230,6 +230,49 @@ pub fn build(b: *std.Build) void {
             const run_musashi = b.addRunArtifact(musashi_exe);
             run_musashi.step.dependOn(&run_bench.step);
             bench_step.dependOn(&run_musashi.step);
+        }
+
+        // Build Moira benchmark for comparison if the submodule is checked out
+        const moira_exists = rootPathExists(b, "external/moira");
+        if (moira_exists) {
+            const moira_mod = b.createModule(.{
+                .target = target,
+                .optimize = optimize,
+            });
+
+            const moira_exe = b.addExecutable(.{
+                .name = "benchmark_moira",
+                .root_module = moira_mod,
+            });
+            moira_exe.addIncludePath(b.path("external/moira/Moira"));
+            moira_exe.addIncludePath(b.path("benches"));
+            moira_exe.linkLibC();
+            moira_exe.linkLibCpp();
+
+            const cxx_flags: []const []const u8 = &.{
+                "-std=c++20",
+                "-Wno-unused-parameter",
+                "-Wno-missing-field-initializers",
+            };
+
+            moira_exe.addCSourceFiles(.{
+                .files = &.{
+                    "benches/benchmark_moira.cpp",
+                    "external/moira/Moira/Moira.cpp",
+                    "external/moira/Moira/MoiraDebugger.cpp",
+                },
+                .flags = cxx_flags,
+            });
+
+            const run_moira = b.addRunArtifact(moira_exe);
+            // Chain after Musashi if it exists, otherwise after Rocket 68
+            if (musashi_exists) {
+                // Find the last step added to bench_step and depend on it
+                run_moira.step.dependOn(&run_bench.step);
+            } else {
+                run_moira.step.dependOn(&run_bench.step);
+            }
+            bench_step.dependOn(&run_moira.step);
         }
     }
 }
