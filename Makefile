@@ -16,6 +16,8 @@ endif
 CFLAGS   += -Wall -Wextra -pedantic -std=c11 -Iinclude -fPIC
 LDFLAGS  :=
 LIBS     :=
+BENCH_CFLAGS = $(filter-out -g -O0,$(CFLAGS)) -O3 -DNDEBUG
+MUSASHI_BENCH_CFLAGS = $(filter-out -I$(INC_DIR),$(BENCH_CFLAGS))
 
 # Directories
 SRC_DIR   := src
@@ -32,6 +34,7 @@ TEST_BINARY   := $(BIN_DIR)/test_main
 BCD_TEST_BINARY := $(BIN_DIR)/test_bcd
 COVERAGE_TEST_BINARY := $(COVERAGE_BIN_DIR)/test_main
 SRC_FILES     := $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/m68k/*.c)
+CORE_SRC_FILES := $(wildcard $(SRC_DIR)/m68k/*.c)
 OBJ_FILES     := $(patsubst $(SRC_DIR)/%.c, $(TARGET_DIR)/%.o, $(SRC_FILES))
 DEP_FILES     := $(OBJ_FILES:.o=.d)
 TEST_FILES    := $(wildcard $(TEST_DIR)/*.c)
@@ -228,9 +231,9 @@ bench: $(BIN_DIR)/benchmark_rocket68 $(BIN_DIR)/benchmark_musashi ## Run benchma
 	@echo "--- Musashi Benchmark ---"
 	@./$(BIN_DIR)/benchmark_musashi
 
-$(BIN_DIR)/benchmark_rocket68: benches/benchmark_rocket68.c static | $(BIN_DIR)
+$(BIN_DIR)/benchmark_rocket68: benches/benchmark_rocket68.c $(CORE_SRC_FILES) | $(BIN_DIR)
 	@echo "Building Rocket68 benchmark..."
-	@$(CC) $(CFLAGS) -O3 -I$(INC_DIR) benches/benchmark_rocket68.c $(STATIC_LIB) -o $(BIN_DIR)/benchmark_rocket68
+	@$(CC) $(BENCH_CFLAGS) benches/benchmark_rocket68.c $(CORE_SRC_FILES) -o $(BIN_DIR)/benchmark_rocket68
 
 $(BIN_DIR)/benchmark_musashi: benches/benchmark_musashi.c | $(BIN_DIR)
 	@echo "Building Musashi benchmark..."
@@ -238,8 +241,8 @@ $(BIN_DIR)/benchmark_musashi: benches/benchmark_musashi.c | $(BIN_DIR)
 		echo "Musashi submodule missing. Run 'git submodule update --init --recursive'"; \
 		exit 1; \
 	fi
-	@$(MAKE) --no-print-directory -C external/musashi
-	@$(CC) -O3 -Iexternal/musashi $(CFLAGS) benches/benchmark_musashi.c external/musashi/m68kcpu.o \
+	@$(MAKE) --no-print-directory -C external/musashi CFLAGS="-O3 -DNDEBUG -Wall -Wextra -pedantic"
+	@$(CC) $(MUSASHI_BENCH_CFLAGS) -Iexternal/musashi benches/benchmark_musashi.c external/musashi/m68kcpu.o \
 	external/musashi/m68kops.o external/musashi/m68kdasm.o external/musashi/softfloat/softfloat.o \
 	-lm -o $(BIN_DIR)/benchmark_musashi
 

@@ -24,7 +24,7 @@ This document outlines the implemented features and the future goals for the pro
 - [x] Immediate arithmetic (`ADDI`, `SUBI`)
 - [x] Compare and test (`CMP`, `CMPA`, `CMPI`, `CMPM`, `TST`)
 - [x] Address manipulation (`LEA` and `PEA`)
-- [x] Stack and frame (`MOVEM`, `LINK`, and `UNLK`)
+- [x] Stack and frame (`LINK` and `UNLK`)
 - [x] Loop utilities (`DBcc` and `Scc`)
 - [x] Address arithmetic (`ADDA` and `SUBA`)
 - [x] Extended arithmetic (`ADDX` and `SUBX`)
@@ -51,11 +51,11 @@ This document outlines the implemented features and the future goals for the pro
 - [x] Function Code (FC0-FC2) callbacks for MMU and memory access typing
 - [x] Execution debug hooks (instruction hook, PC change, RESET/TAS callbacks)
 - [x] Advanced timeslice management (voluntary yielding and dynamic cycle modification)
-- [x] Program/data access differentiation via FC callback
 - [x] CPU state serialization and save state support
 
 ### Compatibility and Advanced CPU Features
 
+- [x] Partial post-68000 opcode coverage (`MOVEC`, `MOVES`, `RTD`, and `BKPT`)
 - [ ] Instruction support for 68010, 68020, 68030, and 68040 CPUs
 - [ ] CPU model selection API and per-model behavior gates (`68000`/`68010`/`68020`/`68030`/`68040`)
 - [ ] Full 68010+ exception vector base handling (`VBR` applied to exception/interrupt vector fetch)

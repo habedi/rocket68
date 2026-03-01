@@ -1,44 +1,56 @@
-#define _POSIX_C_SOURCE 199309L
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
+#include "bench_common.h"
 #include "m68k.h"
 
-int main(void) {
-    M68kCpu cpu;
+static int run_bench(const BenchWorkload* w)
+{
     uint8_t memory[0x10000];
+    M68kCpu cpu;
     memset(memory, 0, sizeof(memory));
     m68k_init(&cpu, memory, sizeof(memory));
 
-    uint16_t program[] = {
-        0x203c, 0x0098, 0x9680,  // MOVE.L #10000000, D0
-        0xd481,                  // ADD.L D1, D2
-        0xb581,                  // EOR.L D2, D1
-        0x5283,                  // ADDQ.L #1, D3
-        0x5380,                  // SUBQ.L #1, D0
-        0x66f6,                  // BNE.S -10
-        0x4e72, 0x2700           // STOP #$2700
-    };
+    load_program(memory, w->code, w->code_words);
 
-    for (size_t i = 0; i < sizeof(program) / sizeof(program[0]); i++) {
-        memory[i * 2] = program[i] >> 8;
-        memory[i * 2 + 1] = program[i] & 0xFF;
-    }
-
+    cpu.a_regs[7].l = 0xFF00;
+    cpu.a_regs[0].l = 0x8000;
+    cpu.ssp = 0xFF00;
+    cpu.sr = 0x2700;
     cpu.pc = 0;
 
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
 
-    while (!cpu.stopped && cpu.pc < sizeof(program) * 2) {
-        m68k_step(&cpu);
+    size_t slices = 0;
+    while (!cpu.stopped)
+    {
+        m68k_execute(&cpu, BENCH_SLICE_CYCLES);
+        slices++;
+        if ((slices & 0xFFu) == 0 &&
+            bench_guard_exceeded("Rocket68", w->name, slices, &start))
+        {
+            return 1;
+        }
     }
 
     clock_gettime(CLOCK_MONOTONIC, &end);
-    double elapsed = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+    print_result(w->name, time_diff(&start, &end), w->expected_iterations);
+    return 0;
+}
 
-    printf("Rocket68 Elapsed: %.4f seconds\n", elapsed);
+int main(void)
+{
+    printf("Rocket68 Benchmark\n");
+    printf("==================\n");
+
+    BenchWorkload workloads[] = BENCH_WORKLOADS;
+    size_t n = sizeof(workloads) / sizeof(workloads[0]);
+
+    for (size_t i = 0; i < n; i++)
+    {
+        if (run_bench(&workloads[i]) != 0)
+        {
+            return 1;
+        }
+    }
+
     return 0;
 }

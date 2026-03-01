@@ -1,5 +1,10 @@
 const std = @import("std");
 
+fn rootPathExists(b: *std.Build, rel_path: []const u8) bool {
+    std.fs.accessAbsolute(b.pathFromRoot(rel_path), .{}) catch return false;
+    return true;
+}
+
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
@@ -118,7 +123,7 @@ pub fn build(b: *std.Build) void {
     wasm_step.dependOn(&wasm_exe_install.step);
 
     const test_step = b.step("test-unit", "Run unit tests");
-    const test_exists = if (std.fs.cwd().access("test", .{})) |_| true else |_| false;
+    const test_exists = rootPathExists(b, "test");
     if (test_exists) {
         const test_files = &.{
             "test/test_addressing.c",
@@ -159,7 +164,7 @@ pub fn build(b: *std.Build) void {
     }
 
     const bench_step = b.step("bench", "Run benchmarks");
-    const bench_exists = if (std.fs.cwd().access("benches", .{})) |_| true else |_| false;
+    const bench_exists = rootPathExists(b, "benches");
     if (bench_exists) {
         const bench_mod = b.createModule(.{
             .target = target,
@@ -171,6 +176,7 @@ pub fn build(b: *std.Build) void {
             .root_module = bench_mod,
         });
         bench_exe.addIncludePath(b.path("include"));
+        bench_exe.addIncludePath(b.path("benches"));
         bench_exe.linkLibC();
         bench_exe.linkLibrary(lib);
 
@@ -187,9 +193,10 @@ pub fn build(b: *std.Build) void {
         bench_step.dependOn(&run_bench.step);
 
         // Build Musashi benchmark for comparison if the submodule is checked out
-        const musashi_exists = if (std.fs.cwd().access("external/musashi", .{})) |_| true else |_| false;
+        const musashi_exists = rootPathExists(b, "external/musashi");
         if (musashi_exists) {
             const make_musashi = b.addSystemCommand(&.{ "make", "-C", "external/musashi" });
+            make_musashi.setCwd(b.path("."));
 
             const musashi_mod = b.createModule(.{
                 .target = target,
@@ -201,6 +208,7 @@ pub fn build(b: *std.Build) void {
                 .root_module = musashi_mod,
             });
             musashi_exe.addIncludePath(b.path("external/musashi"));
+            musashi_exe.addIncludePath(b.path("benches"));
             musashi_exe.linkLibC();
             musashi_exe.linkSystemLibrary("m");
 

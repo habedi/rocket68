@@ -430,8 +430,9 @@ void m68k_exec_andi(M68kCpu* cpu, u16 opcode) {
     int size_bits = (opcode >> 6) & 0x3;
 
     if (opcode == 0x023C) {
-        u16 imm = m68k_fetch(cpu) & 0xFF;
-        cpu->sr = (cpu->sr & 0xFF00) | ((cpu->sr & 0x00FF) & imm);
+        u16 imm = m68k_fetch(cpu) & 0x1F;
+        u16 ccr = (cpu->sr & 0x1F) & imm;
+        cpu->sr = (cpu->sr & ~0x1F) | ccr;
         return;
     }
 
@@ -487,8 +488,9 @@ void m68k_exec_ori(M68kCpu* cpu, u16 opcode) {
     int size_bits = (opcode >> 6) & 0x3;
 
     if (opcode == 0x003C) {
-        u16 imm = m68k_fetch(cpu) & 0xFF;
-        cpu->sr = (cpu->sr & 0xFF00) | ((cpu->sr & 0x00FF) | imm);
+        u16 imm = m68k_fetch(cpu) & 0x1F;
+        u16 ccr = (cpu->sr & 0x1F) | imm;
+        cpu->sr = (cpu->sr & ~0x1F) | ccr;
         return;
     }
 
@@ -544,8 +546,9 @@ void m68k_exec_eori(M68kCpu* cpu, u16 opcode) {
     int size_bits = (opcode >> 6) & 0x3;
 
     if (opcode == 0x0A3C) {
-        u16 imm = m68k_fetch(cpu) & 0xFF;
-        cpu->sr = (cpu->sr & 0xFF00) | ((cpu->sr & 0x00FF) ^ imm);
+        u16 imm = m68k_fetch(cpu) & 0x1F;
+        u16 ccr = (cpu->sr & 0x1F) ^ imm;
+        cpu->sr = (cpu->sr & ~0x1F) | ccr;
         return;
     }
 
