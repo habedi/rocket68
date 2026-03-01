@@ -1,6 +1,6 @@
-# Known Limitations
+# Compatibility Notes
 
-This page lists current limitations and compatibility notes based on the current codebase.
+This page lists current compatibility notes and scope limits based on the current codebase.
 
 ## CPU Model Scope
 

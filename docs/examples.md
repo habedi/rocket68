@@ -183,8 +183,7 @@ bool load_program(M68kCpu* cpu) {
 
 Notes:
 
-- `m68k_load_srec` prints malformed-record errors to `stderr` and continues parsing.
-- Entry-point records (`S7/S8/S9`) update `cpu->pc` directly.
+- For loader edge-case behavior (malformed records, checksum policy, entry-point handling), see [API Reference](api-reference.md) and [Compatibility Notes](limitations.md).
 
 ## 8. Disassemble Memory for Debug Output
 
@@ -207,4 +206,4 @@ void dump_disasm(M68kCpu* cpu, u32 pc, int count) {
 }
 ```
 
-`m68k_disasm` returns the number of bytes consumed by one instruction.
+For disassembly return semantics, see [API Reference](api-reference.md).

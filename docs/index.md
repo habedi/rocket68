@@ -33,7 +33,7 @@ It is designed to be embedded in host emulators and tools.
 - [Getting Started](getting-started.md): build + first runnable program
 - [Examples](examples.md): focused usage patterns
 - [API Reference](api-reference.md): function groups and behavior notes
-- [Known Limitations](limitations.md): current scope limits and integration caveats
+- [Compatibility Notes](limitations.md): current scope limits and integration caveats
 
 ## Version
 
