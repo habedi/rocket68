@@ -454,3 +454,162 @@ void test_regression_clr_illegal_mode_traps() {
 
     printf("Regression: CLR illegal mode traps test passed!\n");
 }
+
+static void dummy_reset_cb(M68kCpu* cpu) { (void)cpu; }
+
+void test_regression_set_context_preserves_callbacks() {
+    M68kCpu cpu1;
+    M68kCpu cpu2;
+    u8 memory1[1024];
+    u8 memory2[1024];
+    memset(memory1, 0, sizeof(memory1));
+    memset(memory2, 0, sizeof(memory2));
+    m68k_init(&cpu1, memory1, sizeof(memory1));
+    m68k_init(&cpu2, memory2, sizeof(memory2));
+
+    m68k_set_reset_callback(&cpu2, dummy_reset_cb);
+
+    cpu1.d_regs[0].l = 0xCAFE;
+    cpu1.pc = 0x200;
+    cpu1.sr = 0x2700;
+
+    unsigned int ctx_size = m68k_context_size();
+    u8* buf = malloc(ctx_size);
+    m68k_get_context(&cpu1, buf);
+    m68k_set_context(&cpu2, buf);
+    free(buf);
+
+    assert(cpu2.d_regs[0].l == 0xCAFE);
+    assert(cpu2.pc == 0x200);
+    assert(cpu2.memory == memory2);
+    assert(cpu2.reset_cb == dummy_reset_cb);
+
+    printf("Regression: set_context preserves callbacks test passed!\n");
+}
+
+void test_regression_ori_ccr_preserves_upper_bits() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    cpu.sr = 0x0000;
+    // ORI to CCR: 0x003C, imm = 0xE0 (bits 5-7 set, no CCR flags)
+    m68k_write_16(&cpu, 0, 0x003C);
+    m68k_write_16(&cpu, 2, 0x00E0);
+    m68k_step(&cpu);
+    assert((cpu.sr & 0x00FF) == 0xE0);
+
+    printf("Regression: ORI to CCR preserves upper bits test passed!\n");
+}
+
+void test_regression_eori_ccr_preserves_upper_bits() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    cpu.sr = 0x00FF;
+    // EORI to CCR: 0x0A3C, imm = 0xE0
+    m68k_write_16(&cpu, 0, 0x0A3C);
+    m68k_write_16(&cpu, 2, 0x00E0);
+    m68k_step(&cpu);
+    // 0xFF ^ 0xE0 = 0x1F
+    assert((cpu.sr & 0x00FF) == 0x1F);
+
+    printf("Regression: EORI to CCR preserves upper bits test passed!\n");
+}
+
+void test_regression_divu_overflow_n_flag() {
+    M68kCpu cpu;
+    u8 memory[4096];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.a_regs[7].l = 0x1000;
+
+    m68k_write_32(&cpu, 5 * 4, 0x300);
+
+    // DIVU.W D0, D1: D1 / D0
+    // D1 = 0x00020000 (131072), D0 = 1 => quotient = 131072 > 0xFFFF -> overflow
+    cpu.d_regs[0].l = 1;
+    cpu.d_regs[1].l = 0x00020000;
+    cpu.sr = 0;
+    // DIVU D0, D1: 1000 001 011 000 000 = 0x82C0
+    m68k_write_16(&cpu, 0, 0x82C0);
+    m68k_step(&cpu);
+
+    assert((cpu.sr & M68K_SR_V) != 0);
+    // Quotient = 0x20000, bit 15 = 0, so N should NOT be set
+    assert((cpu.sr & M68K_SR_N) == 0);
+
+    printf("Regression: DIVU overflow N flag test passed!\n");
+}
+
+void test_regression_divs_overflow_n_flag() {
+    M68kCpu cpu;
+    u8 memory[4096];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.a_regs[7].l = 0x1000;
+
+    m68k_write_32(&cpu, 5 * 4, 0x300);
+
+    // DIVS.W D0, D1: D1 / D0
+    // D1 = 0x00020000 (131072 signed), D0 = 1 => quotient = 131072, overflows s16
+    cpu.d_regs[0].l = 1;
+    cpu.d_regs[1].l = 0x00020000;
+    cpu.sr = 0;
+    // DIVS D0, D1: 1000 001 111 000 000 = 0x83C0
+    m68k_write_16(&cpu, 0, 0x83C0);
+    m68k_step(&cpu);
+
+    assert((cpu.sr & M68K_SR_V) != 0);
+    // Quotient = 131072 > 0, so N should NOT be set
+    assert((cpu.sr & M68K_SR_N) == 0);
+
+    printf("Regression: DIVS overflow N flag test passed!\n");
+}
+
+void test_regression_chk_only_modifies_n() {
+    M68kCpu cpu;
+    u8 memory[4096];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.a_regs[7].l = 0x1000;
+    cpu.sr = 0x2700;
+
+    m68k_write_32(&cpu, 6 * 4, 0x500);
+
+    // CHK D0, D1: 0100 001 110 000 000 = 0x4380
+    // D1 = 5 (src), D0 = 10 (bound) => 5 >= 0 && 5 <= 10 => no exception
+    cpu.d_regs[0].l = 10;
+    cpu.d_regs[1].l = 5;
+    cpu.sr = 0x2700 | M68K_SR_Z | M68K_SR_V | M68K_SR_C;
+    m68k_write_16(&cpu, 0, 0x4380);
+    m68k_step(&cpu);
+
+    // Z, V, C should be preserved (undefined = not cleared)
+    assert((cpu.sr & M68K_SR_Z) != 0);
+    assert((cpu.sr & M68K_SR_V) != 0);
+    assert((cpu.sr & M68K_SR_C) != 0);
+    assert((cpu.sr & M68K_SR_N) == 0);
+
+    printf("Regression: CHK only modifies N test passed!\n");
+}
+
+void test_regression_write_oob_triggers_bus_error() {
+    M68kCpu cpu;
+    u8 memory[256];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x80;
+
+    m68k_write_32(&cpu, 2 * 4, 0x40);
+
+    // Write to address beyond memory_size should trigger bus error
+    m68k_write_8(&cpu, 0x200, 0x42);
+    assert(cpu.exception_thrown == 2);
+
+    printf("Regression: Write OOB triggers bus error test passed!\n");
+}

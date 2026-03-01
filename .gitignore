@@ -149,3 +149,5 @@ obj_coverage/
 bin_coverage/
 core.*
 site/
+main
+main.exe

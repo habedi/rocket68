@@ -83,6 +83,14 @@ int main() {
     test_moves();
     test_andi_ori_eori();
 
+    test_regression_set_context_preserves_callbacks();
+    test_regression_ori_ccr_preserves_upper_bits();
+    test_regression_eori_ccr_preserves_upper_bits();
+    test_regression_divu_overflow_n_flag();
+    test_regression_divs_overflow_n_flag();
+    test_regression_chk_only_modifies_n();
+    test_regression_write_oob_triggers_bus_error();
+
     extern void run_loader_tests();
     run_loader_tests();
 

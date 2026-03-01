@@ -84,7 +84,6 @@ pub fn build(b: *std.Build) void {
         test_step.dependOn(&run_test.step);
     }
 
-    // Add conditional benchmarks
     const bench_step = b.step("bench", "Run benchmarks");
     const bench_dir = std.fs.cwd().openDir("benches", .{}) catch null;
     if (bench_dir != null) {
@@ -99,7 +98,7 @@ pub fn build(b: *std.Build) void {
         });
         bench_exe.addIncludePath(b.path("include"));
         bench_exe.linkLibC();
-        bench_exe.linkLibrary(lib); // Link the static library
+        bench_exe.linkLibrary(lib);
 
         const bench_files = &.{
             "benches/benchmark_rocket68.c",
@@ -113,7 +112,7 @@ pub fn build(b: *std.Build) void {
         const run_bench = b.addRunArtifact(bench_exe);
         bench_step.dependOn(&run_bench.step);
 
-        // Also build Musashi benchmark for comparison if the submodule is checked out
+        // Build Musashi benchmark for comparison if the submodule is checked out
         const musashi_dir = std.fs.cwd().openDir("external/musashi", .{}) catch null;
         if (musashi_dir != null) {
             const make_musashi = b.addSystemCommand(&.{ "make", "-C", "external/musashi" });
@@ -129,7 +128,7 @@ pub fn build(b: *std.Build) void {
             });
             musashi_exe.addIncludePath(b.path("external/musashi"));
             musashi_exe.linkLibC();
-            musashi_exe.linkSystemLibrary("m"); // math library needed by Musashi
+            musashi_exe.linkSystemLibrary("m");
 
             musashi_exe.step.dependOn(&make_musashi.step);
 
@@ -147,7 +146,7 @@ pub fn build(b: *std.Build) void {
             musashi_exe.addObjectFile(b.path("external/musashi/softfloat/softfloat.o"));
 
             const run_musashi = b.addRunArtifact(musashi_exe);
-            run_musashi.step.dependOn(&run_bench.step); // run Musashi after Rocket68
+            run_musashi.step.dependOn(&run_bench.step);
             bench_step.dependOn(&run_musashi.step);
         }
     }

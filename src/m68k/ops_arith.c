@@ -413,8 +413,9 @@ void m68k_exec_div(M68kCpu* cpu, u16 opcode) {
         s32 s_rem = s_dividend % s_divisor;
 
         if (s_quot != (s32)(s16)s_quot) {
-            cpu->sr &= ~(M68K_SR_Z | M68K_SR_C);
-            cpu->sr |= (M68K_SR_N | M68K_SR_V);
+            cpu->sr &= ~(M68K_SR_Z | M68K_SR_C | M68K_SR_N);
+            cpu->sr |= M68K_SR_V;
+            if (s_quot < 0) cpu->sr |= M68K_SR_N;
             return;
         }
 
@@ -430,8 +431,9 @@ void m68k_exec_div(M68kCpu* cpu, u16 opcode) {
         u32 remainder = dividend % divisor_raw;
 
         if (quotient > 0xFFFF) {
-            cpu->sr &= ~(M68K_SR_Z | M68K_SR_C);
-            cpu->sr |= (M68K_SR_N | M68K_SR_V);
+            cpu->sr &= ~(M68K_SR_Z | M68K_SR_C | M68K_SR_N);
+            cpu->sr |= M68K_SR_V;
+            if (quotient & 0x8000) cpu->sr |= M68K_SR_N;
             return;
         }
 

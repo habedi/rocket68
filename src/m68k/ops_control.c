@@ -156,11 +156,8 @@ void m68k_exec_chk(M68kCpu* cpu, u16 opcode) {
     s16 src = (s16)(cpu->d_regs[reg_idx].l & 0xFFFF);
     s16 bound = (s16)ea.value;
 
-    cpu->sr &= ~(M68K_SR_N | M68K_SR_Z | M68K_SR_V | M68K_SR_C);
-    if (src < 0)
-        cpu->sr |= M68K_SR_N;
-    else if (src == 0)
-        cpu->sr |= M68K_SR_Z;
+    cpu->sr &= ~M68K_SR_N;
+    if (src < 0) cpu->sr |= M68K_SR_N;
 
     if (src >= 0 && src <= bound) {
         return;

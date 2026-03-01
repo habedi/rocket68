@@ -6,6 +6,7 @@
 #define M68K_H
 
 #include <assert.h>
+#include <setjmp.h>
 #include <stdalign.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -139,6 +140,8 @@ typedef struct M68kCpu {
     u16 fault_ssw;             /**< Fault status word for exception frames. */
     bool fault_program_access; /**< Fault access type marker. */
     bool fault_valid;          /**< Fault information validity flag. */
+    bool fault_trap_active;    /**< Group-0 fault trap active for the current step. */
+    jmp_buf fault_trap;        /**< Non-local escape target for group-0 fault aborts. */
 
     u32 vbr; /**< Vector base register (model extension path). */
     u32 sfc; /**< Source function code register (model extension path). */

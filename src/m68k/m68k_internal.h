@@ -127,6 +127,4 @@ void m68k_exec_movec(M68kCpu* cpu, u16 opcode);
 void m68k_exec_rtd(M68kCpu* cpu, u16 opcode);
 void m68k_exec_bkpt(M68kCpu* cpu, u16 opcode);
 
-void m68k_swap_sp(M68kCpu* cpu, bool new_supervisor);
-
 #endif
