@@ -46,6 +46,6 @@ This page lists current limitations and compatibility notes based on the current
 
 ## JSON Compatibility Harness
 
-- The JSON compatibility runner (`test/test_json.c`) has a relaxed default for exception-path state checks.
+- The JSON compatibility runner (`tests/test_json.c`) has a relaxed default for exception-path state checks.
 - Strict exception-path checking is available with `ROCKET68_JSON_STRICT=1`.
 - This behavior is test-harness policy, not a runtime core API toggle.

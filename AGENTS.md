@@ -30,7 +30,7 @@ Quick examples:
 - `include/`: public headers (`m68k.h`, `rocket68.h`, `loader.h`, and `disasm.h`).
 - `src/`: core implementation.
 - `src/m68k/`: CPU execution engine and opcode handlers.
-- `test/`: unit and integration tests.
+- `tests/`: unit and integration tests.
 - `benches/`: performance benchmarks.
 - `docs/`: MkDocs documentation.
 - `external/`: third-party reference code (for comparison/validation).
@@ -69,7 +69,7 @@ Use this sequence for your first change:
 
 1. Read `include/m68k.h` and the touched opcode/core files.
 2. Implement the smallest possible code change.
-3. Add or update tests in `test/` that fail before and pass after.
+3. Add or update tests in `tests/` that fail before and pass after.
 4. Run `make test`.
 5. Run `make bench` if execution logic, opcodes, or timing changed.
 6. Update `docs/` if public API behavior or examples changed.

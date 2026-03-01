@@ -24,7 +24,7 @@ MOIRA_BENCH_CXXFLAGS = -O3 -DNDEBUG -std=c++20
 # Directories
 SRC_DIR   := src
 INC_DIR   := include
-TEST_DIR  := test
+TEST_DIR  := tests
 BIN_DIR   := bin
 LIB_DIR   := lib
 TARGET_DIR:= obj

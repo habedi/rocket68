@@ -123,19 +123,19 @@ pub fn build(b: *std.Build) void {
     wasm_step.dependOn(&wasm_exe_install.step);
 
     const test_step = b.step("test-unit", "Run unit tests");
-    const test_exists = rootPathExists(b, "test");
+    const test_exists = rootPathExists(b, "tests");
     if (test_exists) {
         const test_files = &.{
-            "test/test_addressing.c",
-            "test/test_arith.c",
-            "test/test_control.c",
-            "test/test_core.c",
-            "test/test_integration.c",
-            "test/test_loader.c",
-            "test/test_logic.c",
-            "test/test_main.c",
-            "test/test_move.c",
-            "test/test_regression.c",
+            "tests/test_addressing.c",
+            "tests/test_arith.c",
+            "tests/test_control.c",
+            "tests/test_core.c",
+            "tests/test_integration.c",
+            "tests/test_loader.c",
+            "tests/test_logic.c",
+            "tests/test_main.c",
+            "tests/test_move.c",
+            "tests/test_regression.c",
         };
 
         const test_mod = b.createModule(.{
@@ -265,13 +265,7 @@ pub fn build(b: *std.Build) void {
             });
 
             const run_moira = b.addRunArtifact(moira_exe);
-            // Chain after Musashi if it exists, otherwise after Rocket 68
-            if (musashi_exists) {
-                // Find the last step added to bench_step and depend on it
-                run_moira.step.dependOn(&run_bench.step);
-            } else {
-                run_moira.step.dependOn(&run_bench.step);
-            }
+            run_moira.step.dependOn(&run_bench.step);
             bench_step.dependOn(&run_moira.step);
         }
     }
