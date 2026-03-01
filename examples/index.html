@@ -307,7 +307,7 @@
   
     
   
-  Known Limitations
+  Compatibility Notes
 
       </a>
     </li>
@@ -616,7 +616,7 @@
   <span class="md-ellipsis">
     
   
-    Known Limitations
+    Compatibility Notes
   
 
     
@@ -919,8 +919,7 @@ All snippets use only public headers.</p>
 </code></pre></div>
 <p>Notes:</p>
 <ul>
-<li><code>m68k_load_srec</code> prints malformed-record errors to <code>stderr</code> and continues parsing.</li>
-<li>Entry-point records (<code>S7/S8/S9</code>) update <code>cpu-&gt;pc</code> directly.</li>
+<li>For loader edge-case behavior (malformed records, checksum policy, entry-point handling), see <a href="../api-reference/">API Reference</a> and <a href="../limitations/">Compatibility Notes</a>.</li>
 </ul>
 <h2 id="8-disassemble-memory-for-debug-output">8. Disassemble Memory for Debug Output<a class="headerlink" href="#8-disassemble-memory-for-debug-output" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
@@ -940,7 +939,7 @@ All snippets use only public headers.</p>
 <a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">    </span><span class="p">}</span>
 <a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="p">}</span>
 </code></pre></div>
-<p><code>m68k_disasm</code> returns the number of bytes consumed by one instruction.</p>
+<p>For disassembly return semantics, see <a href="../api-reference/">API Reference</a>.</p>
 
 
 
