@@ -23,6 +23,19 @@ Rocket 68 is a Motorola 68000 CPU emulator written in pure C11.
 It supports all the instructions and addressing modes of the 68000 CPU, plus system control features like supervisor mode, interrupts, and exceptions.
 It is also runs as a similar clock cycle to the real 68000 CPU with very good accuracy.
 
+### Why Rocket 68?
+
+Rocket 68 is built to provide a clean, correct, and easy-to-embed Motorola 68000 CPU core.
+A lot of existing 68k emulators were originally designed as full system emulators rather than reusable libraries, which can make it
+hard to integrate them into other projects.
+Rocket 68 focuses on correctness first: instruction behavior, exception handling, and cycle timing closely follow real hardware so projects
+can rely on predictable and accurate CPU behavior.
+
+Rocket 68 is designed to be used a portable library.
+All state lives inside a single `M68kCpu` instance, with no shared global state.
+This should make it straightforward to run multiple CPUs or integrate the core into larger systems.
+Additionally, the codebase uses modern C11 with a small and explicit API that makes the project easy to use and extend.
+
 ### Features
 
 - Have a simple API and easy to integrate into other projects
