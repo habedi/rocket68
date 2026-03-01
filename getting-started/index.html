@@ -69,7 +69,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-orange" data-md-color-accent="amber">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="yellow" data-md-color-accent="amber">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -125,7 +125,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-orange" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="yellow" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -135,7 +135,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-orange" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="yellow" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -295,6 +295,25 @@
   
 
       
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../limitations/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Known Limitations
+
+      </a>
+    </li>
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -434,10 +453,49 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-integration" class="md-nav__link">
+  <a href="#1-build-and-link" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Integration
+        1. Build and Link
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Build and Link">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-a-compile-core-sources-directly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option A: Compile core sources directly
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-b-build-library-with-make" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option B: Build library with Make
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-minimal-runnable-program" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Minimal Runnable Program
       
     </span>
   </a>
@@ -445,10 +503,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-initialization" class="md-nav__link">
+  <a href="#3-running-without-reset-vectors" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Initialization
+        3. Running Without Reset Vectors
       
     </span>
   </a>
@@ -456,10 +514,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-hooking-up-the-io-bus" class="md-nav__link">
+  <a href="#4-basic-execution-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Hooking up the I/O Bus
+        4. Basic Execution Model
       
     </span>
   </a>
@@ -467,10 +525,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-execution" class="md-nav__link">
+  <a href="#5-callback-wiring-optional" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Execution
+        5. Callback Wiring (Optional)
       
     </span>
   </a>
@@ -478,10 +536,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-important-files" class="md-nav__link">
+  <a href="#6-useful-notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Important Files
+        6. Useful Notes
       
     </span>
   </a>
@@ -550,6 +608,33 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Known Limitations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -577,10 +662,49 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-integration" class="md-nav__link">
+  <a href="#1-build-and-link" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Integration
+        1. Build and Link
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Build and Link">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-a-compile-core-sources-directly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option A: Compile core sources directly
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-b-build-library-with-make" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option B: Build library with Make
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-minimal-runnable-program" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Minimal Runnable Program
       
     </span>
   </a>
@@ -588,10 +712,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-initialization" class="md-nav__link">
+  <a href="#3-running-without-reset-vectors" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Initialization
+        3. Running Without Reset Vectors
       
     </span>
   </a>
@@ -599,10 +723,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-hooking-up-the-io-bus" class="md-nav__link">
+  <a href="#4-basic-execution-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Hooking up the I/O Bus
+        4. Basic Execution Model
       
     </span>
   </a>
@@ -610,10 +734,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-execution" class="md-nav__link">
+  <a href="#5-callback-wiring-optional" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Execution
+        5. Callback Wiring (Optional)
       
     </span>
   </a>
@@ -621,10 +745,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-important-files" class="md-nav__link">
+  <a href="#6-useful-notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Important Files
+        6. Useful Notes
       
     </span>
   </a>
@@ -652,98 +776,99 @@
 
 
 <h1 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h1>
-<p>Rocket 68 can run standalone or inside a host emulator.</p>
-<h2 id="1-integration">1. Integration<a class="headerlink" href="#1-integration" title="Permanent link">&para;</a></h2>
-<p>You can add Rocket 68 source files to your build system.</p>
-<p><strong>Required files:</strong></p>
-<ul>
-<li><code>include/m68k.h</code> (primary CPU API)</li>
-<li><code>src/m68k/*.c</code> (CPU core implementation)</li>
-</ul>
-<p>Compile it with any C11-compliant compiler:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>gcc<span class="w"> </span>-std<span class="o">=</span>c11<span class="w"> </span>-O3<span class="w"> </span>-Iinclude<span class="w"> </span>-c<span class="w"> </span>src/m68k/*.c
+<p>This page shows the smallest path from source files to a running 68000 program.</p>
+<h2 id="1-build-and-link">1. Build and Link<a class="headerlink" href="#1-build-and-link" title="Permanent link">&para;</a></h2>
+<h3 id="option-a-compile-core-sources-directly">Option A: Compile core sources directly<a class="headerlink" href="#option-a-compile-core-sources-directly" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>gcc<span class="w"> </span>-std<span class="o">=</span>c11<span class="w"> </span>-O3<span class="w"> </span>-Iinclude<span class="w"> </span>src/m68k/*.c<span class="w"> </span>your_app.c<span class="w"> </span>-o<span class="w"> </span>your_app
 </code></pre></div>
-<h2 id="2-initialization">2. Initialization<a class="headerlink" href="#2-initialization" title="Permanent link">&para;</a></h2>
-<p>Before execution, create <code>M68kCpu</code> and bind memory.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;m68k.h&quot;</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="c1">// 1. Allocate your memory map (e.g., 16 MB of RAM)</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">mem_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">16</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1024</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1024</span><span class="p">;</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="n">u8</span><span class="o">*</span><span class="w"> </span><span class="n">ram</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">malloc</span><span class="p">(</span><span class="n">mem_size</span><span class="p">);</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">ram</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span><span class="c1">// 2. Instantiate the CPU state</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">    </span><span class="n">M68kCpu</span><span class="w"> </span><span class="n">cpu</span><span class="p">;</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">    </span><span class="c1">// 3. Initialize CPU state</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">    </span><span class="n">m68k_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="n">ram</span><span class="p">,</span><span class="w"> </span><span class="n">mem_size</span><span class="p">);</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="p">}</span>
+<h3 id="option-b-build-library-with-make">Option B: Build library with Make<a class="headerlink" href="#option-b-build-library-with-make" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nv">BUILD_TYPE</span><span class="o">=</span>release<span class="w"> </span>make<span class="w"> </span>static
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1"># Produces lib/librocket68.a</span>
 </code></pre></div>
-<h2 id="3-hooking-up-the-io-bus">3. Hooking up the I/O Bus<a class="headerlink" href="#3-hooking-up-the-io-bus" title="Permanent link">&para;</a></h2>
-<p>Rocket 68 executes instructions and calls host callbacks for bus and platform behavior.</p>
-<p>Each callback takes <code>M68kCpu* cpu</code> as its first argument.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1">// Define bus timing behavior</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kt">void</span><span class="w"> </span><span class="nf">my_wait_bus</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">address</span><span class="p">,</span><span class="w"> </span><span class="n">M68kSize</span><span class="w"> </span><span class="n">size</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">address</span><span class="p">;</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">size</span><span class="p">;</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="c1">// Account for memory access wait states</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="n">cpu</span><span class="o">-&gt;</span><span class="n">cycles_remaining</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"> </span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">}</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="c1">// ... setup ...</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">    </span><span class="n">m68k_set_wait_bus_callback</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="n">my_wait_bus</span><span class="p">);</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>
-<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">    </span><span class="c1">// ... run ...</span>
-<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="p">}</span>
+<p>Then link your app:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>gcc<span class="w"> </span>-std<span class="o">=</span>c11<span class="w"> </span>-O2<span class="w"> </span>-Iinclude<span class="w"> </span>your_app.c<span class="w"> </span>lib/librocket68.a<span class="w"> </span>-o<span class="w"> </span>your_app
 </code></pre></div>
-<h2 id="4-execution">4. Execution<a class="headerlink" href="#4-execution" title="Permanent link">&para;</a></h2>
-<p>After initialization, start execution by either:</p>
+<h2 id="2-minimal-runnable-program">2. Minimal Runnable Program<a class="headerlink" href="#2-minimal-runnable-program" title="Permanent link">&para;</a></h2>
+<p>This example:</p>
 <ol>
-<li>calling <code>m68k_reset</code> to load vectors from memory address <code>0x00000000</code> and <code>0x00000004</code>, or</li>
-<li>setting registers manually (<code>m68k_set_pc</code>, <code>m68k_set_sr</code>, and stack state as needed).</li>
+<li>Creates CPU + RAM</li>
+<li>Writes reset vectors (<code>SSP</code> at <code>0x00000000</code>, <code>PC</code> at <code>0x00000004</code>)</li>
+<li>Writes a tiny program (<code>NOP</code>, then <code>STOP #$2700</code>)</li>
+<li>Runs until STOP</li>
 </ol>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">// Load initial A7/PC vectors from memory</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">m68k_reset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">);</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1">// Execute roughly 100,000 cycles</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="kt">int</span><span class="w"> </span><span class="n">executed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m68k_execute</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="mi">100000</span><span class="p">);</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string.h&gt;</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;m68k.h&quot;</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">mem_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1024</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1024</span><span class="p">;</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span><span class="n">u8</span><span class="o">*</span><span class="w"> </span><span class="n">ram</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">calloc</span><span class="p">(</span><span class="n">mem_size</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">ram</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">    </span><span class="n">M68kCpu</span><span class="w"> </span><span class="n">cpu</span><span class="p">;</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">    </span><span class="n">m68k_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="n">ram</span><span class="p">,</span><span class="w"> </span><span class="n">mem_size</span><span class="p">);</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">    </span><span class="cm">/* Reset vectors */</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">    </span><span class="n">m68k_write_32</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="mh">0x00000000</span><span class="p">,</span><span class="w"> </span><span class="mh">0x0000FF00</span><span class="p">);</span><span class="w"> </span><span class="cm">/* initial SSP */</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">    </span><span class="n">m68k_write_32</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="mh">0x00000004</span><span class="p">,</span><span class="w"> </span><span class="mh">0x00000100</span><span class="p">);</span><span class="w"> </span><span class="cm">/* initial PC  */</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">    </span><span class="cm">/* Program at 0x100: NOP; STOP #$2700 */</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">    </span><span class="n">m68k_write_16</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="mh">0x00000100</span><span class="p">,</span><span class="w"> </span><span class="mh">0x4E71</span><span class="p">);</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">    </span><span class="n">m68k_write_16</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="mh">0x00000102</span><span class="p">,</span><span class="w"> </span><span class="mh">0x4E72</span><span class="p">);</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">    </span><span class="n">m68k_write_16</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="mh">0x00000104</span><span class="p">,</span><span class="w"> </span><span class="mh">0x2700</span><span class="p">);</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="w">    </span><span class="n">m68k_reset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">);</span>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">total_cycles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">cpu</span><span class="p">.</span><span class="n">stopped</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="w">        </span><span class="n">total_cycles</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">m68k_execute</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">);</span>
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>
+<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;Stopped. cycles=%d pc=0x%08X</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">total_cycles</span><span class="p">,</span><span class="w"> </span><span class="n">cpu</span><span class="p">.</span><span class="n">pc</span><span class="p">);</span>
+<a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a>
+<a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span class="w">    </span><span class="n">free</span><span class="p">(</span><span class="n">ram</span><span class="p">);</span>
+<a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a><span class="p">}</span>
 </code></pre></div>
-<h2 id="5-important-files">5. Important Files<a class="headerlink" href="#5-important-files" title="Permanent link">&para;</a></h2>
-<p>Here is a list of the important header files provided by the project in the <code>include/</code> directory:</p>
-<table>
-<thead>
-<tr>
-<th>File</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>m68k.h</code></td>
-<td>The primary API header for the CPU core execution, callbacks, and management.</td>
-</tr>
-<tr>
-<td><code>disasm.h</code></td>
-<td>The built-in instruction disassembler API for formatting opcodes into text.</td>
-</tr>
-<tr>
-<td><code>loader.h</code></td>
-<td>Utilities for loading raw binaries and Motorola S-record files into memory.</td>
-</tr>
-<tr>
-<td><code>rocket68.h</code></td>
-<td>A convenience header that includes all the necessary components for the emulator.</td>
-</tr>
-</tbody>
-</table>
+<h2 id="3-running-without-reset-vectors">3. Running Without Reset Vectors<a class="headerlink" href="#3-running-without-reset-vectors" title="Permanent link">&para;</a></h2>
+<p>You can also set state directly:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">m68k_set_ar</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="mh">0x0000FF00</span><span class="p">);</span><span class="w"> </span><span class="cm">/* A7/SP */</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">m68k_set_sr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="mh">0x2700</span><span class="p">);</span><span class="w">         </span><span class="cm">/* supervisor mode */</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">m68k_set_pc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="mh">0x00000100</span><span class="p">);</span>
+</code></pre></div>
+<p>Use this pattern when your host controls boot flow explicitly.</p>
+<h2 id="4-basic-execution-model">4. Basic Execution Model<a class="headerlink" href="#4-basic-execution-model" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>m68k_step(&amp;cpu)</code> executes one instruction (with interrupt/trace checks).</li>
+<li><code>m68k_execute(&amp;cpu, cycles)</code> runs until the timeslice is exhausted.</li>
+<li><code>m68k_cycles_run(&amp;cpu)</code> and <code>m68k_cycles_remaining(&amp;cpu)</code> report timeslice accounting.</li>
+<li><code>m68k_end_timeslice(&amp;cpu)</code> forces the current timeslice to finish.</li>
+</ul>
+<h2 id="5-callback-wiring-optional">5. Callback Wiring (Optional)<a class="headerlink" href="#5-callback-wiring-optional" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">wait_bus</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">address</span><span class="p">,</span><span class="w"> </span><span class="n">M68kSize</span><span class="w"> </span><span class="n">size</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">address</span><span class="p">;</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">size</span><span class="p">;</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="cm">/* Add 2 wait-state cycles for each access */</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="n">cpu</span><span class="o">-&gt;</span><span class="n">cycles_remaining</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="p">}</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">int_ack</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">level</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">cpu</span><span class="p">;</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">level</span><span class="p">;</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">M68K_INT_ACK_AUTOVECTOR</span><span class="p">;</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="p">}</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="n">m68k_set_wait_bus_callback</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="n">wait_bus</span><span class="p">);</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="n">m68k_set_int_ack_callback</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="n">int_ack</span><span class="p">);</span>
+</code></pre></div>
+<h2 id="6-useful-notes">6. Useful Notes<a class="headerlink" href="#6-useful-notes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Memory accesses are checked against <code>cpu.memory_size</code>; out-of-range accesses trigger bus error handling.</li>
+<li>Internally, addresses are masked to 24-bit before validation.</li>
+<li><code>M68kCpu</code> state is instance-local, so multiple CPU instances can run independently.</li>
+</ul>
 
 
 

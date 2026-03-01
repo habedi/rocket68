@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['_5f_5fattribute_5f_5f_0',['__attribute__',['../unionM68kRegister.html#ac8b9a5ab8a36cea24ce735ae36748774',1,'M68kRegister']]]
+  ['a_5fregs_0',['a_regs',['../structM68kCpu.html#afe9d05a40e5fc126f72cb9c00c307d6b',1,'M68kCpu']]],
+  ['address_1',['address',['../structM68kEA.html#a92293d03c36a7b71ecf7245e8393f3a9',1,'M68kEA']]]
 ];

@@ -79,8 +79,7 @@ $(function() {
 <a href="#define-members">Macros</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
-<a href="#func-members">Functions</a> &#124;
-<a href="#var-members">Variables</a>  </div>
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">m68k.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -88,6 +87,7 @@ $(function() {
 <p>Public CPU core API for Rocket 68.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
+<code>#include &lt;setjmp.h&gt;</code><br />
 <code>#include &lt;stdalign.h&gt;</code><br />
 <code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
@@ -185,9 +185,9 @@ Typedefs</h2></td></tr>
 <tr class="memdesc:a6b812bcc496591f8b1c352e0971e5f8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interrupt acknowledge callback.  <br /></td></tr>
 <tr class="separator:a6b812bcc496591f8b1c352e0971e5f8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae1564ec78f2c3850601e15b187ca742c" id="r_ae1564ec78f2c3850601e15b187ca742c"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ae1564ec78f2c3850601e15b187ca742c">M68kFcCallback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, unsigned int new_fc)</td></tr>
-<tr class="memdesc:ae1564ec78f2c3850601e15b187ca742c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function code change callback.  <br /></td></tr>
+<tr class="memdesc:ae1564ec78f2c3850601e15b187ca742c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function code callback emitted for each bus/program access context.  <br /></td></tr>
 <tr class="separator:ae1564ec78f2c3850601e15b187ca742c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8d6f176c71707bd8d0dd2897b74d200d" id="r_a8d6f176c71707bd8d0dd2897b74d200d"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a8d6f176c71707bd8d0dd2897b74d200d">M68kInstrHookCallback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> <a class="el" href="m68k_8h.html#aeca957d5c7a44fcc66d1b27fcad72b5d">pc</a>)</td></tr>
+<tr class="memitem:a8d6f176c71707bd8d0dd2897b74d200d" id="r_a8d6f176c71707bd8d0dd2897b74d200d"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a8d6f176c71707bd8d0dd2897b74d200d">M68kInstrHookCallback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> pc)</td></tr>
 <tr class="memdesc:a8d6f176c71707bd8d0dd2897b74d200d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instruction hook callback executed before instruction decode/execute.  <br /></td></tr>
 <tr class="separator:a8d6f176c71707bd8d0dd2897b74d200d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a15d686bd57e22214945d8a87b41c1946" id="r_a15d686bd57e22214945d8a87b41c1946"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a15d686bd57e22214945d8a87b41c1946">M68kPcChangedCallback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> new_pc)</td></tr>
@@ -233,16 +233,13 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a999eea4a0b2231b6dd115fcce68365bc" id="r_a999eea4a0b2231b6dd115fcce68365bc"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structM68kCpu.html">M68kCpu</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a999eea4a0b2231b6dd115fcce68365bc">__attribute__</a> ((aligned(64))) <a class="el" href="structM68kCpu.html">M68kCpu</a></td></tr>
-<tr class="memdesc:a999eea4a0b2231b6dd115fcce68365bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Full CPU context for one emulated 68000 instance.  <br /></td></tr>
-<tr class="separator:a999eea4a0b2231b6dd115fcce68365bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5e3a7dcd8fd3a0211c67489fc0fe1093" id="r_a5e3a7dcd8fd3a0211c67489fc0fe1093"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a5e3a7dcd8fd3a0211c67489fc0fe1093">m68k_init</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a> *<a class="el" href="m68k_8h.html#aac286a29c2b63f7be786c955821b690c">memory</a>, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> <a class="el" href="m68k_8h.html#a637a569114fcd4e32683e32be9fe636b">memory_size</a>)</td></tr>
+<tr class="memitem:a5e3a7dcd8fd3a0211c67489fc0fe1093" id="r_a5e3a7dcd8fd3a0211c67489fc0fe1093"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a5e3a7dcd8fd3a0211c67489fc0fe1093">m68k_init</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a> *memory, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> memory_size)</td></tr>
 <tr class="memdesc:a5e3a7dcd8fd3a0211c67489fc0fe1093"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a CPU context and bind memory.  <br /></td></tr>
 <tr class="separator:a5e3a7dcd8fd3a0211c67489fc0fe1093"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2770e956d2435dd4fe19c709234e5c19" id="r_a2770e956d2435dd4fe19c709234e5c19"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a2770e956d2435dd4fe19c709234e5c19">m68k_reset</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu)</td></tr>
 <tr class="memdesc:a2770e956d2435dd4fe19c709234e5c19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset CPU state and load initial vectors from memory.  <br /></td></tr>
 <tr class="separator:a2770e956d2435dd4fe19c709234e5c19"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aec6fb371ff1e65d582205ff4bf1be22a" id="r_aec6fb371ff1e65d582205ff4bf1be22a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aec6fb371ff1e65d582205ff4bf1be22a">m68k_set_pc</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> <a class="el" href="m68k_8h.html#aeca957d5c7a44fcc66d1b27fcad72b5d">pc</a>)</td></tr>
+<tr class="memitem:aec6fb371ff1e65d582205ff4bf1be22a" id="r_aec6fb371ff1e65d582205ff4bf1be22a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aec6fb371ff1e65d582205ff4bf1be22a">m68k_set_pc</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> pc)</td></tr>
 <tr class="memdesc:aec6fb371ff1e65d582205ff4bf1be22a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the program counter.  <br /></td></tr>
 <tr class="separator:aec6fb371ff1e65d582205ff4bf1be22a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0a356227b28d3a64def57da190055ec1" id="r_a0a356227b28d3a64def57da190055ec1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a0a356227b28d3a64def57da190055ec1">m68k_get_pc</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu)</td></tr>
@@ -338,77 +335,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a855ea7c0b147b4be3bd343d62293dd89" id="r_a855ea7c0b147b4be3bd343d62293dd89"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a855ea7c0b147b4be3bd343d62293dd89">m68k_set_context</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, const void *src)</td></tr>
 <tr class="memdesc:a855ea7c0b147b4be3bd343d62293dd89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Restore CPU context from an external buffer.  <br /></td></tr>
 <tr class="separator:a855ea7c0b147b4be3bd343d62293dd89"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:a0862191de1af9abc8a3faaa1b4a03bf1" id="r_a0862191de1af9abc8a3faaa1b4a03bf1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="unionM68kRegister.html">M68kRegister</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a0862191de1af9abc8a3faaa1b4a03bf1">d_regs</a> [8]</td></tr>
-<tr class="separator:a0862191de1af9abc8a3faaa1b4a03bf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a841c04da362c589335c2d78b81314c8a" id="r_a841c04da362c589335c2d78b81314c8a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="unionM68kRegister.html">M68kRegister</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a841c04da362c589335c2d78b81314c8a">a_regs</a> [8]</td></tr>
-<tr class="separator:a841c04da362c589335c2d78b81314c8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeca957d5c7a44fcc66d1b27fcad72b5d" id="r_aeca957d5c7a44fcc66d1b27fcad72b5d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aeca957d5c7a44fcc66d1b27fcad72b5d">pc</a></td></tr>
-<tr class="separator:aeca957d5c7a44fcc66d1b27fcad72b5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5d9adc820df2c837b5988418a1e7010" id="r_ad5d9adc820df2c837b5988418a1e7010"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ad5d9adc820df2c837b5988418a1e7010">ppc</a></td></tr>
-<tr class="separator:ad5d9adc820df2c837b5988418a1e7010"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac25f360c975270c321d8fd1f2cd65065" id="r_ac25f360c975270c321d8fd1f2cd65065"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ac25f360c975270c321d8fd1f2cd65065">sr</a></td></tr>
-<tr class="separator:ac25f360c975270c321d8fd1f2cd65065"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abe092f7fc7d58356962df3fc30cad4d1" id="r_abe092f7fc7d58356962df3fc30cad4d1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#abe092f7fc7d58356962df3fc30cad4d1">ir</a></td></tr>
-<tr class="separator:abe092f7fc7d58356962df3fc30cad4d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aac286a29c2b63f7be786c955821b690c" id="r_aac286a29c2b63f7be786c955821b690c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aac286a29c2b63f7be786c955821b690c">memory</a></td></tr>
-<tr class="separator:aac286a29c2b63f7be786c955821b690c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a637a569114fcd4e32683e32be9fe636b" id="r_a637a569114fcd4e32683e32be9fe636b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a637a569114fcd4e32683e32be9fe636b">memory_size</a></td></tr>
-<tr class="separator:a637a569114fcd4e32683e32be9fe636b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abff129d833b3fe59ff0720ccc97ed81c" id="r_abff129d833b3fe59ff0720ccc97ed81c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#abff129d833b3fe59ff0720ccc97ed81c">irq_level</a></td></tr>
-<tr class="separator:abff129d833b3fe59ff0720ccc97ed81c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a859c59da8db886c62651889823c971c7" id="r_a859c59da8db886c62651889823c971c7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a859c59da8db886c62651889823c971c7">usp</a></td></tr>
-<tr class="separator:a859c59da8db886c62651889823c971c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a76aed39db9a0251fb0b94fade6a62d60" id="r_a76aed39db9a0251fb0b94fade6a62d60"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a76aed39db9a0251fb0b94fade6a62d60">ssp</a></td></tr>
-<tr class="separator:a76aed39db9a0251fb0b94fade6a62d60"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4bbd5ff52abed3e07aa5205f1179d9d3" id="r_a4bbd5ff52abed3e07aa5205f1179d9d3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a4bbd5ff52abed3e07aa5205f1179d9d3">stopped</a></td></tr>
-<tr class="separator:a4bbd5ff52abed3e07aa5205f1179d9d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abb04b2a46c7da42fa0c3320e3c190b4a" id="r_abb04b2a46c7da42fa0c3320e3c190b4a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#abb04b2a46c7da42fa0c3320e3c190b4a">trace_pending</a></td></tr>
-<tr class="separator:abb04b2a46c7da42fa0c3320e3c190b4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa1576e83bbe9e6d3eb761f26e4477b36" id="r_aa1576e83bbe9e6d3eb761f26e4477b36"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aa1576e83bbe9e6d3eb761f26e4477b36">exception_thrown</a></td></tr>
-<tr class="separator:aa1576e83bbe9e6d3eb761f26e4477b36"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aefe8e4027b56b38a1eea0dc117d50381" id="r_aefe8e4027b56b38a1eea0dc117d50381"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aefe8e4027b56b38a1eea0dc117d50381">in_address_error</a></td></tr>
-<tr class="separator:aefe8e4027b56b38a1eea0dc117d50381"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a59db740cb36a71726c881fd1e9c26e15" id="r_a59db740cb36a71726c881fd1e9c26e15"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a59db740cb36a71726c881fd1e9c26e15">in_bus_error</a></td></tr>
-<tr class="separator:a59db740cb36a71726c881fd1e9c26e15"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a67152aa9db6f0a5ebef935377996546a" id="r_a67152aa9db6f0a5ebef935377996546a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a67152aa9db6f0a5ebef935377996546a">fault_address</a></td></tr>
-<tr class="separator:a67152aa9db6f0a5ebef935377996546a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a37a0ca32fe1ca487341b9680bd4375ad" id="r_a37a0ca32fe1ca487341b9680bd4375ad"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a37a0ca32fe1ca487341b9680bd4375ad">fault_ir</a></td></tr>
-<tr class="separator:a37a0ca32fe1ca487341b9680bd4375ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afa5ad97efdeb28a5bb7583628cdf0f71" id="r_afa5ad97efdeb28a5bb7583628cdf0f71"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#afa5ad97efdeb28a5bb7583628cdf0f71">fault_ssw</a></td></tr>
-<tr class="separator:afa5ad97efdeb28a5bb7583628cdf0f71"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a56affe0b617f1bbbb1a699862d0f6cb8" id="r_a56affe0b617f1bbbb1a699862d0f6cb8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a56affe0b617f1bbbb1a699862d0f6cb8">fault_program_access</a></td></tr>
-<tr class="separator:a56affe0b617f1bbbb1a699862d0f6cb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a704263244445d3071697dc99bd656bdd" id="r_a704263244445d3071697dc99bd656bdd"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a704263244445d3071697dc99bd656bdd">fault_valid</a></td></tr>
-<tr class="separator:a704263244445d3071697dc99bd656bdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac1851598ae7d978cb7f0cdca7eb71eed" id="r_ac1851598ae7d978cb7f0cdca7eb71eed"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ac1851598ae7d978cb7f0cdca7eb71eed">vbr</a></td></tr>
-<tr class="separator:ac1851598ae7d978cb7f0cdca7eb71eed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a76558f7c6bfced15235af8907f4409d2" id="r_a76558f7c6bfced15235af8907f4409d2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a76558f7c6bfced15235af8907f4409d2">sfc</a></td></tr>
-<tr class="separator:a76558f7c6bfced15235af8907f4409d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0781c67a1facdf114afcd23c827e19a6" id="r_a0781c67a1facdf114afcd23c827e19a6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a0781c67a1facdf114afcd23c827e19a6">dfc</a></td></tr>
-<tr class="separator:a0781c67a1facdf114afcd23c827e19a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4d6a3da29d182746e86f45919e23522a" id="r_a4d6a3da29d182746e86f45919e23522a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a4d6a3da29d182746e86f45919e23522a">target_cycles</a></td></tr>
-<tr class="separator:a4d6a3da29d182746e86f45919e23522a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b9dd1484c840d734c013cc07f9e3b3f" id="r_a5b9dd1484c840d734c013cc07f9e3b3f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a5b9dd1484c840d734c013cc07f9e3b3f">cycles_remaining</a></td></tr>
-<tr class="separator:a5b9dd1484c840d734c013cc07f9e3b3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a94a44fe0b8e6e28281c93173a3472da8" id="r_a94a44fe0b8e6e28281c93173a3472da8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#ad062cae7336e832272370f1de005ce09">M68kWaitBusCallback</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a94a44fe0b8e6e28281c93173a3472da8">wait_bus</a></td></tr>
-<tr class="separator:a94a44fe0b8e6e28281c93173a3472da8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac3b4f54dba327d9bc7e4a90147d07078" id="r_ac3b4f54dba327d9bc7e4a90147d07078"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#a6b812bcc496591f8b1c352e0971e5f8f">M68kIntAckCallback</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ac3b4f54dba327d9bc7e4a90147d07078">int_ack</a></td></tr>
-<tr class="separator:ac3b4f54dba327d9bc7e4a90147d07078"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3fd0e160d6eda02f698738123ac6dd55" id="r_a3fd0e160d6eda02f698738123ac6dd55"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#ae1564ec78f2c3850601e15b187ca742c">M68kFcCallback</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a3fd0e160d6eda02f698738123ac6dd55">fc_cb</a></td></tr>
-<tr class="separator:a3fd0e160d6eda02f698738123ac6dd55"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab16d50e6c4593f871c3cb036ed7ef406" id="r_ab16d50e6c4593f871c3cb036ed7ef406"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#a8d6f176c71707bd8d0dd2897b74d200d">M68kInstrHookCallback</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ab16d50e6c4593f871c3cb036ed7ef406">instr_hook_cb</a></td></tr>
-<tr class="separator:ab16d50e6c4593f871c3cb036ed7ef406"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a566a0ccae1645b1534ba96f24908db48" id="r_a566a0ccae1645b1534ba96f24908db48"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#a15d686bd57e22214945d8a87b41c1946">M68kPcChangedCallback</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a566a0ccae1645b1534ba96f24908db48">pc_changed_cb</a></td></tr>
-<tr class="separator:a566a0ccae1645b1534ba96f24908db48"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab1dfe5a87123bff92d9a1650cc98780b" id="r_ab1dfe5a87123bff92d9a1650cc98780b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#a52ed09b4cf386ffd760712049d3d5271">M68kResetCallback</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ab1dfe5a87123bff92d9a1650cc98780b">reset_cb</a></td></tr>
-<tr class="separator:ab1dfe5a87123bff92d9a1650cc98780b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:accbafbc0815ba608621297f4d2219486" id="r_accbafbc0815ba608621297f4d2219486"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#a4bc37481c221d5f07ea8ff73ad5e7629">M68kTasCallback</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#accbafbc0815ba608621297f4d2219486">tas_cb</a></td></tr>
-<tr class="separator:accbafbc0815ba608621297f4d2219486"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a40cdbe683ffb8bb6ccd446d0565743a4" id="r_a40cdbe683ffb8bb6ccd446d0565743a4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#a50006589848a459ad5f7bf6a625cdb5f">M68kIllgCallback</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a40cdbe683ffb8bb6ccd446d0565743a4">illg_cb</a></td></tr>
-<tr class="separator:a40cdbe683ffb8bb6ccd446d0565743a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Public CPU core API for Rocket 68. </p>
@@ -635,6 +561,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Forward declaration of the CPU context. </p>
+<p>Full CPU context for one emulated 68000 instance. </p>
 
 </div>
 </div>
@@ -650,7 +577,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Function code change callback. </p>
+<p>Function code callback emitted for each bus/program access context. </p>
 
 </div>
 </div>
@@ -677,7 +604,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef void(* M68kInstrHookCallback) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> <a class="el" href="m68k_8h.html#aeca957d5c7a44fcc66d1b27fcad72b5d">pc</a>)</td>
+          <td class="memname">typedef void(* M68kInstrHookCallback) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> pc)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -917,26 +844,6 @@ Variables</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a999eea4a0b2231b6dd115fcce68365bc" name="a999eea4a0b2231b6dd115fcce68365bc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a999eea4a0b2231b6dd115fcce68365bc">&#9670;&#160;</a></span>__attribute__()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct <a class="el" href="structM68kCpu.html">M68kCpu</a> __attribute__ </td>
-          <td>(</td>
-          <td class="paramtype">(aligned(64))&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Full CPU context for one emulated 68000 instance. </p>
-
-</div>
-</div>
 <a id="add146fec61c6610e890ee60050b64bc9" name="add146fec61c6610e890ee60050b64bc9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#add146fec61c6610e890ee60050b64bc9">&#9670;&#160;</a></span>m68k_context_size()</h2>
 
@@ -1594,10 +1501,11 @@ Variables</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
-    <tr><td class="paramname">callback</td><td>Callback function pointer or NULL. </td></tr>
+    <tr><td class="paramname">callback</td><td>Callback function pointer or NULL.</td></tr>
   </table>
   </dd>
 </dl>
+<p>The callback is invoked before memory/program accesses with the active function code. </p>
 
 </div>
 </div>
@@ -2163,517 +2071,6 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<h2 class="groupheader">Variable Documentation</h2>
-<a id="a841c04da362c589335c2d78b81314c8a" name="a841c04da362c589335c2d78b81314c8a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a841c04da362c589335c2d78b81314c8a">&#9670;&#160;</a></span>a_regs</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="unionM68kRegister.html">M68kRegister</a> a_regs[8]</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Address registers A0-A7. </p>
-
-</div>
-</div>
-<a id="a5b9dd1484c840d734c013cc07f9e3b3f" name="a5b9dd1484c840d734c013cc07f9e3b3f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5b9dd1484c840d734c013cc07f9e3b3f">&#9670;&#160;</a></span>cycles_remaining</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int cycles_remaining</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Remaining cycles in current timeslice. </p>
-
-</div>
-</div>
-<a id="a0862191de1af9abc8a3faaa1b4a03bf1" name="a0862191de1af9abc8a3faaa1b4a03bf1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0862191de1af9abc8a3faaa1b4a03bf1">&#9670;&#160;</a></span>d_regs</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="unionM68kRegister.html">M68kRegister</a> d_regs[8]</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Data registers D0-D7. </p>
-
-</div>
-</div>
-<a id="a0781c67a1facdf114afcd23c827e19a6" name="a0781c67a1facdf114afcd23c827e19a6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0781c67a1facdf114afcd23c827e19a6">&#9670;&#160;</a></span>dfc</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> dfc</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Destination function code register (model extension path). </p>
-
-</div>
-</div>
-<a id="aa1576e83bbe9e6d3eb761f26e4477b36" name="aa1576e83bbe9e6d3eb761f26e4477b36"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa1576e83bbe9e6d3eb761f26e4477b36">&#9670;&#160;</a></span>exception_thrown</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int exception_thrown</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Exception state marker. </p>
-
-</div>
-</div>
-<a id="a67152aa9db6f0a5ebef935377996546a" name="a67152aa9db6f0a5ebef935377996546a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a67152aa9db6f0a5ebef935377996546a">&#9670;&#160;</a></span>fault_address</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> fault_address</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Fault address latched for exception frames. </p>
-
-</div>
-</div>
-<a id="a37a0ca32fe1ca487341b9680bd4375ad" name="a37a0ca32fe1ca487341b9680bd4375ad"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a37a0ca32fe1ca487341b9680bd4375ad">&#9670;&#160;</a></span>fault_ir</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a> fault_ir</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Fault IR latched for exception frames. </p>
-
-</div>
-</div>
-<a id="a56affe0b617f1bbbb1a699862d0f6cb8" name="a56affe0b617f1bbbb1a699862d0f6cb8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a56affe0b617f1bbbb1a699862d0f6cb8">&#9670;&#160;</a></span>fault_program_access</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool fault_program_access</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Fault access type marker. </p>
-
-</div>
-</div>
-<a id="afa5ad97efdeb28a5bb7583628cdf0f71" name="afa5ad97efdeb28a5bb7583628cdf0f71"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afa5ad97efdeb28a5bb7583628cdf0f71">&#9670;&#160;</a></span>fault_ssw</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a> fault_ssw</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Fault status word for exception frames. </p>
-
-</div>
-</div>
-<a id="a704263244445d3071697dc99bd656bdd" name="a704263244445d3071697dc99bd656bdd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a704263244445d3071697dc99bd656bdd">&#9670;&#160;</a></span>fault_valid</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool fault_valid</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Fault information validity flag. </p>
-
-</div>
-</div>
-<a id="a3fd0e160d6eda02f698738123ac6dd55" name="a3fd0e160d6eda02f698738123ac6dd55"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3fd0e160d6eda02f698738123ac6dd55">&#9670;&#160;</a></span>fc_cb</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#ae1564ec78f2c3850601e15b187ca742c">M68kFcCallback</a> fc_cb</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Function code callback. </p>
-
-</div>
-</div>
-<a id="a40cdbe683ffb8bb6ccd446d0565743a4" name="a40cdbe683ffb8bb6ccd446d0565743a4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a40cdbe683ffb8bb6ccd446d0565743a4">&#9670;&#160;</a></span>illg_cb</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#a50006589848a459ad5f7bf6a625cdb5f">M68kIllgCallback</a> illg_cb</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Illegal opcode callback. </p>
-
-</div>
-</div>
-<a id="aefe8e4027b56b38a1eea0dc117d50381" name="aefe8e4027b56b38a1eea0dc117d50381"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aefe8e4027b56b38a1eea0dc117d50381">&#9670;&#160;</a></span>in_address_error</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool in_address_error</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Address error re-entry guard. </p>
-
-</div>
-</div>
-<a id="a59db740cb36a71726c881fd1e9c26e15" name="a59db740cb36a71726c881fd1e9c26e15"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a59db740cb36a71726c881fd1e9c26e15">&#9670;&#160;</a></span>in_bus_error</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool in_bus_error</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Bus error re-entry guard. </p>
-
-</div>
-</div>
-<a id="ab16d50e6c4593f871c3cb036ed7ef406" name="ab16d50e6c4593f871c3cb036ed7ef406"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab16d50e6c4593f871c3cb036ed7ef406">&#9670;&#160;</a></span>instr_hook_cb</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#a8d6f176c71707bd8d0dd2897b74d200d">M68kInstrHookCallback</a> instr_hook_cb</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Instruction hook callback. </p>
-
-</div>
-</div>
-<a id="ac3b4f54dba327d9bc7e4a90147d07078" name="ac3b4f54dba327d9bc7e4a90147d07078"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac3b4f54dba327d9bc7e4a90147d07078">&#9670;&#160;</a></span>int_ack</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#a6b812bcc496591f8b1c352e0971e5f8f">M68kIntAckCallback</a> int_ack</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Interrupt acknowledge callback. </p>
-
-</div>
-</div>
-<a id="abe092f7fc7d58356962df3fc30cad4d1" name="abe092f7fc7d58356962df3fc30cad4d1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abe092f7fc7d58356962df3fc30cad4d1">&#9670;&#160;</a></span>ir</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a> ir</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Current instruction register. </p>
-
-</div>
-</div>
-<a id="abff129d833b3fe59ff0720ccc97ed81c" name="abff129d833b3fe59ff0720ccc97ed81c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abff129d833b3fe59ff0720ccc97ed81c">&#9670;&#160;</a></span>irq_level</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int irq_level</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Pending interrupt level (0-7). </p>
-
-</div>
-</div>
-<a id="aac286a29c2b63f7be786c955821b690c" name="aac286a29c2b63f7be786c955821b690c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aac286a29c2b63f7be786c955821b690c">&#9670;&#160;</a></span>memory</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a>* memory</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Bound flat memory pointer. </p>
-
-</div>
-</div>
-<a id="a637a569114fcd4e32683e32be9fe636b" name="a637a569114fcd4e32683e32be9fe636b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a637a569114fcd4e32683e32be9fe636b">&#9670;&#160;</a></span>memory_size</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> memory_size</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Size of bound memory in bytes. </p>
-
-</div>
-</div>
-<a id="aeca957d5c7a44fcc66d1b27fcad72b5d" name="aeca957d5c7a44fcc66d1b27fcad72b5d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeca957d5c7a44fcc66d1b27fcad72b5d">&#9670;&#160;</a></span>pc</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> pc</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Program counter. </p>
-
-</div>
-</div>
-<a id="a566a0ccae1645b1534ba96f24908db48" name="a566a0ccae1645b1534ba96f24908db48"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a566a0ccae1645b1534ba96f24908db48">&#9670;&#160;</a></span>pc_changed_cb</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#a15d686bd57e22214945d8a87b41c1946">M68kPcChangedCallback</a> pc_changed_cb</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>PC changed callback. </p>
-
-</div>
-</div>
-<a id="ad5d9adc820df2c837b5988418a1e7010" name="ad5d9adc820df2c837b5988418a1e7010"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad5d9adc820df2c837b5988418a1e7010">&#9670;&#160;</a></span>ppc</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> ppc</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Previous program counter. </p>
-
-</div>
-</div>
-<a id="ab1dfe5a87123bff92d9a1650cc98780b" name="ab1dfe5a87123bff92d9a1650cc98780b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab1dfe5a87123bff92d9a1650cc98780b">&#9670;&#160;</a></span>reset_cb</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#a52ed09b4cf386ffd760712049d3d5271">M68kResetCallback</a> reset_cb</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Reset callback. </p>
-
-</div>
-</div>
-<a id="a76558f7c6bfced15235af8907f4409d2" name="a76558f7c6bfced15235af8907f4409d2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a76558f7c6bfced15235af8907f4409d2">&#9670;&#160;</a></span>sfc</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> sfc</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Source function code register (model extension path). </p>
-
-</div>
-</div>
-<a id="ac25f360c975270c321d8fd1f2cd65065" name="ac25f360c975270c321d8fd1f2cd65065"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac25f360c975270c321d8fd1f2cd65065">&#9670;&#160;</a></span>sr</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a> sr</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Status register. </p>
-
-</div>
-</div>
-<a id="a76aed39db9a0251fb0b94fade6a62d60" name="a76aed39db9a0251fb0b94fade6a62d60"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a76aed39db9a0251fb0b94fade6a62d60">&#9670;&#160;</a></span>ssp</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> ssp</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Supervisor stack pointer shadow. </p>
-
-</div>
-</div>
-<a id="a4bbd5ff52abed3e07aa5205f1179d9d3" name="a4bbd5ff52abed3e07aa5205f1179d9d3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4bbd5ff52abed3e07aa5205f1179d9d3">&#9670;&#160;</a></span>stopped</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool stopped</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>STOP state latch. </p>
-
-</div>
-</div>
-<a id="a4d6a3da29d182746e86f45919e23522a" name="a4d6a3da29d182746e86f45919e23522a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4d6a3da29d182746e86f45919e23522a">&#9670;&#160;</a></span>target_cycles</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int target_cycles</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Timeslice target cycles accumulator. </p>
-
-</div>
-</div>
-<a id="accbafbc0815ba608621297f4d2219486" name="accbafbc0815ba608621297f4d2219486"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#accbafbc0815ba608621297f4d2219486">&#9670;&#160;</a></span>tas_cb</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#a4bc37481c221d5f07ea8ff73ad5e7629">M68kTasCallback</a> tas_cb</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>TAS callback. </p>
-
-</div>
-</div>
-<a id="abb04b2a46c7da42fa0c3320e3c190b4a" name="abb04b2a46c7da42fa0c3320e3c190b4a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abb04b2a46c7da42fa0c3320e3c190b4a">&#9670;&#160;</a></span>trace_pending</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool trace_pending</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Trace pending latch. </p>
-
-</div>
-</div>
-<a id="a859c59da8db886c62651889823c971c7" name="a859c59da8db886c62651889823c971c7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a859c59da8db886c62651889823c971c7">&#9670;&#160;</a></span>usp</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> usp</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>User stack pointer. </p>
-
-</div>
-</div>
-<a id="ac1851598ae7d978cb7f0cdca7eb71eed" name="ac1851598ae7d978cb7f0cdca7eb71eed"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac1851598ae7d978cb7f0cdca7eb71eed">&#9670;&#160;</a></span>vbr</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> vbr</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Vector base register (model extension path). </p>
-
-</div>
-</div>
-<a id="a94a44fe0b8e6e28281c93173a3472da8" name="a94a44fe0b8e6e28281c93173a3472da8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a94a44fe0b8e6e28281c93173a3472da8">&#9670;&#160;</a></span>wait_bus</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="m68k_8h.html#ad062cae7336e832272370f1de005ce09">M68kWaitBusCallback</a> wait_bus</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Wait/bus callback. </p>
 
 </div>
 </div>

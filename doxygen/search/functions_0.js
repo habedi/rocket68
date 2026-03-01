@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['_5f_5fattribute_5f_5f_0',['__attribute__',['../m68k_8h.html#a999eea4a0b2231b6dd115fcce68365bc',1,'m68k.h']]]
+  ['_5falignas_0',['_Alignas',['../structM68kCpu.html#aca93edb6d98a5038f993d09bd8bb1568',1,'M68kCpu']]]
 ];

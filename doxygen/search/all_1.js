@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['a_5fregs_0',['a_regs',['../structM68kCpu.html#afe9d05a40e5fc126f72cb9c00c307d6b',1,'M68kCpu::a_regs'],['../m68k_8h.html#a841c04da362c589335c2d78b81314c8a',1,'a_regs:&#160;m68k.h']]],
+  ['a_5fregs_0',['a_regs',['../structM68kCpu.html#afe9d05a40e5fc126f72cb9c00c307d6b',1,'M68kCpu']]],
   ['addr_5fmode_5fabs_5flong_1',['ADDR_MODE_ABS_LONG',['../m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3a6cc5d81828e315e24d935600a35954cd',1,'m68k.h']]],
   ['addr_5fmode_5fabs_5fshort_2',['ADDR_MODE_ABS_SHORT',['../m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3ac54b5b7c902086e1ee6804941a776938',1,'m68k.h']]],
   ['addr_5fmode_5faddr_5freg_5fdirect_3',['ADDR_MODE_ADDR_REG_DIRECT',['../m68k_8h.html#a124c8defd3d694c08919e9f49c2b6cb3a838714077bd5873ceca0542e811fabbc',1,'m68k.h']]],

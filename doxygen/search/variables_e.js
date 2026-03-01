@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['usp_0',['usp',['../structM68kCpu.html#a3cd2d840e4243e21e0bdf95c7404649c',1,'M68kCpu::usp'],['../m68k_8h.html#a859c59da8db886c62651889823c971c7',1,'usp:&#160;m68k.h']]]
+  ['value_0',['value',['../structM68kEA.html#a5372d69dd1744ee89317981163641a0f',1,'M68kEA']]],
+  ['vbr_1',['vbr',['../structM68kCpu.html#a177e3e8c2739b01273dfd55649fbf693',1,'M68kCpu']]]
 ];

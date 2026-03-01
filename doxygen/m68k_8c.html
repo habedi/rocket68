@@ -101,13 +101,13 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a5e3a7dcd8fd3a0211c67489fc0fe1093" id="r_a5e3a7dcd8fd3a0211c67489fc0fe1093"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8c.html#a5e3a7dcd8fd3a0211c67489fc0fe1093">m68k_init</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a> *<a class="el" href="m68k_8h.html#aac286a29c2b63f7be786c955821b690c">memory</a>, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> <a class="el" href="m68k_8h.html#a637a569114fcd4e32683e32be9fe636b">memory_size</a>)</td></tr>
+<tr class="memitem:a5e3a7dcd8fd3a0211c67489fc0fe1093" id="r_a5e3a7dcd8fd3a0211c67489fc0fe1093"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8c.html#a5e3a7dcd8fd3a0211c67489fc0fe1093">m68k_init</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a> *memory, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> memory_size)</td></tr>
 <tr class="memdesc:a5e3a7dcd8fd3a0211c67489fc0fe1093"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a CPU context and bind memory.  <br /></td></tr>
 <tr class="separator:a5e3a7dcd8fd3a0211c67489fc0fe1093"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2770e956d2435dd4fe19c709234e5c19" id="r_a2770e956d2435dd4fe19c709234e5c19"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8c.html#a2770e956d2435dd4fe19c709234e5c19">m68k_reset</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu)</td></tr>
 <tr class="memdesc:a2770e956d2435dd4fe19c709234e5c19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset CPU state and load initial vectors from memory.  <br /></td></tr>
 <tr class="separator:a2770e956d2435dd4fe19c709234e5c19"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aec6fb371ff1e65d582205ff4bf1be22a" id="r_aec6fb371ff1e65d582205ff4bf1be22a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8c.html#aec6fb371ff1e65d582205ff4bf1be22a">m68k_set_pc</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> <a class="el" href="m68k_8h.html#aeca957d5c7a44fcc66d1b27fcad72b5d">pc</a>)</td></tr>
+<tr class="memitem:aec6fb371ff1e65d582205ff4bf1be22a" id="r_aec6fb371ff1e65d582205ff4bf1be22a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8c.html#aec6fb371ff1e65d582205ff4bf1be22a">m68k_set_pc</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> pc)</td></tr>
 <tr class="memdesc:aec6fb371ff1e65d582205ff4bf1be22a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the program counter.  <br /></td></tr>
 <tr class="separator:aec6fb371ff1e65d582205ff4bf1be22a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0a356227b28d3a64def57da190055ec1" id="r_a0a356227b28d3a64def57da190055ec1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8c.html#a0a356227b28d3a64def57da190055ec1">m68k_get_pc</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu)</td></tr>
@@ -1277,10 +1277,11 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
-    <tr><td class="paramname">callback</td><td>Callback function pointer or NULL. </td></tr>
+    <tr><td class="paramname">callback</td><td>Callback function pointer or NULL.</td></tr>
   </table>
   </dd>
 </dl>
+<p>The callback is invoked before memory/program accesses with the active function code. </p>
 
 </div>
 </div>

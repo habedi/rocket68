@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['memory_0',['memory',['../structM68kCpu.html#ac284695456e2679ce65ca04ad90b2153',1,'M68kCpu::memory'],['../m68k_8h.html#aac286a29c2b63f7be786c955821b690c',1,'memory:&#160;m68k.h']]],
-  ['memory_5fsize_1',['memory_size',['../structM68kCpu.html#a1c1be8ff235b2f9f99e14eaa75abe6d8',1,'M68kCpu::memory_size'],['../m68k_8h.html#a637a569114fcd4e32683e32be9fe636b',1,'memory_size:&#160;m68k.h']]]
+  ['pc_0',['pc',['../structM68kCpu.html#a3dc53ea0dd304f63ff5ee6f6d431a55a',1,'M68kCpu']]],
+  ['pc_5fchanged_5fcb_1',['pc_changed_cb',['../structM68kCpu.html#a346f3612513090d8bc64af3d60d1ab79',1,'M68kCpu']]],
+  ['ppc_2',['ppc',['../structM68kCpu.html#a26427f1fb97260e82beae388e21aa7ee',1,'M68kCpu']]]
 ];

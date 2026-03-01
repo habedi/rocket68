@@ -16,6 +16,8 @@
         <link rel="prev" href="../examples/">
       
       
+        <link rel="next" href="../limitations/">
+      
       
         
       
@@ -67,7 +69,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-orange" data-md-color-accent="amber">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="yellow" data-md-color-accent="amber">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -123,7 +125,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-orange" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="yellow" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -133,7 +135,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-orange" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="yellow" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -287,6 +289,25 @@
     
   
   API Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../limitations/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Known Limitations
 
       </a>
     </li>
@@ -486,22 +507,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#core-structures" class="md-nav__link">
+  <a href="#header-usage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Core Structures
+        Header Usage
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Core Structures">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Types">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#m68kcpu" class="md-nav__link">
+  <a href="#integer-aliases" class="md-nav__link">
     <span class="md-ellipsis">
       
-        M68kCpu
+        Integer aliases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m68ksize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M68kSize
       
     </span>
   </a>
@@ -519,28 +562,72 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#m68kcpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M68kCpu
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#functions" class="md-nav__link">
+  <a href="#status-register-flags" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Functions
+        Status Register Flags
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Functions">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#function-code-constants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Function Code Constants
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interrupt-ack-constants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interrupt ACK Constants
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lifecycle-and-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lifecycle and State
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Lifecycle and State">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#m68k_init" class="md-nav__link">
+  <a href="#void-m68k_initm68kcpu-cpu-u8-memory-u32-memory_size" class="md-nav__link">
     <span class="md-ellipsis">
       
-        m68k_init
+        void m68k_init(M68kCpu* cpu, u8* memory, u32 memory_size);
       
     </span>
   </a>
@@ -548,10 +635,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#m68k_reset" class="md-nav__link">
+  <a href="#void-m68k_resetm68kcpu-cpu" class="md-nav__link">
     <span class="md-ellipsis">
       
-        m68k_reset
+        void m68k_reset(M68kCpu* cpu);
       
     </span>
   </a>
@@ -559,10 +646,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#m68k_execute" class="md-nav__link">
+  <a href="#void-m68k_set_pcm68kcpu-cpu-u32-pc" class="md-nav__link">
     <span class="md-ellipsis">
       
-        m68k_execute
+        void m68k_set_pc(M68kCpu* cpu, u32 pc);
       
     </span>
   </a>
@@ -570,10 +657,43 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#other-frequently-used-apis" class="md-nav__link">
+  <a href="#u32-m68k_get_pcm68kcpu-cpu" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Other frequently used APIs
+        u32 m68k_get_pc(M68kCpu* cpu);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_srm68kcpu-cpu-u16-new_sr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_sr(M68kCpu* cpu, u16 new_sr);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_irqm68kcpu-cpu-int-level" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_irq(M68kCpu* cpu, int level);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#register-accessors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Register accessors
       
     </span>
   </a>
@@ -586,13 +706,352 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#io-callbacks" class="md-nav__link">
+  <a href="#execution-api" class="md-nav__link">
     <span class="md-ellipsis">
       
-        I/O Callbacks
+        Execution API
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Execution API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_step_exm68kcpu-cpu-bool-check_exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_step_ex(M68kCpu* cpu, bool check_exceptions);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_stepm68kcpu-cpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_step(M68kCpu* cpu);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#int-m68k_executem68kcpu-cpu-int-cycles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        int m68k_execute(M68kCpu* cpu, int cycles);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeslice-helpers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeslice helpers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#memory-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory API
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Memory API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reads
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#writes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Writes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#callback-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Callback API
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Callback API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_wait_bus_callbackm68kcpu-cpu-m68kwaitbuscallback-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_wait_bus_callback(M68kCpu* cpu, M68kWaitBusCallback callback);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_int_ack_callbackm68kcpu-cpu-m68kintackcallback-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_int_ack_callback(M68kCpu* cpu, M68kIntAckCallback callback);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_fc_callbackm68kcpu-cpu-m68kfccallback-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_fc_callback(M68kCpu* cpu, M68kFcCallback callback);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_instr_hook_callbackm68kcpu-cpu-m68kinstrhookcallback-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_instr_hook_callback(M68kCpu* cpu, M68kInstrHookCallback callback);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_pc_changed_callbackm68kcpu-cpu-m68kpcchangedcallback-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_pc_changed_callback(M68kCpu* cpu, M68kPcChangedCallback callback);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_reset_callbackm68kcpu-cpu-m68kresetcallback-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_reset_callback(M68kCpu* cpu, M68kResetCallback callback);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_tas_callbackm68kcpu-cpu-m68ktascallback-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_tas_callback(M68kCpu* cpu, M68kTasCallback callback);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_illg_callbackm68kcpu-cpu-m68killgcallback-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_illg_callback(M68kCpu* cpu, M68kIllgCallback callback);
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#context-saverestore" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context Save/Restore
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Context Save/Restore">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#unsigned-int-m68k_context_sizevoid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        unsigned int m68k_context_size(void);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_get_contextm68kcpu-cpu-void-dst" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_get_context(M68kCpu* cpu, void* dst);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_contextm68kcpu-cpu-const-void-src" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_context(M68kCpu* cpu, const void* src);
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loader-api-loaderh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loader API (loader.h)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Loader API (loader.h)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bool-m68k_load_srecm68kcpu-cpu-const-char-filename" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bool m68k_load_srec(M68kCpu* cpu, const char* filename);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bool-m68k_load_binm68kcpu-cpu-const-char-filename-u32-address" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bool m68k_load_bin(M68kCpu* cpu, const char* filename, u32 address);
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#disassembler-api-disasmh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disassembler API (disasm.h)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Disassembler API (disasm.h)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#int-m68k_disasmm68kcpu-cpu-u32-pc-char-buffer-int-buf_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size);
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Version">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rocket68_version_str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ROCKET68_VERSION_STR
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -600,6 +1059,33 @@
   
 </nav>
       
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Known Limitations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -631,22 +1117,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#core-structures" class="md-nav__link">
+  <a href="#header-usage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Core Structures
+        Header Usage
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Core Structures">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Types">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#m68kcpu" class="md-nav__link">
+  <a href="#integer-aliases" class="md-nav__link">
     <span class="md-ellipsis">
       
-        M68kCpu
+        Integer aliases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#m68ksize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M68kSize
       
     </span>
   </a>
@@ -664,28 +1172,72 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#m68kcpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M68kCpu
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#functions" class="md-nav__link">
+  <a href="#status-register-flags" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Functions
+        Status Register Flags
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Functions">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#function-code-constants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Function Code Constants
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interrupt-ack-constants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interrupt ACK Constants
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lifecycle-and-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lifecycle and State
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Lifecycle and State">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#m68k_init" class="md-nav__link">
+  <a href="#void-m68k_initm68kcpu-cpu-u8-memory-u32-memory_size" class="md-nav__link">
     <span class="md-ellipsis">
       
-        m68k_init
+        void m68k_init(M68kCpu* cpu, u8* memory, u32 memory_size);
       
     </span>
   </a>
@@ -693,10 +1245,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#m68k_reset" class="md-nav__link">
+  <a href="#void-m68k_resetm68kcpu-cpu" class="md-nav__link">
     <span class="md-ellipsis">
       
-        m68k_reset
+        void m68k_reset(M68kCpu* cpu);
       
     </span>
   </a>
@@ -704,10 +1256,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#m68k_execute" class="md-nav__link">
+  <a href="#void-m68k_set_pcm68kcpu-cpu-u32-pc" class="md-nav__link">
     <span class="md-ellipsis">
       
-        m68k_execute
+        void m68k_set_pc(M68kCpu* cpu, u32 pc);
       
     </span>
   </a>
@@ -715,10 +1267,43 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#other-frequently-used-apis" class="md-nav__link">
+  <a href="#u32-m68k_get_pcm68kcpu-cpu" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Other frequently used APIs
+        u32 m68k_get_pc(M68kCpu* cpu);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_srm68kcpu-cpu-u16-new_sr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_sr(M68kCpu* cpu, u16 new_sr);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_irqm68kcpu-cpu-int-level" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_irq(M68kCpu* cpu, int level);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#register-accessors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Register accessors
       
     </span>
   </a>
@@ -731,13 +1316,352 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#io-callbacks" class="md-nav__link">
+  <a href="#execution-api" class="md-nav__link">
     <span class="md-ellipsis">
       
-        I/O Callbacks
+        Execution API
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Execution API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_step_exm68kcpu-cpu-bool-check_exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_step_ex(M68kCpu* cpu, bool check_exceptions);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_stepm68kcpu-cpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_step(M68kCpu* cpu);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#int-m68k_executem68kcpu-cpu-int-cycles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        int m68k_execute(M68kCpu* cpu, int cycles);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeslice-helpers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeslice helpers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#memory-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Memory API
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Memory API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reads
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#writes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Writes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#callback-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Callback API
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Callback API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_wait_bus_callbackm68kcpu-cpu-m68kwaitbuscallback-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_wait_bus_callback(M68kCpu* cpu, M68kWaitBusCallback callback);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_int_ack_callbackm68kcpu-cpu-m68kintackcallback-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_int_ack_callback(M68kCpu* cpu, M68kIntAckCallback callback);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_fc_callbackm68kcpu-cpu-m68kfccallback-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_fc_callback(M68kCpu* cpu, M68kFcCallback callback);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_instr_hook_callbackm68kcpu-cpu-m68kinstrhookcallback-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_instr_hook_callback(M68kCpu* cpu, M68kInstrHookCallback callback);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_pc_changed_callbackm68kcpu-cpu-m68kpcchangedcallback-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_pc_changed_callback(M68kCpu* cpu, M68kPcChangedCallback callback);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_reset_callbackm68kcpu-cpu-m68kresetcallback-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_reset_callback(M68kCpu* cpu, M68kResetCallback callback);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_tas_callbackm68kcpu-cpu-m68ktascallback-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_tas_callback(M68kCpu* cpu, M68kTasCallback callback);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_illg_callbackm68kcpu-cpu-m68killgcallback-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_illg_callback(M68kCpu* cpu, M68kIllgCallback callback);
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#context-saverestore" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context Save/Restore
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Context Save/Restore">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#unsigned-int-m68k_context_sizevoid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        unsigned int m68k_context_size(void);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_get_contextm68kcpu-cpu-void-dst" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_get_context(M68kCpu* cpu, void* dst);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#void-m68k_set_contextm68kcpu-cpu-const-void-src" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        void m68k_set_context(M68kCpu* cpu, const void* src);
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loader-api-loaderh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loader API (loader.h)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Loader API (loader.h)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bool-m68k_load_srecm68kcpu-cpu-const-char-filename" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bool m68k_load_srec(M68kCpu* cpu, const char* filename);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bool-m68k_load_binm68kcpu-cpu-const-char-filename-u32-address" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        bool m68k_load_bin(M68kCpu* cpu, const char* filename, u32 address);
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#disassembler-api-disasmh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disassembler API (disasm.h)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Disassembler API (disasm.h)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#int-m68k_disasmm68kcpu-cpu-u32-pc-char-buffer-int-buf_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size);
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Version">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rocket68_version_str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ROCKET68_VERSION_STR
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -762,88 +1686,167 @@
 
 
 <h1 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
-<p>The primary interaction with Rocket 68 uses <code>M68kCpu</code> and API functions from <code>include/m68k.h</code>.
-Most API functions take <code>M68kCpu* cpu</code>. The exception is <code>m68k_context_size(void)</code>.</p>
-<hr />
-<h2 id="core-structures">Core Structures<a class="headerlink" href="#core-structures" title="Permanent link">&para;</a></h2>
-<h3 id="m68kcpu"><code>M68kCpu</code><a class="headerlink" href="#m68kcpu" title="Permanent link">&para;</a></h3>
-<p><code>M68kCpu</code> is a 64-byte aligned structure that stores one emulated CPU instance.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">M68kCpu</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">M68kRegister</span><span class="w"> </span><span class="n">d_regs</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span><span class="w"> </span><span class="c1">// Data registers D0-D7</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="n">M68kRegister</span><span class="w"> </span><span class="n">a_regs</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span><span class="w"> </span><span class="c1">// Address registers A0-A7</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">pc</span><span class="p">;</span><span class="w">                 </span><span class="c1">// Program Counter</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">ppc</span><span class="p">;</span><span class="w">                </span><span class="c1">// Previous Program Counter</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="n">u16</span><span class="w"> </span><span class="n">sr</span><span class="p">;</span><span class="w">                 </span><span class="c1">// Status Register</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="n">u16</span><span class="w"> </span><span class="n">ir</span><span class="p">;</span><span class="w">                 </span><span class="c1">// Current instruction register</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="c1">// ... Internal execution state</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">}</span><span class="w"> </span><span class="n">__attribute__</span><span class="p">((</span><span class="n">aligned</span><span class="p">(</span><span class="mi">64</span><span class="p">)))</span><span class="w"> </span><span class="n">M68kCpu</span><span class="p">;</span>
+<p>This page documents the public C API in:</p>
+<ul>
+<li><code>include/m68k.h</code></li>
+<li><code>include/loader.h</code></li>
+<li><code>include/disasm.h</code></li>
+<li><code>include/rocket68.h</code></li>
+</ul>
+<h2 id="header-usage">Header Usage<a class="headerlink" href="#header-usage" title="Permanent link">&para;</a></h2>
+<p>Include the umbrella header:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;rocket68.h&quot;</span>
+</code></pre></div>
+<p>Or include only what you need:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;m68k.h&quot;</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;loader.h&quot;</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;disasm.h&quot;</span>
+</code></pre></div>
+<h2 id="core-types">Core Types<a class="headerlink" href="#core-types" title="Permanent link">&para;</a></h2>
+<h3 id="integer-aliases">Integer aliases<a class="headerlink" href="#integer-aliases" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>u8</code>, <code>u16</code>, <code>u32</code></li>
+<li><code>s8</code>, <code>s16</code>, <code>s32</code></li>
+</ul>
+<h3 id="m68ksize"><code>M68kSize</code><a class="headerlink" href="#m68ksize" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">SIZE_BYTE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">SIZE_WORD</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">SIZE_LONG</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">M68kSize</span><span class="p">;</span>
 </code></pre></div>
 <h3 id="m68kregister"><code>M68kRegister</code><a class="headerlink" href="#m68kregister" title="Permanent link">&para;</a></h3>
-<p><code>M68kRegister</code> stores one register value with 32-bit and 16-bit access.
-The <code>w</code> field maps to the low 16 bits.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">typedef</span><span class="w"> </span><span class="k">union</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="n">u32</span><span class="w"> </span><span class="n">l</span><span class="p">;</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="cp">#if defined(__BYTE_ORDER__) &amp;&amp; __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="n">u16</span><span class="w"> </span><span class="n">high</span><span class="p">;</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="n">u16</span><span class="w"> </span><span class="n">w</span><span class="p">;</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="cp">#else</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">        </span><span class="n">u16</span><span class="w"> </span><span class="n">w</span><span class="p">;</span><span class="w">    </span><span class="c1">// low 16 bits</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span><span class="n">u16</span><span class="w"> </span><span class="n">high</span><span class="p">;</span><span class="w"> </span><span class="c1">// high 16 bits</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="cp">#endif</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">    </span><span class="p">};</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="p">}</span><span class="w"> </span><span class="n">M68kRegister</span><span class="p">;</span>
-</code></pre></div>
-<p>Usage:</p>
+<p>Register union used for <code>D0-D7</code> and <code>A0-A7</code>.
+<code>w</code> maps to the low 16 bits of <code>l</code>.</p>
+<h3 id="m68kcpu"><code>M68kCpu</code><a class="headerlink" href="#m68kcpu" title="Permanent link">&para;</a></h3>
+<p>One complete CPU instance with registers, execution state, memory binding, and callbacks.
+<code>d_regs</code> is aligned to 64 bytes.</p>
+<h2 id="status-register-flags">Status Register Flags<a class="headerlink" href="#status-register-flags" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>cpu-&gt;d_regs[0].l = 0xFFFF; // Write 32 bits</code></li>
-<li><code>cpu-&gt;d_regs[0].w = 0x00FF; // Write lower 16 bits</code></li>
+<li><code>M68K_SR_C</code> carry</li>
+<li><code>M68K_SR_V</code> overflow</li>
+<li><code>M68K_SR_Z</code> zero</li>
+<li><code>M68K_SR_N</code> negative</li>
+<li><code>M68K_SR_X</code> extend</li>
+<li><code>M68K_SR_S</code> supervisor mode</li>
 </ul>
-<hr />
-<h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
-<h3 id="m68k_init"><code>m68k_init</code><a class="headerlink" href="#m68k_init" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_init</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="n">u8</span><span class="o">*</span><span class="w"> </span><span class="n">memory</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">memory_size</span><span class="p">);</span>
-</code></pre></div>
-<p>Initializes CPU state and binds the CPU instance to a flat memory buffer.</p>
-<h3 id="m68k_reset"><code>m68k_reset</code><a class="headerlink" href="#m68k_reset" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_reset</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">);</span>
-</code></pre></div>
-<p>Executes a reset sequence.
-Loads <code>A7</code> (supervisor stack pointer) from <code>0x00000000</code> and <code>PC</code> from <code>0x00000004</code>.</p>
-<h3 id="m68k_execute"><code>m68k_execute</code><a class="headerlink" href="#m68k_execute" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">int</span><span class="w"> </span><span class="nf">m68k_execute</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">cycles</span><span class="p">);</span>
-</code></pre></div>
-<p>Executes instructions until the current timeslice is exhausted.
-Returns the number of cycles consumed by this call.</p>
-<h3 id="other-frequently-used-apis">Other frequently used APIs<a class="headerlink" href="#other-frequently-used-apis" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_pc</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">pc</span><span class="p">);</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">u32</span><span class="w"> </span><span class="nf">m68k_get_pc</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">);</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_sr</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="n">u16</span><span class="w"> </span><span class="n">new_sr</span><span class="p">);</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_irq</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">level</span><span class="p">);</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="kt">int</span><span class="w"> </span><span class="nf">m68k_cycles_run</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">);</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="kt">int</span><span class="w"> </span><span class="nf">m68k_cycles_remaining</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">);</span>
-</code></pre></div>
-<hr />
-<h2 id="io-callbacks">I/O Callbacks<a class="headerlink" href="#io-callbacks" title="Permanent link">&para;</a></h2>
-<p>Callbacks are stored per CPU instance. They are not global.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1">// Emulate wait states on the bus</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_wait_bus_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">addr</span><span class="p">,</span><span class="w"> </span><span class="n">M68kSize</span><span class="w"> </span><span class="n">sz</span><span class="p">));</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1">// Respond to Interrupt Acknowledge cycles</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_int_ack_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">level</span><span class="p">));</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1">// Respond to Function Code (FC) changes</span>
-<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_fc_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">fc</span><span class="p">));</span>
-<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
-<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="c1">// Trace PC changes</span>
-<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_pc_changed_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">pc</span><span class="p">));</span>
-<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>
-<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="c1">// Other callbacks</span>
-<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_instr_hook_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">u32</span><span class="w"> </span><span class="n">pc</span><span class="p">));</span>
-<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_reset_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">));</span>
-<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_tas_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">));</span>
-<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="kt">void</span><span class="w"> </span><span class="nf">m68k_set_illg_callback</span><span class="p">(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">fn</span><span class="p">)(</span><span class="n">M68kCpu</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">opcode</span><span class="p">));</span>
-</code></pre></div>
+<h2 id="function-code-constants">Function Code Constants<a class="headerlink" href="#function-code-constants" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>M68K_FC_USER_DATA</code></li>
+<li><code>M68K_FC_USER_PROG</code></li>
+<li><code>M68K_FC_SUPV_DATA</code></li>
+<li><code>M68K_FC_SUPV_PROG</code></li>
+<li><code>M68K_FC_INT_ACK</code></li>
+</ul>
+<h2 id="interrupt-ack-constants">Interrupt ACK Constants<a class="headerlink" href="#interrupt-ack-constants" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>M68K_INT_ACK_AUTOVECTOR</code></li>
+<li><code>M68K_INT_ACK_SPURIOUS</code></li>
+</ul>
+<h2 id="lifecycle-and-state">Lifecycle and State<a class="headerlink" href="#lifecycle-and-state" title="Permanent link">&para;</a></h2>
+<h3 id="void-m68k_initm68kcpu-cpu-u8-memory-u32-memory_size"><code>void m68k_init(M68kCpu* cpu, u8* memory, u32 memory_size);</code><a class="headerlink" href="#void-m68k_initm68kcpu-cpu-u8-memory-u32-memory_size" title="Permanent link">&para;</a></h3>
+<p>Initializes all CPU fields and binds a flat memory buffer.</p>
+<h3 id="void-m68k_resetm68kcpu-cpu"><code>void m68k_reset(M68kCpu* cpu);</code><a class="headerlink" href="#void-m68k_resetm68kcpu-cpu" title="Permanent link">&para;</a></h3>
+<p>Performs reset-state initialization and loads:</p>
+<ul>
+<li>initial SSP from <code>0x00000000</code></li>
+<li>initial PC from <code>0x00000004</code></li>
+</ul>
+<h3 id="void-m68k_set_pcm68kcpu-cpu-u32-pc"><code>void m68k_set_pc(M68kCpu* cpu, u32 pc);</code><a class="headerlink" href="#void-m68k_set_pcm68kcpu-cpu-u32-pc" title="Permanent link">&para;</a></h3>
+<p>Sets PC and triggers <code>pc_changed</code> callback if installed.</p>
+<h3 id="u32-m68k_get_pcm68kcpu-cpu"><code>u32 m68k_get_pc(M68kCpu* cpu);</code><a class="headerlink" href="#u32-m68k_get_pcm68kcpu-cpu" title="Permanent link">&para;</a></h3>
+<p>Returns PC.</p>
+<h3 id="void-m68k_set_srm68kcpu-cpu-u16-new_sr"><code>void m68k_set_sr(M68kCpu* cpu, u16 new_sr);</code><a class="headerlink" href="#void-m68k_set_srm68kcpu-cpu-u16-new_sr" title="Permanent link">&para;</a></h3>
+<p>Sets SR with masking (<code>0xA71F</code>) and performs USP/SSP swap when supervisor state changes.</p>
+<h3 id="void-m68k_set_irqm68kcpu-cpu-int-level"><code>void m68k_set_irq(M68kCpu* cpu, int level);</code><a class="headerlink" href="#void-m68k_set_irqm68kcpu-cpu-int-level" title="Permanent link">&para;</a></h3>
+<p>Sets pending interrupt level (0-7).</p>
+<h3 id="register-accessors">Register accessors<a class="headerlink" href="#register-accessors" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>void m68k_set_dr(M68kCpu* cpu, int reg, u32 value);</code></li>
+<li><code>u32 m68k_get_dr(M68kCpu* cpu, int reg);</code></li>
+<li><code>void m68k_set_ar(M68kCpu* cpu, int reg, u32 value);</code></li>
+<li><code>u32 m68k_get_ar(M68kCpu* cpu, int reg);</code></li>
+</ul>
+<p>Invalid register indexes are ignored on set and return <code>0</code> on get.</p>
+<h2 id="execution-api">Execution API<a class="headerlink" href="#execution-api" title="Permanent link">&para;</a></h2>
+<h3 id="void-m68k_step_exm68kcpu-cpu-bool-check_exceptions"><code>void m68k_step_ex(M68kCpu* cpu, bool check_exceptions);</code><a class="headerlink" href="#void-m68k_step_exm68kcpu-cpu-bool-check_exceptions" title="Permanent link">&para;</a></h3>
+<p>Executes one instruction with optional interrupt/trace checks.</p>
+<h3 id="void-m68k_stepm68kcpu-cpu"><code>void m68k_step(M68kCpu* cpu);</code><a class="headerlink" href="#void-m68k_stepm68kcpu-cpu" title="Permanent link">&para;</a></h3>
+<p>Equivalent to <code>m68k_step_ex(cpu, true)</code>.</p>
+<h3 id="int-m68k_executem68kcpu-cpu-int-cycles"><code>int m68k_execute(M68kCpu* cpu, int cycles);</code><a class="headerlink" href="#int-m68k_executem68kcpu-cpu-int-cycles" title="Permanent link">&para;</a></h3>
+<p>Adds <code>cycles</code> to the timeslice, runs until <code>cycles_remaining &lt;= 0</code>, and returns consumed cycles for this call.</p>
+<h3 id="timeslice-helpers">Timeslice helpers<a class="headerlink" href="#timeslice-helpers" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>int m68k_cycles_run(M68kCpu* cpu);</code></li>
+<li><code>int m68k_cycles_remaining(M68kCpu* cpu);</code></li>
+<li><code>void m68k_modify_timeslice(M68kCpu* cpu, int cycles);</code></li>
+<li><code>void m68k_end_timeslice(M68kCpu* cpu);</code></li>
+</ul>
+<h2 id="memory-api">Memory API<a class="headerlink" href="#memory-api" title="Permanent link">&para;</a></h2>
+<p>All memory accesses are big-endian.
+Addresses are masked to 24-bit internally before bounds checks.</p>
+<h3 id="reads">Reads<a class="headerlink" href="#reads" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>u8  m68k_read_8(M68kCpu* cpu, u32 address);</code></li>
+<li><code>u16 m68k_read_16(M68kCpu* cpu, u32 address);</code></li>
+<li><code>u32 m68k_read_32(M68kCpu* cpu, u32 address);</code></li>
+</ul>
+<h3 id="writes">Writes<a class="headerlink" href="#writes" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>void m68k_write_8(M68kCpu* cpu, u32 address, u8 value);</code></li>
+<li><code>void m68k_write_16(M68kCpu* cpu, u32 address, u16 value);</code></li>
+<li><code>void m68k_write_32(M68kCpu* cpu, u32 address, u32 value);</code></li>
+</ul>
+<p>Behavior notes:</p>
+<ul>
+<li>Word/long accesses on odd addresses trigger address error handling.</li>
+<li>Out-of-range accesses trigger bus error handling.</li>
+</ul>
+<h2 id="callback-api">Callback API<a class="headerlink" href="#callback-api" title="Permanent link">&para;</a></h2>
+<p>All callbacks are per-instance.</p>
+<h3 id="void-m68k_set_wait_bus_callbackm68kcpu-cpu-m68kwaitbuscallback-callback"><code>void m68k_set_wait_bus_callback(M68kCpu* cpu, M68kWaitBusCallback callback);</code><a class="headerlink" href="#void-m68k_set_wait_bus_callbackm68kcpu-cpu-m68kwaitbuscallback-callback" title="Permanent link">&para;</a></h3>
+<p>Called before each memory/fetch bus access.</p>
+<h3 id="void-m68k_set_int_ack_callbackm68kcpu-cpu-m68kintackcallback-callback"><code>void m68k_set_int_ack_callback(M68kCpu* cpu, M68kIntAckCallback callback);</code><a class="headerlink" href="#void-m68k_set_int_ack_callbackm68kcpu-cpu-m68kintackcallback-callback" title="Permanent link">&para;</a></h3>
+<p>Called when an interrupt is acknowledged.
+Return vector number, <code>M68K_INT_ACK_AUTOVECTOR</code>, or <code>M68K_INT_ACK_SPURIOUS</code>.</p>
+<h3 id="void-m68k_set_fc_callbackm68kcpu-cpu-m68kfccallback-callback"><code>void m68k_set_fc_callback(M68kCpu* cpu, M68kFcCallback callback);</code><a class="headerlink" href="#void-m68k_set_fc_callbackm68kcpu-cpu-m68kfccallback-callback" title="Permanent link">&para;</a></h3>
+<p>Called before bus/program accesses with the active FC value.</p>
+<h3 id="void-m68k_set_instr_hook_callbackm68kcpu-cpu-m68kinstrhookcallback-callback"><code>void m68k_set_instr_hook_callback(M68kCpu* cpu, M68kInstrHookCallback callback);</code><a class="headerlink" href="#void-m68k_set_instr_hook_callbackm68kcpu-cpu-m68kinstrhookcallback-callback" title="Permanent link">&para;</a></h3>
+<p>Called before each instruction decode/execute (not during STOP-idle cycles).</p>
+<h3 id="void-m68k_set_pc_changed_callbackm68kcpu-cpu-m68kpcchangedcallback-callback"><code>void m68k_set_pc_changed_callback(M68kCpu* cpu, M68kPcChangedCallback callback);</code><a class="headerlink" href="#void-m68k_set_pc_changed_callbackm68kcpu-cpu-m68kpcchangedcallback-callback" title="Permanent link">&para;</a></h3>
+<p>Called when PC changes through <code>m68k_set_pc</code>.</p>
+<h3 id="void-m68k_set_reset_callbackm68kcpu-cpu-m68kresetcallback-callback"><code>void m68k_set_reset_callback(M68kCpu* cpu, M68kResetCallback callback);</code><a class="headerlink" href="#void-m68k_set_reset_callbackm68kcpu-cpu-m68kresetcallback-callback" title="Permanent link">&para;</a></h3>
+<p>Called by execution of the <code>RESET</code> instruction.
+This is separate from <code>m68k_reset()</code>.</p>
+<h3 id="void-m68k_set_tas_callbackm68kcpu-cpu-m68ktascallback-callback"><code>void m68k_set_tas_callback(M68kCpu* cpu, M68kTasCallback callback);</code><a class="headerlink" href="#void-m68k_set_tas_callbackm68kcpu-cpu-m68ktascallback-callback" title="Permanent link">&para;</a></h3>
+<p>Called by <code>TAS</code>; non-zero return allows write-back, zero blocks write-back.</p>
+<h3 id="void-m68k_set_illg_callbackm68kcpu-cpu-m68killgcallback-callback"><code>void m68k_set_illg_callback(M68kCpu* cpu, M68kIllgCallback callback);</code><a class="headerlink" href="#void-m68k_set_illg_callbackm68kcpu-cpu-m68killgcallback-callback" title="Permanent link">&para;</a></h3>
+<p>Registers an illegal-opcode callback pointer.
+Current core decode path does not invoke this callback yet.</p>
+<h2 id="context-saverestore">Context Save/Restore<a class="headerlink" href="#context-saverestore" title="Permanent link">&para;</a></h2>
+<h3 id="unsigned-int-m68k_context_sizevoid"><code>unsigned int m68k_context_size(void);</code><a class="headerlink" href="#unsigned-int-m68k_context_sizevoid" title="Permanent link">&para;</a></h3>
+<p>Returns context blob size in bytes.</p>
+<h3 id="void-m68k_get_contextm68kcpu-cpu-void-dst"><code>void m68k_get_context(M68kCpu* cpu, void* dst);</code><a class="headerlink" href="#void-m68k_get_contextm68kcpu-cpu-void-dst" title="Permanent link">&para;</a></h3>
+<p>Copies CPU context into <code>dst</code> (<code>m68k_context_size()</code> bytes).</p>
+<h3 id="void-m68k_set_contextm68kcpu-cpu-const-void-src"><code>void m68k_set_context(M68kCpu* cpu, const void* src);</code><a class="headerlink" href="#void-m68k_set_contextm68kcpu-cpu-const-void-src" title="Permanent link">&para;</a></h3>
+<p>Restores context from <code>src</code>, while preserving destination-instance runtime bindings:</p>
+<ul>
+<li>memory pointer and memory size</li>
+<li>internal fault trap storage</li>
+<li>installed callbacks</li>
+</ul>
+<h2 id="loader-api-loaderh">Loader API (<code>loader.h</code>)<a class="headerlink" href="#loader-api-loaderh" title="Permanent link">&para;</a></h2>
+<h3 id="bool-m68k_load_srecm68kcpu-cpu-const-char-filename"><code>bool m68k_load_srec(M68kCpu* cpu, const char* filename);</code><a class="headerlink" href="#bool-m68k_load_srecm68kcpu-cpu-const-char-filename" title="Permanent link">&para;</a></h3>
+<p>Loads Motorola S-record data into memory.
+Returns <code>false</code> only when the file cannot be opened.
+Malformed records are reported to <code>stderr</code> and skipped.
+Entry-point records (<code>S7/S8/S9</code>) set <code>cpu-&gt;pc</code> directly.</p>
+<h3 id="bool-m68k_load_binm68kcpu-cpu-const-char-filename-u32-address"><code>bool m68k_load_bin(M68kCpu* cpu, const char* filename, u32 address);</code><a class="headerlink" href="#bool-m68k_load_binm68kcpu-cpu-const-char-filename-u32-address" title="Permanent link">&para;</a></h3>
+<p>Loads raw binary bytes into memory starting at <code>address</code>.
+Returns <code>false</code> only when the file cannot be opened.</p>
+<h2 id="disassembler-api-disasmh">Disassembler API (<code>disasm.h</code>)<a class="headerlink" href="#disassembler-api-disasmh" title="Permanent link">&para;</a></h2>
+<h3 id="int-m68k_disasmm68kcpu-cpu-u32-pc-char-buffer-int-buf_size"><code>int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size);</code><a class="headerlink" href="#int-m68k_disasmm68kcpu-cpu-u32-pc-char-buffer-int-buf_size" title="Permanent link">&para;</a></h3>
+<p>Disassembles one instruction at <code>pc</code> into <code>buffer</code>.
+Returns number of bytes consumed by that instruction.</p>
+<h2 id="version">Version<a class="headerlink" href="#version" title="Permanent link">&para;</a></h2>
+<h3 id="rocket68_version_str"><code>ROCKET68_VERSION_STR</code><a class="headerlink" href="#rocket68_version_str" title="Permanent link">&para;</a></h3>
+<p>Semantic version string in <code>include/rocket68.h</code>.</p>
 
 
 
