@@ -8,5 +8,7 @@ var searchData=
   ['fault_5ftrap_5factive_5',['fault_trap_active',['../structM68kCpu.html#ab83dfe157b08d540dddc0988e3434792',1,'M68kCpu']]],
   ['fault_5fvalid_6',['fault_valid',['../structM68kCpu.html#aa33631a9e2b7de0be8eb2a75dfd648c1',1,'M68kCpu']]],
   ['fc_5fcb_7',['fc_cb',['../structM68kCpu.html#af482183cc035b29b29325463e524b108',1,'M68kCpu']]],
-  ['fetch_5fextension_8',['fetch_extension',['../m68k_8c.html#ae88d9b5b03cb5d5906aeee0bab2c8e11',1,'fetch_extension(M68kCpu *cpu):&#160;m68k.c'],['../m68k__internal_8h.html#ae88d9b5b03cb5d5906aeee0bab2c8e11',1,'fetch_extension(M68kCpu *cpu):&#160;m68k.c']]]
+  ['fetch_5fextension_8',['fetch_extension',['../m68k_8c.html#ae88d9b5b03cb5d5906aeee0bab2c8e11',1,'fetch_extension(M68kCpu *cpu):&#160;m68k.c'],['../m68k__internal_8h.html#ae88d9b5b03cb5d5906aeee0bab2c8e11',1,'fetch_extension(M68kCpu *cpu):&#160;m68k.c']]],
+  ['final_9',['final',['../structTest__Rec.html#a7e472fd5fead93264a3bd52d011d737e',1,'Test_Rec']]],
+  ['flag_5fmask_10',['FLAG_MASK',['../test__bcd__verifier_8c.html#a890221cb651a3f30f6d1bca0d9b0e13d',1,'test_bcd_verifier.c']]]
 ];

@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['pc_0',['pc',['../structM68kCpu.html#a3dc53ea0dd304f63ff5ee6f6d431a55a',1,'M68kCpu']]],
-  ['pc_5fchanged_5fcb_1',['pc_changed_cb',['../structM68kCpu.html#a346f3612513090d8bc64af3d60d1ab79',1,'M68kCpu']]],
-  ['ppc_2',['ppc',['../structM68kCpu.html#a26427f1fb97260e82beae388e21aa7ee',1,'M68kCpu']]]
+  ['l_0',['l',['../unionM68kRegister.html#a179d7b07a62661ae7d29f4786f2b15d3',1,'M68kRegister']]],
+  ['len_1',['len',['../structTest__Rec.html#aa731591955a26b9f0f5ee9ae7a76c438',1,'Test_Rec']]]
 ];
