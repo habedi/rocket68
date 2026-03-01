@@ -64,7 +64,7 @@ typedef int (*M68kIntAckCallback)(M68kCpu* cpu, int level);
 /** @brief Function code for interrupt acknowledge cycle. */
 #define M68K_FC_INT_ACK 7
 
-/** @brief Function code change callback. */
+/** @brief Function code callback emitted for each bus/program access context. */
 typedef void (*M68kFcCallback)(M68kCpu* cpu, unsigned int new_fc);
 /** @brief Instruction hook callback executed before instruction decode/execute. */
 typedef void (*M68kInstrHookCallback)(M68kCpu* cpu, u32 pc);
@@ -361,6 +361,8 @@ void m68k_set_int_ack_callback(M68kCpu* cpu, M68kIntAckCallback callback);
  * @brief Install function code callback.
  * @param cpu CPU context.
  * @param callback Callback function pointer or NULL.
+ *
+ * The callback is invoked before memory/program accesses with the active function code.
  */
 void m68k_set_fc_callback(M68kCpu* cpu, M68kFcCallback callback);
 

@@ -14,7 +14,7 @@
  * @param pc Program counter to disassemble from.
  * @param buffer Destination text buffer.
  * @param buf_size Size of @p buffer in bytes.
- * @return Number of bytes consumed by the instruction, or a negative value on error.
+ * @return Number of bytes consumed by the instruction.
  */
 int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size);
 
