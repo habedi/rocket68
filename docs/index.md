@@ -26,7 +26,7 @@ It is designed to be embedded in host emulators and tools.
 - `src/loader.c`: S-record and raw binary loaders
 - `src/disasm.c`: disassembler implementation
 - `tests/`: unit, regression, and JSON compatibility tests
-- `benches/`: Rocket68 vs Musashi benchmarks
+- `benches/`: Rocket68 vs Musashi and Moira benchmarks
 
 ## Documentation Map
 

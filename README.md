@@ -27,7 +27,7 @@ It is also runs as a similar clock cycle to the real 68000 CPU with very good ac
 
 - Have a simple API and easy to integrate into other projects
 - Supports all Motorola 68000 instructions and different addressing modes
-- Near-exact cycle timing (which means emulation speed is very close to the real 68000 CPU clock speed)
+- Near-exact cycle timing to emulate the real 68000 CPU
 - Full hardware interrupt support (with auto-vectoring, address error traps, trace mode, and halted states)
 - Built-in instruction disassembler and support for loading binary and S-record programs
 
