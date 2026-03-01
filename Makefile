@@ -2,6 +2,7 @@
 ## Variables
 ####################################################################################################
 CC       := gcc # Change to `clang` if needed
+CXX      := g++
 AR       := ar
 
 # Set BUILD_TYPE=release for an optimized build
@@ -18,11 +19,12 @@ LDFLAGS  :=
 LIBS     :=
 BENCH_CFLAGS = $(filter-out -g -O0,$(CFLAGS)) -O3 -DNDEBUG
 MUSASHI_BENCH_CFLAGS = $(filter-out -I$(INC_DIR),$(BENCH_CFLAGS))
+MOIRA_BENCH_CXXFLAGS = -O3 -DNDEBUG -std=c++20
 
 # Directories
 SRC_DIR   := src
 INC_DIR   := include
-TEST_DIR  := test
+TEST_DIR  := tests
 BIN_DIR   := bin
 LIB_DIR   := lib
 TARGET_DIR:= obj
@@ -127,6 +129,7 @@ test-musashi: ## Run Musashi's test suite
 	rm -f "$$tmp_log"; \
 	exit $$status
 
+
 .PHONY: test-bcd
 test-bcd: ## Run BCD test suite
 	@if [ ! -d external/bcd-test-rom ]; then \
@@ -225,11 +228,28 @@ coverage: $(COVERAGE_TEST_BINARY) ## Generate code coverage report
 	gcov -o $(COVERAGE_TARGET_DIR)/m68k $(wildcard $(SRC_DIR)/m68k/*.c)
 
 .PHONY: bench
-bench: $(BIN_DIR)/benchmark_rocket68 $(BIN_DIR)/benchmark_musashi ## Run benchmarks comparing Rocket68 to Musashi
-	@echo "--- Rocket68 Benchmark ---"
-	@./$(BIN_DIR)/benchmark_rocket68
-	@echo "--- Musashi Benchmark ---"
-	@./$(BIN_DIR)/benchmark_musashi
+bench: $(BIN_DIR)/benchmark_rocket68 $(BIN_DIR)/benchmark_musashi $(BIN_DIR)/benchmark_moira ## Run benchmarks comparing Rocket68 to Musashi and Moira
+	@tmp_r=$$(mktemp); tmp_mu=$$(mktemp); tmp_mo=$$(mktemp); \
+	echo "--- Rocket68 Benchmark ---"; \
+	./$(BIN_DIR)/benchmark_rocket68 | tee "$$tmp_r"; \
+	echo "--- Musashi Benchmark ---"; \
+	./$(BIN_DIR)/benchmark_musashi | tee "$$tmp_mu"; \
+	echo "--- Moira Benchmark ---"; \
+	./$(BIN_DIR)/benchmark_moira | tee "$$tmp_mo"; \
+	echo ""; \
+	echo "=== Comparison Summary ==="; \
+	echo ""; \
+	printf "  %-20s  %14s  %14s  %14s\n" "Workload" "Rocket68" "Musashi" "Moira"; \
+	printf "  %-20s  %14s  %14s  %14s\n" "--------------------" "--------------" "--------------" "--------------"; \
+	awk ' \
+	  /iter\/s/ { split($$0, a, "~"); gsub(/\)/, "", a[2]); gsub(/^[ \t]+/, "", a[2]); rate = a[2]; match($$0, /[0-9]+\.[0-9]+ s/); name = substr($$0, 1, RSTART-1); gsub(/^[ \t]+|[ \t]+$$/, "", name) } \
+	  FILENAME == ARGV[1] && /iter\/s/ { r[++nr] = rate; names[nr] = name } \
+	  FILENAME == ARGV[2] && /iter\/s/ { mu[++nmu] = rate } \
+	  FILENAME == ARGV[3] && /iter\/s/ { mo[++nmo] = rate } \
+	  END { for (i=1; i<=nr; i++) printf "  %-20s  %14s  %14s  %14s\n", names[i], r[i], mu[i], mo[i] } \
+	' "$$tmp_r" "$$tmp_mu" "$$tmp_mo"; \
+	echo ""; \
+	rm -f "$$tmp_r" "$$tmp_mu" "$$tmp_mo"
 
 $(BIN_DIR)/benchmark_rocket68: benches/benchmark_rocket68.c $(CORE_SRC_FILES) | $(BIN_DIR)
 	@echo "Building Rocket68 benchmark..."
@@ -245,6 +265,15 @@ $(BIN_DIR)/benchmark_musashi: benches/benchmark_musashi.c | $(BIN_DIR)
 	@$(CC) $(MUSASHI_BENCH_CFLAGS) -Iexternal/musashi benches/benchmark_musashi.c external/musashi/m68kcpu.o \
 	external/musashi/m68kops.o external/musashi/m68kdasm.o external/musashi/softfloat/softfloat.o \
 	-lm -o $(BIN_DIR)/benchmark_musashi
+
+$(BIN_DIR)/benchmark_moira: benches/benchmark_moira.cpp external/moira/Moira/Moira.cpp external/moira/Moira/MoiraDebugger.cpp | $(BIN_DIR)
+	@echo "Building Moira benchmark..."
+	@if [ ! -d external/moira ]; then \
+		echo "Moira submodule missing. Run 'git submodule update --init --recursive'"; \
+		exit 1; \
+	fi
+	@$(CXX) $(MOIRA_BENCH_CXXFLAGS) -Iexternal/moira/Moira benches/benchmark_moira.cpp \
+	external/moira/Moira/Moira.cpp external/moira/Moira/MoiraDebugger.cpp -o $(BIN_DIR)/benchmark_moira
 
 .PHONY: zig-test-unit
 zig-test-unit: ## Run unit tests using Zig build system
@@ -277,7 +306,7 @@ clean-coverage: ## Remove coverage build artifacts only
 install-deps: ## Install system and development dependencies (for Debian-based OSes)
 	@echo "Installing system dependencies..."
 	sudo apt-get update
-	sudo apt-get install -y gcc g++ clang clang-format clang-tidy doxygen cppcheck valgrind gdb python3-pip snap
+	sudo apt-get install -y gcc g++ clang clang-format clang-tidy doxygen cppcheck valgrind gdb python3-pip snap cmake
 	pip install uv
 	sudo snap install --classic --beta zig
 

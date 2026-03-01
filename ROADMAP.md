@@ -72,4 +72,4 @@ This document outlines the implemented features and the future goals for the pro
 - [x] Basic unit tests
 - [x] Unit tests for instructions
 - [x] Integration tests
-- [x] Benchmarks (against Musashi emulator)
+- [x] Benchmarks (against Musashi and Moira emulators)

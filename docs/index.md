@@ -25,8 +25,8 @@ It is designed to be embedded in host emulators and tools.
 - `src/m68k/`: CPU core and opcode handlers
 - `src/loader.c`: S-record and raw binary loaders
 - `src/disasm.c`: disassembler implementation
-- `test/`: unit, regression, and JSON compatibility tests
-- `benches/`: Rocket68 vs Musashi benchmarks
+- `tests/`: unit, regression, and JSON compatibility tests
+- `benches/`: Rocket68 vs Musashi and Moira benchmarks
 
 ## Documentation Map
 
