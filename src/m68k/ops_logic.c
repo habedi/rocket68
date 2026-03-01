@@ -426,25 +426,13 @@ void m68k_exec_shift(M68kCpu* cpu, u16 opcode) {
     }
 }
 
-void m68k_swap_sp(M68kCpu* cpu, bool new_supervisor) {
-    bool old_supervisor = (cpu->sr & M68K_SR_S) != 0;
-    if (old_supervisor != new_supervisor) {
-        if (new_supervisor) {
-            cpu->usp = cpu->a_regs[7].l;
-        } else {
-            u32 ssp = cpu->a_regs[7].l;
-            cpu->a_regs[7].l = cpu->usp;
-            cpu->usp = ssp;
-        }
-    }
-}
-
 void m68k_exec_andi(M68kCpu* cpu, u16 opcode) {
     int size_bits = (opcode >> 6) & 0x3;
 
     if (opcode == 0x023C) {
-        u16 imm = m68k_fetch(cpu) & 0xFF;
-        cpu->sr = (cpu->sr & 0xFF00) | ((cpu->sr & 0x00FF) & imm);
+        u16 imm = m68k_fetch(cpu) & 0x1F;
+        u16 ccr = (cpu->sr & 0x1F) & imm;
+        cpu->sr = (cpu->sr & ~0x1F) | ccr;
         return;
     }
 
@@ -500,8 +488,9 @@ void m68k_exec_ori(M68kCpu* cpu, u16 opcode) {
     int size_bits = (opcode >> 6) & 0x3;
 
     if (opcode == 0x003C) {
-        u16 imm = m68k_fetch(cpu) & 0xFF;
-        cpu->sr = (cpu->sr & 0xFF00) | (((cpu->sr & 0x00FF) | imm) & 0x1F);
+        u16 imm = m68k_fetch(cpu) & 0x1F;
+        u16 ccr = (cpu->sr & 0x1F) | imm;
+        cpu->sr = (cpu->sr & ~0x1F) | ccr;
         return;
     }
 
@@ -557,8 +546,9 @@ void m68k_exec_eori(M68kCpu* cpu, u16 opcode) {
     int size_bits = (opcode >> 6) & 0x3;
 
     if (opcode == 0x0A3C) {
-        u16 imm = m68k_fetch(cpu) & 0xFF;
-        cpu->sr = (cpu->sr & 0xFF00) | (((cpu->sr & 0x00FF) ^ imm) & 0x1F);
+        u16 imm = m68k_fetch(cpu) & 0x1F;
+        u16 ccr = (cpu->sr & 0x1F) ^ imm;
+        cpu->sr = (cpu->sr & ~0x1F) | ccr;
         return;
     }
 

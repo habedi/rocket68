@@ -87,6 +87,7 @@ static void read_state(FILE* f, CPU_State* st) {
     st->prefetch[1] = read_u32(f);
 
     st->ram_count = read_u32(f);
+    if (st->ram_count > 128) st->ram_count = 128;
     for (uint32_t i = 0; i < st->ram_count; i++) {
         uint32_t addr = read_u32(f);
         uint16_t data = read_u16(f);
@@ -176,10 +177,10 @@ static bool run_test(M68kCpu* cpu, Test_Rec* test, FILE* logf) {
         cpu->usp = cpu->a_regs[7].l;
     }
 
-    // Save final state of A7 cleanly
+    // Save the final state of A7 cleanly
     // The initial `supervisor` variable holds the mode *before* execution.
     // The `final_supervisor` variable holds the mode *after* execution.
-    // If the mode changed, A7 will reflect the new mode's stack pointer.
+    // If the mode is changed, A7 will reflect the new mode's stack pointer.
     // We need to save the correct USP/SSP based on the final mode.
     uint32_t final_ssp_val;
     uint32_t final_usp_val;
@@ -224,7 +225,7 @@ static bool run_test(M68kCpu* cpu, Test_Rec* test, FILE* logf) {
                 test->name, test->initial.sr, cpu->sr, test->final.sr);
     }
 
-    // MAME `final.pc` is also next prefetch base
+    // MAME `final.pc` is also the next prefetch base
     uint32_t expected_final_pc = test->final.pc - 4;
     const bool skip_pc_verification = (!strict_exception_checks && cpu->stopped);
     if (!skip_pc_verification && cpu->pc != expected_final_pc) {

@@ -14,7 +14,9 @@
  *
  * @param cpu CPU instance with bound memory.
  * @param filename Path to an S-record file.
- * @return true on success, false on failure.
+ * @return false only if the input file cannot be opened; otherwise true.
+ *
+ * Parsing errors in individual records are reported to stderr and skipped.
  */
 bool m68k_load_srec(M68kCpu* cpu, const char* filename);
 
@@ -24,7 +26,7 @@ bool m68k_load_srec(M68kCpu* cpu, const char* filename);
  * @param cpu CPU instance with bound memory.
  * @param filename Path to a binary file.
  * @param address Start address in emulated memory.
- * @return true on success, false on failure.
+ * @return false only if the input file cannot be opened; otherwise true.
  */
 bool m68k_load_bin(M68kCpu* cpu, const char* filename, u32 address);
 

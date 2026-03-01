@@ -6,6 +6,7 @@
 #define M68K_H
 
 #include <assert.h>
+#include <setjmp.h>
 #include <stdalign.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -63,7 +64,7 @@ typedef int (*M68kIntAckCallback)(M68kCpu* cpu, int level);
 /** @brief Function code for interrupt acknowledge cycle. */
 #define M68K_FC_INT_ACK 7
 
-/** @brief Function code change callback. */
+/** @brief Function code callback emitted for each bus/program access context. */
 typedef void (*M68kFcCallback)(M68kCpu* cpu, unsigned int new_fc);
 /** @brief Instruction hook callback executed before instruction decode/execute. */
 typedef void (*M68kInstrHookCallback)(M68kCpu* cpu, u32 pc);
@@ -116,12 +117,12 @@ typedef union {
  * @brief Full CPU context for one emulated 68000 instance.
  */
 typedef struct M68kCpu {
-    M68kRegister d_regs[8]; /**< Data registers D0-D7. */
-    M68kRegister a_regs[8]; /**< Address registers A0-A7. */
-    u32 pc;                 /**< Program counter. */
-    u32 ppc;                /**< Previous program counter. */
-    u16 sr;                 /**< Status register. */
-    u16 ir;                 /**< Current instruction register. */
+    _Alignas(64) M68kRegister d_regs[8]; /**< Data registers D0-D7. */
+    M68kRegister a_regs[8];              /**< Address registers A0-A7. */
+    u32 pc;                              /**< Program counter. */
+    u32 ppc;                             /**< Previous program counter. */
+    u16 sr;                              /**< Status register. */
+    u16 ir;                              /**< Current instruction register. */
 
     u8* memory;      /**< Bound flat memory pointer. */
     u32 memory_size; /**< Size of bound memory in bytes. */
@@ -139,6 +140,8 @@ typedef struct M68kCpu {
     u16 fault_ssw;             /**< Fault status word for exception frames. */
     bool fault_program_access; /**< Fault access type marker. */
     bool fault_valid;          /**< Fault information validity flag. */
+    bool fault_trap_active;    /**< Group-0 fault trap active for the current step. */
+    jmp_buf fault_trap;        /**< Non-local escape target for group-0 fault aborts. */
 
     u32 vbr; /**< Vector base register (model extension path). */
     u32 sfc; /**< Source function code register (model extension path). */
@@ -155,9 +158,7 @@ typedef struct M68kCpu {
     M68kResetCallback reset_cb;          /**< Reset callback. */
     M68kTasCallback tas_cb;              /**< TAS callback. */
     M68kIllgCallback illg_cb;            /**< Illegal opcode callback. */
-} __attribute__((aligned(64)
-
-                     )) M68kCpu;
+} M68kCpu;
 
 /** @brief Carry flag bit mask in SR. */
 #define M68K_SR_C (1 << 0)
@@ -360,6 +361,8 @@ void m68k_set_int_ack_callback(M68kCpu* cpu, M68kIntAckCallback callback);
  * @brief Install function code callback.
  * @param cpu CPU context.
  * @param callback Callback function pointer or NULL.
+ *
+ * The callback is invoked before memory/program accesses with the active function code.
  */
 void m68k_set_fc_callback(M68kCpu* cpu, M68kFcCallback callback);
 

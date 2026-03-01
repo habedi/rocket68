@@ -10,11 +10,12 @@
 #include "../../include/m68k.h"
 
 /** @brief Effective-address resolution result used by opcode handlers. */
-typedef struct {
-    u32 value;    /**< Loaded EA value. */
-    u32 address;  /**< Computed EA address when applicable. */
-    bool is_reg;  /**< True when EA targets a register. */
-    int reg_num;  /**< Register index for register EAs. */
+typedef struct
+{
+    u32 value; /**< Loaded EA value. */
+    u32 address; /**< Computed EA address when applicable. */
+    bool is_reg; /**< True when EA targets a register. */
+    int reg_num; /**< Register index for register EAs. */
     bool is_addr; /**< True when register EA is an address register. */
 } M68kEA;
 
@@ -37,16 +38,16 @@ void m68k_write_size(M68kCpu* cpu, u32 address, u32 value, M68kSize size);
 
 int m68k_ea_cycles(int mode, int reg, M68kSize size);
 
-u16 m68k_fetch(M68kCpu* cpu);
-u32 fetch_extension(M68kCpu* cpu);
+u16 m68k_fetch(M68kCpu * cpu);
+u32 fetch_extension(M68kCpu * cpu);
 M68kEA m68k_calc_ea_ex(M68kCpu* cpu, int mode, int reg, M68kSize size, bool fetch_value);
 M68kEA m68k_calc_ea(M68kCpu* cpu, int mode, int reg, M68kSize size);
 M68kEA m68k_calc_ea_addr(M68kCpu* cpu, int mode, int reg, M68kSize size);
 
 void m68k_push_32(M68kCpu* cpu, u32 value);
-u32 m68k_pop_32(M68kCpu* cpu);
+u32 m68k_pop_32(M68kCpu * cpu);
 void m68k_push_16(M68kCpu* cpu, u16 value);
-u16 m68k_pop_16(M68kCpu* cpu);
+u16 m68k_pop_16(M68kCpu * cpu);
 
 #include <stdnoreturn.h>
 
@@ -126,7 +127,5 @@ void m68k_exec_reset(M68kCpu* cpu, u16 opcode);
 void m68k_exec_movec(M68kCpu* cpu, u16 opcode);
 void m68k_exec_rtd(M68kCpu* cpu, u16 opcode);
 void m68k_exec_bkpt(M68kCpu* cpu, u16 opcode);
-
-void m68k_swap_sp(M68kCpu* cpu, bool new_supervisor);
 
 #endif
