@@ -1,54 +1,210 @@
-# Real-World Scenario
+# Examples
 
-This example sets up a minimal execution loop for Rocket 68 with host callbacks.
+These examples focus on common host-integration patterns.
+All snippets use only public headers.
+
+## 1. Run a Small Program from Reset Vectors
+
+This example initializes RAM, writes reset vectors, and runs until `STOP`.
 
 ```c
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "rocket68.h"
 
-// 1) Define a simple interrupt system
-int my_int_ack(M68kCpu* cpu, int level) {
-    printf("Acknowledged CPU interrupt at level %d!\n", level);
-    return M68K_INT_ACK_AUTOVECTOR;
-}
+int main(void) {
+    const u32 mem_size = 1024 * 1024;
+    u8* ram = calloc(mem_size, 1);
+    if (!ram) return 1;
 
-// 2) Define illegal instruction traps
-int my_illg_cb(M68kCpu* cpu, int opcode) {
-    printf("FATAL: CPU halted on opcode 0x%04X at PC:%08X\n", opcode, cpu->pc);
-    return 1; // Halt
-}
+    M68kCpu cpu;
+    m68k_init(&cpu, ram, mem_size);
 
-int main() {
-    u32 memory_size = 64 * 1024; // 64 KB
-    u8* ram = calloc(memory_size, 1);
-    if (!ram) {
-        return 1;
+    /* Reset vectors */
+    m68k_write_32(&cpu, 0x00000000, 0x0000FF00); /* SSP */
+    m68k_write_32(&cpu, 0x00000004, 0x00000100); /* PC  */
+
+    /* Program: NOP; STOP #$2700 */
+    m68k_write_16(&cpu, 0x00000100, 0x4E71);
+    m68k_write_16(&cpu, 0x00000102, 0x4E72);
+    m68k_write_16(&cpu, 0x00000104, 0x2700);
+
+    m68k_reset(&cpu);
+
+    while (!cpu.stopped) {
+        m68k_execute(&cpu, 32);
     }
 
-    // Place instructions at 0x1000:
-    // 0x1000: NOP (0x4e71)
-    // 0x1002: STOP #$2000 (0x4e72, 0x2000)
-    ram[0x1000] = 0x4e; ram[0x1001] = 0x71; 
-    ram[0x1002] = 0x4e; ram[0x1003] = 0x72; 
-    ram[0x1004] = 0x20; ram[0x1005] = 0x00;
+    printf("Stopped at PC=0x%08X\n", m68k_get_pc(&cpu));
 
-    M68kCpu core;
-    m68k_init(&core, ram, memory_size);
-
-    // Attach callbacks
-    m68k_set_int_ack_callback(&core, my_int_ack);
-    m68k_set_illg_callback(&core, my_illg_cb);
-
-    // Set initial state directly for this example
-    m68k_set_pc(&core, 0x1000);
-    m68k_set_sr(&core, 0x2700);
-
-    int cycles_burned = m68k_execute(&core, 100);
-
-    printf("Executed %d cycles. CPU PC is now 0x%08X\n", cycles_burned, core.pc);
     free(ram);
     return 0;
 }
 ```
+
+## 2. Start from Host-Controlled State
+
+Use this when your platform sets CPU state directly instead of using vector table boot.
+
+```c
+M68kCpu cpu;
+m68k_init(&cpu, ram, mem_size);
+
+m68k_set_ar(&cpu, 7, 0x0000FF00); /* A7/SP */
+m68k_set_sr(&cpu, 0x2700);         /* Supervisor mode */
+m68k_set_pc(&cpu, 0x00001000);
+
+for (int i = 0; i < 100 && !cpu.stopped; i++) {
+    m68k_step(&cpu);
+}
+```
+
+## 3. Interrupt Handling with `int_ack`
+
+`m68k_set_irq` sets a pending level (0-7). The core checks interrupts on step boundaries.
+
+```c
+#include "rocket68.h"
+
+static int my_int_ack(M68kCpu* cpu, int level) {
+    (void)cpu;
+    (void)level;
+
+    /* Return autovector (level 3 -> vector 27). */
+    return M68K_INT_ACK_AUTOVECTOR;
+}
+
+void setup_interrupt_demo(M68kCpu* cpu) {
+    m68k_set_int_ack_callback(cpu, my_int_ack);
+
+    /* Raise level-3 interrupt. */
+    m68k_set_irq(cpu, 3);
+
+    /* Run some time; interrupt will be taken if mask allows it. */
+    m68k_execute(cpu, 128);
+}
+```
+
+## 4. Model Wait States with `wait_bus`
+
+`wait_bus` is called on memory reads, memory writes, and instruction fetches.
+
+```c
+#include "rocket68.h"
+
+static void wait_bus(M68kCpu* cpu, u32 address, M68kSize size) {
+    (void)address;
+    (void)size;
+
+    /* Add 2 extra cycles for each bus access. */
+    cpu->cycles_remaining -= 2;
+}
+
+void attach_wait_states(M68kCpu* cpu) {
+    m68k_set_wait_bus_callback(cpu, wait_bus);
+}
+```
+
+## 5. Track Access Context with `fc_callback`
+
+Function-code callback reports whether access is user/supervisor and data/program.
+
+```c
+#include <stdio.h>
+#include "rocket68.h"
+
+static void fc_trace(M68kCpu* cpu, unsigned int fc) {
+    (void)cpu;
+
+    const char* name = "UNKNOWN";
+    if (fc == M68K_FC_USER_DATA) name = "USER_DATA";
+    else if (fc == M68K_FC_USER_PROG) name = "USER_PROG";
+    else if (fc == M68K_FC_SUPV_DATA) name = "SUPV_DATA";
+    else if (fc == M68K_FC_SUPV_PROG) name = "SUPV_PROG";
+
+    printf("FC: %s (%u)\n", name, fc);
+}
+
+void attach_fc_trace(M68kCpu* cpu) {
+    m68k_set_fc_callback(cpu, fc_trace);
+}
+```
+
+## 6. Save and Restore CPU Context
+
+Use this for save states or rewind.
+
+```c
+#include <stdlib.h>
+#include <string.h>
+#include "rocket68.h"
+
+void save_and_restore(M68kCpu* cpu) {
+    const unsigned int ctx_size = m68k_context_size();
+    void* blob = malloc(ctx_size);
+    if (!blob) return;
+
+    m68k_get_context(cpu, blob);
+
+    /* Run forward a bit. */
+    m68k_execute(cpu, 256);
+
+    /* Restore prior state. */
+    m68k_set_context(cpu, blob);
+
+    free(blob);
+}
+```
+
+Note:
+
+- `m68k_set_context` preserves the destination CPU's memory binding and installed callbacks.
+- Save-state data should be reused with the same Rocket68 build/config.
+
+## 7. Load Programs from S-Record or Binary
+
+```c
+#include "rocket68.h"
+
+bool load_program(M68kCpu* cpu) {
+    if (!m68k_load_srec(cpu, "firmware.srec")) {
+        return false; /* File open failed. */
+    }
+
+    if (!m68k_load_bin(cpu, "overlay.bin", 0x00020000)) {
+        return false; /* File open failed. */
+    }
+
+    return true;
+}
+```
+
+Notes:
+
+- `m68k_load_srec` prints malformed-record errors to `stderr` and continues parsing.
+- Entry-point records (`S7/S8/S9`) update `cpu->pc` directly.
+
+## 8. Disassemble Memory for Debug Output
+
+```c
+#include <stdio.h>
+#include "rocket68.h"
+
+void dump_disasm(M68kCpu* cpu, u32 pc, int count) {
+    for (int i = 0; i < count; i++) {
+        char text[128];
+        int used = m68k_disasm(cpu, pc, text, (int)sizeof(text));
+
+        printf("%08X: %s\n", pc, text);
+
+        if (used <= 0) {
+            break;
+        }
+        pc += (u32)used;
+    }
+}
+```
+
+`m68k_disasm` returns the number of bytes consumed by one instruction.
