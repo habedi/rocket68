@@ -1,40 +1,37 @@
 # Rocket 68
 
-Rocket 68 is a Motorola 68000 emulator written in C11.
-It is designed to be embedded in host emulators and tools.
+<p align="center">
+  <img src="https://raw.githubusercontent.com/habedi/rocket68/main/logo.svg" alt="Project Logo" width="200" />
+</p>
 
-## What This Project Provides
+Rocket 68 is a Motorola 68000 (or m68k) CPU emulator written in pure C11.
+It supports all the instructions and addressing modes of the m68k, plus system control features like supervisor mode, interrupts, and exceptions.
+It tracks timing with baseline cycle accounting and optional wait states, so you get predictable scheduling and more realistic memory/bus timing.
 
-- A CPU core centered on one struct: `M68kCpu`
-- Flat-memory emulation with 8/16/32-bit big-endian access helpers
-- Instruction stepping (`m68k_step`) and cycle-budget execution (`m68k_execute`)
-- Per-instance callbacks for bus wait states, interrupt acknowledge, function code, and debug hooks
-- Exception handling (including bus/address-error frames)
-- Optional loader utilities (`m68k_load_srec`, `m68k_load_bin`)
-- Optional disassembler utility (`m68k_disasm`)
+## Why Rocket 68?
 
-## Important Scope Notes
+Rocket 68 is built to provide a clean, correct, and easy-to-embed Motorola 68000 core for projects that need to run m68k code.
+A lot of existing 68k emulators are originally designed as full system emulators rather than reusable libraries, which can make it
+hard to integrate them into other projects.
+Rocket 68 focuses on correctness first: instruction behavior, exception handling, and cycle timing closely follow real hardware so projects
+can rely on predictable and accurate CPU behavior.
 
-- The public API is in `include/m68k.h`.
-- Address accesses are masked to 24-bit internally (`0x00FFFFFF`) before bounds checks.
-- The project currently includes some post-68000 opcodes (`MOVEC`, `MOVES`, `RTD`, and `BKPT`), but does not expose a full CPU-model selection API yet.
+Rocket 68 is designed to be used a portable library.
+All state lives inside a single `M68kCpu` instance, with no shared global state.
+This makes it relatively straightforward to run multiple CPUs or integrate the core into larger systems.
+Additionally, the codebase uses modern C11 with a small and explicit API that makes the project easy to use and extend.
 
-## Project Layout
+## Features
 
-- `include/`: public headers (`m68k.h`, `loader.h`, `disasm.h`, `rocket68.h`)
-- `src/m68k/`: CPU core and opcode handlers
-- `src/loader.c`: S-record and raw binary loaders
-- `src/disasm.c`: disassembler implementation
-- `tests/`: unit, regression, and JSON compatibility tests
-- `benches/`: Rocket68 vs Musashi and Moira benchmarks
+- Have a simple API and easy to integrate into other projects
+- Supports all Motorola 68000 instructions and different addressing modes
+- Baseline cycle accounting with an optional wait-state callback for bus timing
+- Full hardware interrupt support (with auto-vectoring, address error traps, trace mode, and halted states)
+- Built-in instruction disassembler and support for loading binary and S-record programs
 
-## Documentation Map
+## Documentation
 
-- [Getting Started](getting-started.md): build + first runnable program
-- [Examples](examples.md): focused usage patterns
-- [API Reference](api-reference.md): function groups and behavior notes
-- [Compatibility Notes](limitations.md): current scope limits and integration caveats
-
-## Version
-
-- `ROCKET68_VERSION_STR`: see `include/rocket68.h`
+- [Getting Started](getting-started.md)
+- [Examples](examples.md)
+- [API Reference](api-reference.md)
+- [Compatibility Notes](compatibility.md)
