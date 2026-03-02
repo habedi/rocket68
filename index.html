@@ -299,7 +299,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="limitations/" class="md-tabs__link">
+      <a href="compatibility/" class="md-tabs__link">
         
   
   
@@ -424,10 +424,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-this-project-provides" class="md-nav__link">
+  <a href="#why-rocket-68" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What This Project Provides
+        Why Rocket 68?
       
     </span>
   </a>
@@ -435,10 +435,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#important-scope-notes" class="md-nav__link">
+  <a href="#features" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Important Scope Notes
+        Features
       
     </span>
   </a>
@@ -446,32 +446,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#project-layout" class="md-nav__link">
+  <a href="#documentation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Project Layout
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#documentation-map" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Documentation Map
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#version" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Version
+        Documentation
       
     </span>
   </a>
@@ -574,7 +552,7 @@
   
   
     <li class="md-nav__item">
-      <a href="limitations/" class="md-nav__link">
+      <a href="compatibility/" class="md-nav__link">
         
   
   
@@ -621,10 +599,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-this-project-provides" class="md-nav__link">
+  <a href="#why-rocket-68" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What This Project Provides
+        Why Rocket 68?
       
     </span>
   </a>
@@ -632,10 +610,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#important-scope-notes" class="md-nav__link">
+  <a href="#features" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Important Scope Notes
+        Features
       
     </span>
   </a>
@@ -643,32 +621,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#project-layout" class="md-nav__link">
+  <a href="#documentation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Project Layout
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#documentation-map" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Documentation Map
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#version" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Version
+        Documentation
       
     </span>
   </a>
@@ -696,43 +652,37 @@
 
 
 <h1 id="rocket-68">Rocket 68<a class="headerlink" href="#rocket-68" title="Permanent link">&para;</a></h1>
-<p>Rocket 68 is a Motorola 68000 emulator written in C11.
-It is designed to be embedded in host emulators and tools.</p>
-<h2 id="what-this-project-provides">What This Project Provides<a class="headerlink" href="#what-this-project-provides" title="Permanent link">&para;</a></h2>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/habedi/rocket68/main/logo.svg" alt="Project Logo" width="200" />
+</p>
+
+<p>Rocket 68 is a Motorola 68000 (or m68k) CPU emulator written in pure C11.
+It supports all the instructions and addressing modes of the m68k, plus system control features like supervisor mode, interrupts, and exceptions.
+It tracks timing with baseline cycle accounting and optional wait states, so you get predictable scheduling and more realistic memory/bus timing.</p>
+<h2 id="why-rocket-68">Why Rocket 68?<a class="headerlink" href="#why-rocket-68" title="Permanent link">&para;</a></h2>
+<p>Rocket 68 is built to provide a clean, correct, and easy-to-embed Motorola 68000 core for projects that need to run m68k code.
+A lot of existing 68k emulators are originally designed as full system emulators rather than reusable libraries, which can make it
+hard to integrate them into other projects.
+Rocket 68 focuses on correctness first: instruction behavior, exception handling, and cycle timing closely follow real hardware so projects
+can rely on predictable and accurate CPU behavior.</p>
+<p>Rocket 68 is designed to be used a portable library.
+All state lives inside a single <code>M68kCpu</code> instance, with no shared global state.
+This makes it relatively straightforward to run multiple CPUs or integrate the core into larger systems.
+Additionally, the codebase uses modern C11 with a small and explicit API that makes the project easy to use and extend.</p>
+<h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
 <ul>
-<li>A CPU core centered on one struct: <code>M68kCpu</code></li>
-<li>Flat-memory emulation with 8/16/32-bit big-endian access helpers</li>
-<li>Instruction stepping (<code>m68k_step</code>) and cycle-budget execution (<code>m68k_execute</code>)</li>
-<li>Per-instance callbacks for bus wait states, interrupt acknowledge, function code, and debug hooks</li>
-<li>Exception handling (including bus/address-error frames)</li>
-<li>Optional loader utilities (<code>m68k_load_srec</code>, <code>m68k_load_bin</code>)</li>
-<li>Optional disassembler utility (<code>m68k_disasm</code>)</li>
+<li>Have a simple API and easy to integrate into other projects</li>
+<li>Supports all Motorola 68000 instructions and different addressing modes</li>
+<li>Baseline cycle accounting with an optional wait-state callback for bus timing</li>
+<li>Full hardware interrupt support (with auto-vectoring, address error traps, trace mode, and halted states)</li>
+<li>Built-in instruction disassembler and support for loading binary and S-record programs</li>
 </ul>
-<h2 id="important-scope-notes">Important Scope Notes<a class="headerlink" href="#important-scope-notes" title="Permanent link">&para;</a></h2>
+<h2 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h2>
 <ul>
-<li>The public API is in <code>include/m68k.h</code>.</li>
-<li>Address accesses are masked to 24-bit internally (<code>0x00FFFFFF</code>) before bounds checks.</li>
-<li>The project currently includes some post-68000 opcodes (<code>MOVEC</code>, <code>MOVES</code>, <code>RTD</code>, and <code>BKPT</code>), but does not expose a full CPU-model selection API yet.</li>
-</ul>
-<h2 id="project-layout">Project Layout<a class="headerlink" href="#project-layout" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>include/</code>: public headers (<code>m68k.h</code>, <code>loader.h</code>, <code>disasm.h</code>, <code>rocket68.h</code>)</li>
-<li><code>src/m68k/</code>: CPU core and opcode handlers</li>
-<li><code>src/loader.c</code>: S-record and raw binary loaders</li>
-<li><code>src/disasm.c</code>: disassembler implementation</li>
-<li><code>tests/</code>: unit, regression, and JSON compatibility tests</li>
-<li><code>benches/</code>: Rocket68 vs Musashi and Moira benchmarks</li>
-</ul>
-<h2 id="documentation-map">Documentation Map<a class="headerlink" href="#documentation-map" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="getting-started/">Getting Started</a>: build + first runnable program</li>
-<li><a href="examples/">Examples</a>: focused usage patterns</li>
-<li><a href="api-reference/">API Reference</a>: function groups and behavior notes</li>
-<li><a href="limitations/">Compatibility Notes</a>: current scope limits and integration caveats</li>
-</ul>
-<h2 id="version">Version<a class="headerlink" href="#version" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>ROCKET68_VERSION_STR</code>: see <code>include/rocket68.h</code></li>
+<li><a href="getting-started/">Getting Started</a></li>
+<li><a href="examples/">Examples</a></li>
+<li><a href="api-reference/">API Reference</a></li>
+<li><a href="compatibility/">Compatibility Notes</a></li>
 </ul>
 
 
