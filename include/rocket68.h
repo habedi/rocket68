@@ -14,7 +14,7 @@ extern "C" {
 #include "m68k.h"
 
 /** @brief Rocket 68 semantic version string. */
-#define ROCKET68_VERSION_STR "0.1.0-alpha.3"
+#define ROCKET68_VERSION_STR "0.1.0-alpha.4"
 
 #ifdef __cplusplus
 }
