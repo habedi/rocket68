@@ -183,7 +183,7 @@ bool load_program(M68kCpu* cpu) {
 
 Notes:
 
-- For loader edge-case behavior (malformed records, checksum policy, entry-point handling), see [API Reference](api-reference.md) and [Compatibility Notes](limitations.md).
+- For loader edge-case behavior (malformed records, checksum policy, entry-point handling), see [API Reference](api-reference.md) and [Compatibility Notes](compatibility.md).
 
 ## 8. Disassemble Memory for Debug Output
 
