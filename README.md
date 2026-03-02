@@ -19,35 +19,35 @@ A Motorola 68000 CPU emulator in C
 
 ---
 
-Rocket 68 is a Motorola 68000 CPU emulator written in pure C11.
-It supports all the instructions and addressing modes of the 68000 CPU, plus system control features like supervisor mode, interrupts, and exceptions.
-It is also runs as a similar clock cycle to the real 68000 CPU with very good accuracy.
+Rocket 68 is a Motorola 68000 (or m68k) CPU emulator written in pure C11.
+It supports all the instructions and addressing modes of the m68k, plus system control features like supervisor mode, interrupts, and exceptions.
+It tracks timing with baseline cycle accounting and optional wait states, so you get predictable scheduling and more realistic memory/bus timing.
 
 ### Why Rocket 68?
 
-Rocket 68 is built to provide a clean, correct, and easy-to-embed Motorola 68000 CPU core.
-A lot of existing 68k emulators were originally designed as full system emulators rather than reusable libraries, which can make it
+Rocket 68 is built to provide a clean, correct, and easy-to-embed Motorola 68000 core for projects that need to run m68k code.
+A lot of existing 68k emulators are originally designed as full system emulators rather than reusable libraries, which can make it
 hard to integrate them into other projects.
 Rocket 68 focuses on correctness first: instruction behavior, exception handling, and cycle timing closely follow real hardware so projects
 can rely on predictable and accurate CPU behavior.
 
 Rocket 68 is designed to be used a portable library.
 All state lives inside a single `M68kCpu` instance, with no shared global state.
-This should make it straightforward to run multiple CPUs or integrate the core into larger systems.
+This makes it relatively straightforward to run multiple CPUs or integrate the core into larger systems.
 Additionally, the codebase uses modern C11 with a small and explicit API that makes the project easy to use and extend.
 
 ### Features
 
 - Have a simple API and easy to integrate into other projects
 - Supports all Motorola 68000 instructions and different addressing modes
-- Near-exact cycle timing to emulate the real 68000 CPU
+- Baseline cycle accounting with an optional wait-state callback for bus timing
 - Full hardware interrupt support (with auto-vectoring, address error traps, trace mode, and halted states)
 - Built-in instruction disassembler and support for loading binary and S-record programs
 
 See [ROADMAP.md](ROADMAP.md) for the list of implemented and planned features.
 
 > [!IMPORTANT]
-> This project is in early development, so bugs and breaking changes are expected.
+> This project is still in early development, so bugs and breaking changes are expected.
 > Please use the [issues page](https://github.com/habedi/rocket68/issues) to report bugs or request features.
 
 ---
@@ -119,7 +119,9 @@ int main(void) {
     // Reset CPU (this causes it to read the SSP and PC from address 0)
     m68k_reset(&cpu);
 
-    // Execute up to 1000 cycles (or until STOP instruction)
+    // Run for a 1000-cycle timeslice.
+    // STOP halts instruction execution.
+    // Note that m68k_execute() still spends idle STOP cycles until the timeslice ends.
     int cycles_executed = m68k_execute(&cpu, 1000);
 
     printf("Guest wrote: %c%c%c", ram[0x100], ram[0x101], ram[0x102]);
