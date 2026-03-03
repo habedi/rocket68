@@ -35,3 +35,4 @@ Additionally, the codebase uses modern C11 with a small and explicit API that ma
 - [Examples](examples.md)
 - [API Reference](api-reference.md)
 - [Compatibility Notes](compatibility.md)
+- [Doxygen API Documentation](https://habedi.github.io/rocket68/doxygen/index.html)
