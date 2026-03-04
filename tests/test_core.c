@@ -67,6 +67,101 @@ void test_memory_access() {
     printf("Memory access test passed!\n");
 }
 
+static u8 callback_read_8_value = 0;
+static u16 callback_read_16_value = 0;
+static u32 callback_read_32_value = 0;
+static u32 callback_last_addr = 0;
+static u8 callback_write_8_value = 0;
+static u16 callback_write_16_value = 0;
+static u32 callback_write_32_value = 0;
+
+static u8 mock_read_8(M68kCpu* cpu, u32 address) {
+    (void)cpu;
+    callback_last_addr = address;
+    return callback_read_8_value;
+}
+
+static u16 mock_read_16(M68kCpu* cpu, u32 address) {
+    (void)cpu;
+    callback_last_addr = address;
+    return callback_read_16_value;
+}
+
+static u32 mock_read_32(M68kCpu* cpu, u32 address) {
+    (void)cpu;
+    callback_last_addr = address;
+    return callback_read_32_value;
+}
+
+static void mock_write_8(M68kCpu* cpu, u32 address, u8 value) {
+    (void)cpu;
+    callback_last_addr = address;
+    callback_write_8_value = value;
+}
+
+static void mock_write_16(M68kCpu* cpu, u32 address, u16 value) {
+    (void)cpu;
+    callback_last_addr = address;
+    callback_write_16_value = value;
+}
+
+static void mock_write_32(M68kCpu* cpu, u32 address, u32 value) {
+    (void)cpu;
+    callback_last_addr = address;
+    callback_write_32_value = value;
+}
+
+void test_host_memory_callbacks() {
+    M68kCpu cpu;
+    u8 memory[128];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    callback_last_addr = 0;
+    callback_read_8_value = 0xAB;
+    callback_read_16_value = 0x1234;
+    callback_read_32_value = 0x89ABCDEFu;
+    callback_write_8_value = 0;
+    callback_write_16_value = 0;
+    callback_write_32_value = 0;
+
+    m68k_set_read8_callback(&cpu, mock_read_8);
+    m68k_set_read16_callback(&cpu, mock_read_16);
+    m68k_set_read32_callback(&cpu, mock_read_32);
+    m68k_set_write8_callback(&cpu, mock_write_8);
+    m68k_set_write16_callback(&cpu, mock_write_16);
+    m68k_set_write32_callback(&cpu, mock_write_32);
+
+    assert(m68k_read_8(&cpu, 0x010203u) == 0xAB);
+    assert(callback_last_addr == 0x010203u);
+    assert(m68k_read_16(&cpu, 0x020304u) == 0x1234);
+    assert(callback_last_addr == 0x020304u);
+    assert(m68k_read_32(&cpu, 0x030405u) == 0x89ABCDEFu);
+    assert(callback_last_addr == 0x030405u);
+
+    m68k_write_8(&cpu, 0x040506u, 0x55);
+    assert(callback_last_addr == 0x040506u);
+    assert(callback_write_8_value == 0x55);
+    m68k_write_16(&cpu, 0x050607u, 0x7788);
+    assert(callback_last_addr == 0x050607u);
+    assert(callback_write_16_value == 0x7788);
+    m68k_write_32(&cpu, 0x060708u, 0x11223344u);
+    assert(callback_last_addr == 0x060708u);
+    assert(callback_write_32_value == 0x11223344u);
+
+    // Masking to 24-bit still happens before callback dispatch.
+    m68k_read_8(&cpu, 0xFF000001u);
+    assert(callback_last_addr == 0x000001u);
+
+    // Unset callbacks should fall back to default flat memory access.
+    m68k_set_read8_callback(&cpu, NULL);
+    m68k_set_write8_callback(&cpu, NULL);
+    m68k_write_8(&cpu, 10, 0xCC);
+    assert(m68k_read_8(&cpu, 10) == 0xCC);
+
+    printf("Host memory callbacks test passed!\n");
+}
+
 void test_fetch() {
     M68kCpu cpu;
     u8 memory[1024];

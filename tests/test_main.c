@@ -10,6 +10,7 @@ int main() {
     test_initialization();
     test_register_access();
     test_memory_access();
+    test_host_memory_callbacks();
     test_fetch();
     test_move();
     test_arithmetic();
