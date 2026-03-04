@@ -573,6 +573,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#host-memory-callback-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Host memory callback types
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -899,6 +910,17 @@
     <span class="md-ellipsis">
       
         void m68k_set_illg_callback(M68kCpu* cpu, M68kIllgCallback callback);
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#host-memory-callbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Host memory callbacks
       
     </span>
   </a>
@@ -1183,6 +1205,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#host-memory-callback-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Host memory callback types
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1515,6 +1548,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#host-memory-callbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Host memory callbacks
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1717,6 +1761,15 @@
 <h3 id="m68kcpu"><code>M68kCpu</code><a class="headerlink" href="#m68kcpu" title="Permanent link">&para;</a></h3>
 <p>One complete CPU instance with registers, execution state, memory binding, and callbacks.
 <code>d_regs</code> is aligned to 64 bytes.</p>
+<h3 id="host-memory-callback-types">Host memory callback types<a class="headerlink" href="#host-memory-callback-types" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>M68kRead8Callback</code></li>
+<li><code>M68kRead16Callback</code></li>
+<li><code>M68kRead32Callback</code></li>
+<li><code>M68kWrite8Callback</code></li>
+<li><code>M68kWrite16Callback</code></li>
+<li><code>M68kWrite32Callback</code></li>
+</ul>
 <h2 id="status-register-flags">Status Register Flags<a class="headerlink" href="#status-register-flags" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>M68K_SR_C</code> carry</li>
@@ -1741,7 +1794,8 @@
 </ul>
 <h2 id="lifecycle-and-state">Lifecycle and State<a class="headerlink" href="#lifecycle-and-state" title="Permanent link">&para;</a></h2>
 <h3 id="void-m68k_initm68kcpu-cpu-u8-memory-u32-memory_size"><code>void m68k_init(M68kCpu* cpu, u8* memory, u32 memory_size);</code><a class="headerlink" href="#void-m68k_initm68kcpu-cpu-u8-memory-u32-memory_size" title="Permanent link">&para;</a></h3>
-<p>Initializes all CPU fields and binds a flat memory buffer.</p>
+<p>Initializes all CPU fields and binds a flat memory buffer.
+If host memory callbacks are installed later, read/write API calls dispatch through callbacks instead of this flat buffer.</p>
 <h3 id="void-m68k_resetm68kcpu-cpu"><code>void m68k_reset(M68kCpu* cpu);</code><a class="headerlink" href="#void-m68k_resetm68kcpu-cpu" title="Permanent link">&para;</a></h3>
 <p>Performs reset-state initialization and loads:</p>
 <ul>
@@ -1795,6 +1849,8 @@ Addresses are masked to 24-bit internally before bounds checks.</p>
 </ul>
 <p>Behavior notes:</p>
 <ul>
+<li>If a host memory callback is installed for the requested width, it is called first.</li>
+<li>When callbacks are used, default flat-buffer address/alignment/bus-error checks for that access are bypassed and are expected to be handled by the host.</li>
 <li>Word/long accesses on odd addresses trigger address error handling.</li>
 <li>Out-of-range accesses trigger bus error handling.</li>
 </ul>
@@ -1819,6 +1875,17 @@ This is separate from <code>m68k_reset()</code>.</p>
 <h3 id="void-m68k_set_illg_callbackm68kcpu-cpu-m68killgcallback-callback"><code>void m68k_set_illg_callback(M68kCpu* cpu, M68kIllgCallback callback);</code><a class="headerlink" href="#void-m68k_set_illg_callbackm68kcpu-cpu-m68killgcallback-callback" title="Permanent link">&para;</a></h3>
 <p>Registers an illegal-opcode callback pointer.
 Current core decode path does not invoke this callback yet.</p>
+<h3 id="host-memory-callbacks">Host memory callbacks<a class="headerlink" href="#host-memory-callbacks" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>void m68k_set_read8_callback(M68kCpu* cpu, M68kRead8Callback callback);</code></li>
+<li><code>void m68k_set_read16_callback(M68kCpu* cpu, M68kRead16Callback callback);</code></li>
+<li><code>void m68k_set_read32_callback(M68kCpu* cpu, M68kRead32Callback callback);</code></li>
+<li><code>void m68k_set_write8_callback(M68kCpu* cpu, M68kWrite8Callback callback);</code></li>
+<li><code>void m68k_set_write16_callback(M68kCpu* cpu, M68kWrite16Callback callback);</code></li>
+<li><code>void m68k_set_write32_callback(M68kCpu* cpu, M68kWrite32Callback callback);</code></li>
+</ul>
+<p>Use these to route memory access to a host bus implementation (for mapped IO/peripherals or custom memory models).
+Pass <code>NULL</code> to disable a callback and fall back to default flat-memory behavior for that access width.</p>
 <h2 id="context-saverestore">Context Save/Restore<a class="headerlink" href="#context-saverestore" title="Permanent link">&para;</a></h2>
 <h3 id="unsigned-int-m68k_context_sizevoid"><code>unsigned int m68k_context_size(void);</code><a class="headerlink" href="#unsigned-int-m68k_context_sizevoid" title="Permanent link">&para;</a></h3>
 <p>Returns context blob size in bytes.</p>

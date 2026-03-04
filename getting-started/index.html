@@ -863,6 +863,7 @@
 <a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="n">m68k_set_wait_bus_callback</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="n">wait_bus</span><span class="p">);</span>
 <a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="n">m68k_set_int_ack_callback</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cpu</span><span class="p">,</span><span class="w"> </span><span class="n">int_ack</span><span class="p">);</span>
 </code></pre></div>
+<p>For mapped-memory or MMIO host integration, see the host bus callback example in <a href="../examples/#6-use-a-host-bus-with-memory-callbacks">Examples</a>.</p>
 <h2 id="6-useful-notes">6. Useful Notes<a class="headerlink" href="#6-useful-notes" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Memory accesses are checked against <code>cpu.memory_size</code>; out-of-range accesses trigger bus error handling.</li>

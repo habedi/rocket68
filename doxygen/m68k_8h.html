@@ -202,6 +202,24 @@ Typedefs</h2></td></tr>
 <tr class="memitem:a50006589848a459ad5f7bf6a625cdb5f" id="r_a50006589848a459ad5f7bf6a625cdb5f"><td class="memItemLeft" align="right" valign="top">typedef int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a50006589848a459ad5f7bf6a625cdb5f">M68kIllgCallback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, int opcode)</td></tr>
 <tr class="memdesc:a50006589848a459ad5f7bf6a625cdb5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Illegal instruction callback. Return non-zero to signal handled/halt behavior in host policy.  <br /></td></tr>
 <tr class="separator:a50006589848a459ad5f7bf6a625cdb5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8498689e0615a8f5af0d05c91d1416f9" id="r_a8498689e0615a8f5af0d05c91d1416f9"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a>(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a8498689e0615a8f5af0d05c91d1416f9">M68kRead8Callback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address)</td></tr>
+<tr class="memdesc:a8498689e0615a8f5af0d05c91d1416f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Host memory read callback (8-bit).  <br /></td></tr>
+<tr class="separator:a8498689e0615a8f5af0d05c91d1416f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6be5b01c3927c3ffafed978554aa7138" id="r_a6be5b01c3927c3ffafed978554aa7138"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a>(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a6be5b01c3927c3ffafed978554aa7138">M68kRead16Callback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address)</td></tr>
+<tr class="memdesc:a6be5b01c3927c3ffafed978554aa7138"><td class="mdescLeft">&#160;</td><td class="mdescRight">Host memory read callback (16-bit).  <br /></td></tr>
+<tr class="separator:a6be5b01c3927c3ffafed978554aa7138"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91b01ffef74b41fe3430ed6ed8862bf1" id="r_a91b01ffef74b41fe3430ed6ed8862bf1"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a91b01ffef74b41fe3430ed6ed8862bf1">M68kRead32Callback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address)</td></tr>
+<tr class="memdesc:a91b01ffef74b41fe3430ed6ed8862bf1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Host memory read callback (32-bit).  <br /></td></tr>
+<tr class="separator:a91b01ffef74b41fe3430ed6ed8862bf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3704ea7d2534271da9cb2a37e3c0da07" id="r_a3704ea7d2534271da9cb2a37e3c0da07"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a3704ea7d2534271da9cb2a37e3c0da07">M68kWrite8Callback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a> value)</td></tr>
+<tr class="memdesc:a3704ea7d2534271da9cb2a37e3c0da07"><td class="mdescLeft">&#160;</td><td class="mdescRight">Host memory write callback (8-bit).  <br /></td></tr>
+<tr class="separator:a3704ea7d2534271da9cb2a37e3c0da07"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab886616ebdbe16b397ba281c81195ea5" id="r_ab886616ebdbe16b397ba281c81195ea5"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ab886616ebdbe16b397ba281c81195ea5">M68kWrite16Callback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a> value)</td></tr>
+<tr class="memdesc:ab886616ebdbe16b397ba281c81195ea5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Host memory write callback (16-bit).  <br /></td></tr>
+<tr class="separator:ab886616ebdbe16b397ba281c81195ea5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae5f6ebdfc206941477ac721d28693899" id="r_ae5f6ebdfc206941477ac721d28693899"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ae5f6ebdfc206941477ac721d28693899">M68kWrite32Callback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> value)</td></tr>
+<tr class="memdesc:ae5f6ebdfc206941477ac721d28693899"><td class="mdescLeft">&#160;</td><td class="mdescRight">Host memory write callback (32-bit).  <br /></td></tr>
+<tr class="separator:ae5f6ebdfc206941477ac721d28693899"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -326,6 +344,24 @@ Functions</h2></td></tr>
 <tr class="memitem:ad1d4460f9b63b37494b9265bdaecf837" id="r_ad1d4460f9b63b37494b9265bdaecf837"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ad1d4460f9b63b37494b9265bdaecf837">m68k_set_illg_callback</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#a50006589848a459ad5f7bf6a625cdb5f">M68kIllgCallback</a> callback)</td></tr>
 <tr class="memdesc:ad1d4460f9b63b37494b9265bdaecf837"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install illegal opcode callback.  <br /></td></tr>
 <tr class="separator:ad1d4460f9b63b37494b9265bdaecf837"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab48d76d6748f527ac9fafd6b85e6e9bd" id="r_ab48d76d6748f527ac9fafd6b85e6e9bd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ab48d76d6748f527ac9fafd6b85e6e9bd">m68k_set_read8_callback</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#a8498689e0615a8f5af0d05c91d1416f9">M68kRead8Callback</a> callback)</td></tr>
+<tr class="memdesc:ab48d76d6748f527ac9fafd6b85e6e9bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install host memory read callback (8-bit).  <br /></td></tr>
+<tr class="separator:ab48d76d6748f527ac9fafd6b85e6e9bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84c6bdd0b113ccf1bca023ed802236c8" id="r_a84c6bdd0b113ccf1bca023ed802236c8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a84c6bdd0b113ccf1bca023ed802236c8">m68k_set_read16_callback</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#a6be5b01c3927c3ffafed978554aa7138">M68kRead16Callback</a> callback)</td></tr>
+<tr class="memdesc:a84c6bdd0b113ccf1bca023ed802236c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install host memory read callback (16-bit).  <br /></td></tr>
+<tr class="separator:a84c6bdd0b113ccf1bca023ed802236c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a99ee2395424e1fc3031b782ae4d209df" id="r_a99ee2395424e1fc3031b782ae4d209df"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a99ee2395424e1fc3031b782ae4d209df">m68k_set_read32_callback</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#a91b01ffef74b41fe3430ed6ed8862bf1">M68kRead32Callback</a> callback)</td></tr>
+<tr class="memdesc:a99ee2395424e1fc3031b782ae4d209df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install host memory read callback (32-bit).  <br /></td></tr>
+<tr class="separator:a99ee2395424e1fc3031b782ae4d209df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad36353f81bcb5ccc05f46fe76c77d0e9" id="r_ad36353f81bcb5ccc05f46fe76c77d0e9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ad36353f81bcb5ccc05f46fe76c77d0e9">m68k_set_write8_callback</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#a3704ea7d2534271da9cb2a37e3c0da07">M68kWrite8Callback</a> callback)</td></tr>
+<tr class="memdesc:ad36353f81bcb5ccc05f46fe76c77d0e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install host memory write callback (8-bit).  <br /></td></tr>
+<tr class="separator:ad36353f81bcb5ccc05f46fe76c77d0e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71e5d534f947d39a25413356d717dedc" id="r_a71e5d534f947d39a25413356d717dedc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a71e5d534f947d39a25413356d717dedc">m68k_set_write16_callback</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#ab886616ebdbe16b397ba281c81195ea5">M68kWrite16Callback</a> callback)</td></tr>
+<tr class="memdesc:a71e5d534f947d39a25413356d717dedc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install host memory write callback (16-bit).  <br /></td></tr>
+<tr class="separator:a71e5d534f947d39a25413356d717dedc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ec40088466e0daa1f6e862cb5145b57" id="r_a4ec40088466e0daa1f6e862cb5145b57"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a4ec40088466e0daa1f6e862cb5145b57">m68k_set_write32_callback</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#ae5f6ebdfc206941477ac721d28693899">M68kWrite32Callback</a> callback)</td></tr>
+<tr class="memdesc:a4ec40088466e0daa1f6e862cb5145b57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install host memory write callback (32-bit).  <br /></td></tr>
+<tr class="separator:a4ec40088466e0daa1f6e862cb5145b57"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add146fec61c6610e890ee60050b64bc9" id="r_add146fec61c6610e890ee60050b64bc9"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#add146fec61c6610e890ee60050b64bc9">m68k_context_size</a> (void)</td></tr>
 <tr class="memdesc:add146fec61c6610e890ee60050b64bc9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get serialized context size.  <br /></td></tr>
 <tr class="separator:add146fec61c6610e890ee60050b64bc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -646,6 +682,54 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a6be5b01c3927c3ffafed978554aa7138" name="a6be5b01c3927c3ffafed978554aa7138"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6be5b01c3927c3ffafed978554aa7138">&#9670;&#160;</a></span>M68kRead16Callback</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef <a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a>(* M68kRead16Callback) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Host memory read callback (16-bit). </p>
+
+</div>
+</div>
+<a id="a91b01ffef74b41fe3430ed6ed8862bf1" name="a91b01ffef74b41fe3430ed6ed8862bf1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a91b01ffef74b41fe3430ed6ed8862bf1">&#9670;&#160;</a></span>M68kRead32Callback</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a>(* M68kRead32Callback) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Host memory read callback (32-bit). </p>
+
+</div>
+</div>
+<a id="a8498689e0615a8f5af0d05c91d1416f9" name="a8498689e0615a8f5af0d05c91d1416f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8498689e0615a8f5af0d05c91d1416f9">&#9670;&#160;</a></span>M68kRead8Callback</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef <a class="el" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a>(* M68kRead8Callback) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Host memory read callback (8-bit). </p>
+
+</div>
+</div>
 <a id="a52ed09b4cf386ffd760712049d3d5271" name="a52ed09b4cf386ffd760712049d3d5271"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a52ed09b4cf386ffd760712049d3d5271">&#9670;&#160;</a></span>M68kResetCallback</h2>
 
@@ -692,6 +776,54 @@ Functions</h2></td></tr>
 
 <p>Bus wait callback. </p>
 <p>Called on memory accesses to model wait states. </p>
+
+</div>
+</div>
+<a id="ab886616ebdbe16b397ba281c81195ea5" name="ab886616ebdbe16b397ba281c81195ea5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab886616ebdbe16b397ba281c81195ea5">&#9670;&#160;</a></span>M68kWrite16Callback</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef void(* M68kWrite16Callback) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa">u16</a> value)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Host memory write callback (16-bit). </p>
+
+</div>
+</div>
+<a id="ae5f6ebdfc206941477ac721d28693899" name="ae5f6ebdfc206941477ac721d28693899"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae5f6ebdfc206941477ac721d28693899">&#9670;&#160;</a></span>M68kWrite32Callback</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef void(* M68kWrite32Callback) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> value)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Host memory write callback (32-bit). </p>
+
+</div>
+</div>
+<a id="a3704ea7d2534271da9cb2a37e3c0da07" name="a3704ea7d2534271da9cb2a37e3c0da07"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3704ea7d2534271da9cb2a37e3c0da07">&#9670;&#160;</a></span>M68kWrite8Callback</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef void(* M68kWrite8Callback) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca">u8</a> value)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Host memory write callback (8-bit). </p>
 
 </div>
 </div>
@@ -1731,6 +1863,117 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a84c6bdd0b113ccf1bca023ed802236c8" name="a84c6bdd0b113ccf1bca023ed802236c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a84c6bdd0b113ccf1bca023ed802236c8">&#9670;&#160;</a></span>m68k_set_read16_callback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void m68k_set_read16_callback </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structM68kCpu.html">M68kCpu</a> *&#160;</td>
+          <td class="paramname"><em>cpu</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="m68k_8h.html#a6be5b01c3927c3ffafed978554aa7138">M68kRead16Callback</a>&#160;</td>
+          <td class="paramname"><em>callback</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Install host memory read callback (16-bit). </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">callback</td><td>Callback function pointer or NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a99ee2395424e1fc3031b782ae4d209df" name="a99ee2395424e1fc3031b782ae4d209df"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a99ee2395424e1fc3031b782ae4d209df">&#9670;&#160;</a></span>m68k_set_read32_callback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void m68k_set_read32_callback </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structM68kCpu.html">M68kCpu</a> *&#160;</td>
+          <td class="paramname"><em>cpu</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="m68k_8h.html#a91b01ffef74b41fe3430ed6ed8862bf1">M68kRead32Callback</a>&#160;</td>
+          <td class="paramname"><em>callback</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Install host memory read callback (32-bit). </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">callback</td><td>Callback function pointer or NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ab48d76d6748f527ac9fafd6b85e6e9bd" name="ab48d76d6748f527ac9fafd6b85e6e9bd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab48d76d6748f527ac9fafd6b85e6e9bd">&#9670;&#160;</a></span>m68k_set_read8_callback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void m68k_set_read8_callback </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structM68kCpu.html">M68kCpu</a> *&#160;</td>
+          <td class="paramname"><em>cpu</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="m68k_8h.html#a8498689e0615a8f5af0d05c91d1416f9">M68kRead8Callback</a>&#160;</td>
+          <td class="paramname"><em>callback</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Install host memory read callback (8-bit). </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">callback</td><td>Callback function pointer or NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a1f2dbe2a3aed79f97ec7ce1cc26ffe4e" name="a1f2dbe2a3aed79f97ec7ce1cc26ffe4e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1f2dbe2a3aed79f97ec7ce1cc26ffe4e">&#9670;&#160;</a></span>m68k_set_reset_callback()</h2>
 
@@ -1869,6 +2112,117 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Install wait bus callback. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">callback</td><td>Callback function pointer or NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a71e5d534f947d39a25413356d717dedc" name="a71e5d534f947d39a25413356d717dedc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a71e5d534f947d39a25413356d717dedc">&#9670;&#160;</a></span>m68k_set_write16_callback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void m68k_set_write16_callback </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structM68kCpu.html">M68kCpu</a> *&#160;</td>
+          <td class="paramname"><em>cpu</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="m68k_8h.html#ab886616ebdbe16b397ba281c81195ea5">M68kWrite16Callback</a>&#160;</td>
+          <td class="paramname"><em>callback</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Install host memory write callback (16-bit). </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">callback</td><td>Callback function pointer or NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a4ec40088466e0daa1f6e862cb5145b57" name="a4ec40088466e0daa1f6e862cb5145b57"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4ec40088466e0daa1f6e862cb5145b57">&#9670;&#160;</a></span>m68k_set_write32_callback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void m68k_set_write32_callback </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structM68kCpu.html">M68kCpu</a> *&#160;</td>
+          <td class="paramname"><em>cpu</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="m68k_8h.html#ae5f6ebdfc206941477ac721d28693899">M68kWrite32Callback</a>&#160;</td>
+          <td class="paramname"><em>callback</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Install host memory write callback (32-bit). </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">callback</td><td>Callback function pointer or NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ad36353f81bcb5ccc05f46fe76c77d0e9" name="ad36353f81bcb5ccc05f46fe76c77d0e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad36353f81bcb5ccc05f46fe76c77d0e9">&#9670;&#160;</a></span>m68k_set_write8_callback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void m68k_set_write8_callback </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structM68kCpu.html">M68kCpu</a> *&#160;</td>
+          <td class="paramname"><em>cpu</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="m68k_8h.html#a3704ea7d2534271da9cb2a37e3c0da07">M68kWrite8Callback</a>&#160;</td>
+          <td class="paramname"><em>callback</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Install host memory write callback (8-bit). </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>

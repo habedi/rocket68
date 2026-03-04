@@ -9,6 +9,4 @@ digraph "include/disasm.h"
   Node2 [id="Node000002",label="include/rocket68.h",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$rocket68_8h.html",tooltip="Convenience umbrella header for Rocket 68."];
   Node1 -> Node3 [id="edge2_Node000001_Node000003",dir="back",color="steelblue1",style="solid",tooltip=" "];
   Node3 [id="Node000003",label="src/disasm.c",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$disasm_8c.html",tooltip="68000 instruction disassembler implementation."];
-  Node1 -> Node4 [id="edge3_Node000001_Node000004",dir="back",color="steelblue1",style="solid",tooltip=" "];
-  Node4 [id="Node000004",label="tests/test_loader.c",height=0.2,width=0.4,color="grey40", fillcolor="white", style="filled",URL="$test__loader_8c.html",tooltip=" "];
 }

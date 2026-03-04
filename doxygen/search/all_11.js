@@ -1,11 +1,8 @@
 var searchData=
 [
-  ['u16_0',['u16',['../m68k_8h.html#ace9d960e74685e2cd84b36132dbbf8aa',1,'m68k.h']]],
-  ['u32_1',['u32',['../m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba',1,'m68k.h']]],
-  ['u8_2',['u8',['../m68k_8h.html#a92c50087ca0e64fa93fc59402c55f8ca',1,'m68k.h']]],
-  ['update_5fflags_5fadd_3',['update_flags_add',['../m68k_8c.html#a5f2daf8f0231acb716e654b808580fb2',1,'update_flags_add(M68kCpu *cpu, u32 src, u32 dest, u32 result, M68kSize size):&#160;m68k.c'],['../m68k__internal_8h.html#a5f2daf8f0231acb716e654b808580fb2',1,'update_flags_add(M68kCpu *cpu, u32 src, u32 dest, u32 result, M68kSize size):&#160;m68k.c']]],
-  ['update_5fflags_5fcmp_4',['update_flags_cmp',['../m68k_8c.html#a49b24b7de508de692c28df0d31e62ff4',1,'update_flags_cmp(M68kCpu *cpu, u32 src, u32 dest, u32 result, M68kSize size):&#160;m68k.c'],['../m68k__internal_8h.html#a49b24b7de508de692c28df0d31e62ff4',1,'update_flags_cmp(M68kCpu *cpu, u32 src, u32 dest, u32 result, M68kSize size):&#160;m68k.c']]],
-  ['update_5fflags_5flogic_5',['update_flags_logic',['../m68k_8c.html#a3c08da54bfe43bcbb988595763cff38a',1,'update_flags_logic(M68kCpu *cpu, u32 result, M68kSize size):&#160;m68k.c'],['../m68k__internal_8h.html#a3c08da54bfe43bcbb988595763cff38a',1,'update_flags_logic(M68kCpu *cpu, u32 result, M68kSize size):&#160;m68k.c']]],
-  ['update_5fflags_5fsub_6',['update_flags_sub',['../m68k_8c.html#aac4161062bf6f08b777eaade0163f5f8',1,'update_flags_sub(M68kCpu *cpu, u32 src, u32 dest, u32 result, M68kSize size):&#160;m68k.c'],['../m68k__internal_8h.html#aac4161062bf6f08b777eaade0163f5f8',1,'update_flags_sub(M68kCpu *cpu, u32 src, u32 dest, u32 result, M68kSize size):&#160;m68k.c']]],
-  ['usp_7',['usp',['../structM68kCpu.html#a3cd2d840e4243e21e0bdf95c7404649c',1,'M68kCpu::usp'],['../structCPU__State.html#ae0c5b7a03d28cb61a80bcbc4587590e2',1,'CPU_State::usp']]]
+  ['w_0',['w',['../unionM68kRegister.html#a2708229079a75e5c00a4785d675d1631',1,'M68kRegister']]],
+  ['wait_5fbus_1',['wait_bus',['../structM68kCpu.html#ac11df0f9d1b22692d7db762c52266448',1,'M68kCpu']]],
+  ['write16_5fcb_2',['write16_cb',['../structM68kCpu.html#a59f6da74569a335dd9b523cc9ef0a8e0',1,'M68kCpu']]],
+  ['write32_5fcb_3',['write32_cb',['../structM68kCpu.html#a0d6d9c825fc2aeaba1ae64640fbc1980',1,'M68kCpu']]],
+  ['write8_5fcb_4',['write8_cb',['../structM68kCpu.html#a2c8c7ce0d4219b624103164b439d8a0c',1,'M68kCpu']]]
 ];

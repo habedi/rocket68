@@ -165,6 +165,18 @@ Public Attributes</h2></td></tr>
 <tr class="separator:ae4e23efaef32937781595578ea6c7113"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac96b39302a4b1dd798b85480043d360b" id="r_ac96b39302a4b1dd798b85480043d360b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#a50006589848a459ad5f7bf6a625cdb5f">M68kIllgCallback</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#ac96b39302a4b1dd798b85480043d360b">illg_cb</a></td></tr>
 <tr class="separator:ac96b39302a4b1dd798b85480043d360b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52e46c310cf2cbb932b9976c375a14a9" id="r_a52e46c310cf2cbb932b9976c375a14a9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#a8498689e0615a8f5af0d05c91d1416f9">M68kRead8Callback</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#a52e46c310cf2cbb932b9976c375a14a9">read8_cb</a></td></tr>
+<tr class="separator:a52e46c310cf2cbb932b9976c375a14a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29ca70dc94efce1ee36ad2cc312f2ca9" id="r_a29ca70dc94efce1ee36ad2cc312f2ca9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#a6be5b01c3927c3ffafed978554aa7138">M68kRead16Callback</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#a29ca70dc94efce1ee36ad2cc312f2ca9">read16_cb</a></td></tr>
+<tr class="separator:a29ca70dc94efce1ee36ad2cc312f2ca9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e81f5ef6d11548ae13baddd6c742b17" id="r_a2e81f5ef6d11548ae13baddd6c742b17"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#a91b01ffef74b41fe3430ed6ed8862bf1">M68kRead32Callback</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#a2e81f5ef6d11548ae13baddd6c742b17">read32_cb</a></td></tr>
+<tr class="separator:a2e81f5ef6d11548ae13baddd6c742b17"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c8c7ce0d4219b624103164b439d8a0c" id="r_a2c8c7ce0d4219b624103164b439d8a0c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#a3704ea7d2534271da9cb2a37e3c0da07">M68kWrite8Callback</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#a2c8c7ce0d4219b624103164b439d8a0c">write8_cb</a></td></tr>
+<tr class="separator:a2c8c7ce0d4219b624103164b439d8a0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59f6da74569a335dd9b523cc9ef0a8e0" id="r_a59f6da74569a335dd9b523cc9ef0a8e0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#ab886616ebdbe16b397ba281c81195ea5">M68kWrite16Callback</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#a59f6da74569a335dd9b523cc9ef0a8e0">write16_cb</a></td></tr>
+<tr class="separator:a59f6da74569a335dd9b523cc9ef0a8e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d6d9c825fc2aeaba1ae64640fbc1980" id="r_a0d6d9c825fc2aeaba1ae64640fbc1980"><td class="memItemLeft" align="right" valign="top"><a class="el" href="m68k_8h.html#ae5f6ebdfc206941477ac721d28693899">M68kWrite32Callback</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structM68kCpu.html#a0d6d9c825fc2aeaba1ae64640fbc1980">write32_cb</a></td></tr>
+<tr class="separator:a0d6d9c825fc2aeaba1ae64640fbc1980"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Full CPU context for one emulated 68000 instance. </p>
@@ -549,6 +561,51 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a29ca70dc94efce1ee36ad2cc312f2ca9" name="a29ca70dc94efce1ee36ad2cc312f2ca9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a29ca70dc94efce1ee36ad2cc312f2ca9">&#9670;&#160;</a></span>read16_cb</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="m68k_8h.html#a6be5b01c3927c3ffafed978554aa7138">M68kRead16Callback</a> M68kCpu::read16_cb</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Host memory read callback (16-bit). </p>
+
+</div>
+</div>
+<a id="a2e81f5ef6d11548ae13baddd6c742b17" name="a2e81f5ef6d11548ae13baddd6c742b17"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e81f5ef6d11548ae13baddd6c742b17">&#9670;&#160;</a></span>read32_cb</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="m68k_8h.html#a91b01ffef74b41fe3430ed6ed8862bf1">M68kRead32Callback</a> M68kCpu::read32_cb</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Host memory read callback (32-bit). </p>
+
+</div>
+</div>
+<a id="a52e46c310cf2cbb932b9976c375a14a9" name="a52e46c310cf2cbb932b9976c375a14a9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a52e46c310cf2cbb932b9976c375a14a9">&#9670;&#160;</a></span>read8_cb</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="m68k_8h.html#a8498689e0615a8f5af0d05c91d1416f9">M68kRead8Callback</a> M68kCpu::read8_cb</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Host memory read callback (8-bit). </p>
+
+</div>
+</div>
 <a id="a110c1b67590de1bbb52abae98d7eacb3" name="a110c1b67590de1bbb52abae98d7eacb3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a110c1b67590de1bbb52abae98d7eacb3">&#9670;&#160;</a></span>reset_cb</h2>
 
@@ -711,6 +768,51 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Wait/bus callback. </p>
+
+</div>
+</div>
+<a id="a59f6da74569a335dd9b523cc9ef0a8e0" name="a59f6da74569a335dd9b523cc9ef0a8e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59f6da74569a335dd9b523cc9ef0a8e0">&#9670;&#160;</a></span>write16_cb</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="m68k_8h.html#ab886616ebdbe16b397ba281c81195ea5">M68kWrite16Callback</a> M68kCpu::write16_cb</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Host memory write callback (16-bit). </p>
+
+</div>
+</div>
+<a id="a0d6d9c825fc2aeaba1ae64640fbc1980" name="a0d6d9c825fc2aeaba1ae64640fbc1980"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d6d9c825fc2aeaba1ae64640fbc1980">&#9670;&#160;</a></span>write32_cb</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="m68k_8h.html#ae5f6ebdfc206941477ac721d28693899">M68kWrite32Callback</a> M68kCpu::write32_cb</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Host memory write callback (32-bit). </p>
+
+</div>
+</div>
+<a id="a2c8c7ce0d4219b624103164b439d8a0c" name="a2c8c7ce0d4219b624103164b439d8a0c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2c8c7ce0d4219b624103164b439d8a0c">&#9670;&#160;</a></span>write8_cb</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="m68k_8h.html#a3704ea7d2534271da9cb2a37e3c0da07">M68kWrite8Callback</a> M68kCpu::write8_cb</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Host memory write callback (8-bit). </p>
 
 </div>
 </div>
