@@ -132,7 +132,78 @@ void attach_fc_trace(M68kCpu* cpu) {
 }
 ```
 
-## 6. Save and Restore CPU Context
+## 6. Use a Host Bus with Memory Callbacks
+
+Use this when you need mapped IO/peripherals instead of a flat RAM array.
+
+```c
+#include "rocket68.h"
+
+typedef struct {
+    u8 ram[64 * 1024];
+    u8 io_reg;
+} HostBus;
+
+static u8 bus_read8(M68kCpu* cpu, u32 addr) {
+    HostBus* bus = (HostBus*)cpu->memory; /* host-owned pointer convention */
+    addr &= 0x00FFFFFF;
+
+    if (addr == 0x00A10001) return bus->io_reg;  /* simple MMIO read */
+    if (addr < sizeof(bus->ram)) return bus->ram[addr];
+    return 0xFF;
+}
+
+static void bus_write8(M68kCpu* cpu, u32 addr, u8 value) {
+    HostBus* bus = (HostBus*)cpu->memory;
+    addr &= 0x00FFFFFF;
+
+    if (addr == 0x00A10001) {
+        bus->io_reg = value;  /* simple MMIO write */
+        return;
+    }
+    if (addr < sizeof(bus->ram)) {
+        bus->ram[addr] = value;
+    }
+}
+
+/* Width wrappers can use your own bus logic directly. */
+static u16 bus_read16(M68kCpu* cpu, u32 addr) {
+    return (u16)((bus_read8(cpu, addr) << 8) | bus_read8(cpu, addr + 1));
+}
+
+static u32 bus_read32(M68kCpu* cpu, u32 addr) {
+    return ((u32)bus_read16(cpu, addr) << 16) | bus_read16(cpu, addr + 2);
+}
+
+static void bus_write16(M68kCpu* cpu, u32 addr, u16 value) {
+    bus_write8(cpu, addr, (u8)(value >> 8));
+    bus_write8(cpu, addr + 1, (u8)value);
+}
+
+static void bus_write32(M68kCpu* cpu, u32 addr, u32 value) {
+    bus_write16(cpu, addr, (u16)(value >> 16));
+    bus_write16(cpu, addr + 2, (u16)value);
+}
+
+void attach_bus(M68kCpu* cpu, HostBus* bus) {
+    /* memory/memory_size can be repurposed for host state when callbacks are installed */
+    m68k_init(cpu, (u8*)bus, sizeof(*bus));
+
+    m68k_set_read8_callback(cpu, bus_read8);
+    m68k_set_read16_callback(cpu, bus_read16);
+    m68k_set_read32_callback(cpu, bus_read32);
+    m68k_set_write8_callback(cpu, bus_write8);
+    m68k_set_write16_callback(cpu, bus_write16);
+    m68k_set_write32_callback(cpu, bus_write32);
+}
+```
+
+Note:
+
+- When a callback for a given width is installed, Rocket68 dispatches through that callback for that width.
+- Pass `NULL` to any `m68k_set_*_callback` setter to fall back to flat-memory behavior for that width.
+
+## 7. Save and Restore CPU Context
 
 Use this for save states or rewind.
 
@@ -163,7 +234,7 @@ Note:
 - `m68k_set_context` preserves the destination CPU's memory binding and installed callbacks.
 - Save-state data should be reused with the same Rocket68 build/config.
 
-## 7. Load Programs from S-Record or Binary
+## 8. Load Programs from S-Record or Binary
 
 ```c
 #include "rocket68.h"
@@ -183,9 +254,9 @@ bool load_program(M68kCpu* cpu) {
 
 Notes:
 
-- For loader edge-case behavior (malformed records, checksum policy, entry-point handling), see [API Reference](api-reference.md) and [Compatibility Notes](limitations.md).
+- For loader edge-case behavior (malformed records, checksum policy, entry-point handling), see [API Reference](api-reference.md) and [Compatibility Notes](compatibility.md).
 
-## 8. Disassemble Memory for Debug Output
+## 9. Disassemble Memory for Debug Output
 
 ```c
 #include <stdio.h>

@@ -77,6 +77,18 @@ typedef int (*M68kTasCallback)(M68kCpu* cpu);
 /** @brief Illegal instruction callback. Return non-zero to signal handled/halt behavior in host
  * policy. */
 typedef int (*M68kIllgCallback)(M68kCpu* cpu, int opcode);
+/** @brief Host memory read callback (8-bit). */
+typedef u8 (*M68kRead8Callback)(M68kCpu* cpu, u32 address);
+/** @brief Host memory read callback (16-bit). */
+typedef u16 (*M68kRead16Callback)(M68kCpu* cpu, u32 address);
+/** @brief Host memory read callback (32-bit). */
+typedef u32 (*M68kRead32Callback)(M68kCpu* cpu, u32 address);
+/** @brief Host memory write callback (8-bit). */
+typedef void (*M68kWrite8Callback)(M68kCpu* cpu, u32 address, u8 value);
+/** @brief Host memory write callback (16-bit). */
+typedef void (*M68kWrite16Callback)(M68kCpu* cpu, u32 address, u16 value);
+/** @brief Host memory write callback (32-bit). */
+typedef void (*M68kWrite32Callback)(M68kCpu* cpu, u32 address, u32 value);
 
 /** @brief Effective address mode encoding used by internal helpers and opcode decoding. */
 typedef enum {
@@ -158,6 +170,12 @@ typedef struct M68kCpu {
     M68kResetCallback reset_cb;          /**< Reset callback. */
     M68kTasCallback tas_cb;              /**< TAS callback. */
     M68kIllgCallback illg_cb;            /**< Illegal opcode callback. */
+    M68kRead8Callback read8_cb;          /**< Host memory read callback (8-bit). */
+    M68kRead16Callback read16_cb;        /**< Host memory read callback (16-bit). */
+    M68kRead32Callback read32_cb;        /**< Host memory read callback (32-bit). */
+    M68kWrite8Callback write8_cb;        /**< Host memory write callback (8-bit). */
+    M68kWrite16Callback write16_cb;      /**< Host memory write callback (16-bit). */
+    M68kWrite32Callback write32_cb;      /**< Host memory write callback (32-bit). */
 } M68kCpu;
 
 /** @brief Carry flag bit mask in SR. */
@@ -400,6 +418,48 @@ void m68k_set_tas_callback(M68kCpu* cpu, M68kTasCallback callback);
  * @param callback Callback function pointer or NULL.
  */
 void m68k_set_illg_callback(M68kCpu* cpu, M68kIllgCallback callback);
+
+/**
+ * @brief Install host memory read callback (8-bit).
+ * @param cpu CPU context.
+ * @param callback Callback function pointer or NULL.
+ */
+void m68k_set_read8_callback(M68kCpu* cpu, M68kRead8Callback callback);
+
+/**
+ * @brief Install host memory read callback (16-bit).
+ * @param cpu CPU context.
+ * @param callback Callback function pointer or NULL.
+ */
+void m68k_set_read16_callback(M68kCpu* cpu, M68kRead16Callback callback);
+
+/**
+ * @brief Install host memory read callback (32-bit).
+ * @param cpu CPU context.
+ * @param callback Callback function pointer or NULL.
+ */
+void m68k_set_read32_callback(M68kCpu* cpu, M68kRead32Callback callback);
+
+/**
+ * @brief Install host memory write callback (8-bit).
+ * @param cpu CPU context.
+ * @param callback Callback function pointer or NULL.
+ */
+void m68k_set_write8_callback(M68kCpu* cpu, M68kWrite8Callback callback);
+
+/**
+ * @brief Install host memory write callback (16-bit).
+ * @param cpu CPU context.
+ * @param callback Callback function pointer or NULL.
+ */
+void m68k_set_write16_callback(M68kCpu* cpu, M68kWrite16Callback callback);
+
+/**
+ * @brief Install host memory write callback (32-bit).
+ * @param cpu CPU context.
+ * @param callback Callback function pointer or NULL.
+ */
+void m68k_set_write32_callback(M68kCpu* cpu, M68kWrite32Callback callback);
 
 /**
  * @brief Get serialized context size.

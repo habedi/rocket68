@@ -134,7 +134,7 @@ int main(void) {
 
 4. Check out the [Makefile](Makefile) (optional)
 
-You can run the `make help` command to see the available targets and options including the targets for running different tests suites.
+You can run the `make help` command to see the available targets and options including the targets for running different test suites.
 
 ---
 

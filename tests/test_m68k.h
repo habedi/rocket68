@@ -4,6 +4,7 @@
 void test_initialization();
 void test_register_access();
 void test_memory_access();
+void test_host_memory_callbacks();
 void test_fetch();
 void test_move();
 void test_arithmetic();

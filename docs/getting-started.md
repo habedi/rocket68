@@ -109,6 +109,8 @@ m68k_set_wait_bus_callback(&cpu, wait_bus);
 m68k_set_int_ack_callback(&cpu, int_ack);
 ```
 
+For mapped-memory or MMIO host integration, see the host bus callback example in [Examples](examples.md#6-use-a-host-bus-with-memory-callbacks).
+
 ## 6. Useful Notes
 
 - Memory accesses are checked against `cpu.memory_size`; out-of-range accesses trigger bus error handling.

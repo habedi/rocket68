@@ -46,6 +46,15 @@ Register union used for `D0-D7` and `A0-A7`.
 One complete CPU instance with registers, execution state, memory binding, and callbacks.
 `d_regs` is aligned to 64 bytes.
 
+### Host memory callback types
+
+- `M68kRead8Callback`
+- `M68kRead16Callback`
+- `M68kRead32Callback`
+- `M68kWrite8Callback`
+- `M68kWrite16Callback`
+- `M68kWrite32Callback`
+
 ## Status Register Flags
 
 - `M68K_SR_C` carry
@@ -73,6 +82,7 @@ One complete CPU instance with registers, execution state, memory binding, and c
 ### `void m68k_init(M68kCpu* cpu, u8* memory, u32 memory_size);`
 
 Initializes all CPU fields and binds a flat memory buffer.
+If host memory callbacks are installed later, read/write API calls dispatch through callbacks instead of this flat buffer.
 
 ### `void m68k_reset(M68kCpu* cpu);`
 
@@ -146,6 +156,8 @@ Addresses are masked to 24-bit internally before bounds checks.
 
 Behavior notes:
 
+- If a host memory callback is installed for the requested width, it is called first.
+- When callbacks are used, default flat-buffer address/alignment/bus-error checks for that access are bypassed and are expected to be handled by the host.
 - Word/long accesses on odd addresses trigger address error handling.
 - Out-of-range accesses trigger bus error handling.
 
@@ -187,6 +199,18 @@ Called by `TAS`; non-zero return allows write-back, zero blocks write-back.
 
 Registers an illegal-opcode callback pointer.
 Current core decode path does not invoke this callback yet.
+
+### Host memory callbacks
+
+- `void m68k_set_read8_callback(M68kCpu* cpu, M68kRead8Callback callback);`
+- `void m68k_set_read16_callback(M68kCpu* cpu, M68kRead16Callback callback);`
+- `void m68k_set_read32_callback(M68kCpu* cpu, M68kRead32Callback callback);`
+- `void m68k_set_write8_callback(M68kCpu* cpu, M68kWrite8Callback callback);`
+- `void m68k_set_write16_callback(M68kCpu* cpu, M68kWrite16Callback callback);`
+- `void m68k_set_write32_callback(M68kCpu* cpu, M68kWrite32Callback callback);`
+
+Use these to route memory access to a host bus implementation (for mapped IO/peripherals or custom memory models).
+Pass `NULL` to disable a callback and fall back to default flat-memory behavior for that access width.
 
 ## Context Save/Restore
 

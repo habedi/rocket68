@@ -16,7 +16,7 @@ INPUT              = .
 FILE_PATTERNS      = *.c *.h
 RECURSIVE          = YES
 EXTRACT_ALL        = YES
-EXCLUDE_PATTERNS   = test benches external tmp
+EXCLUDE_PATTERNS   = tests benches external tmp
 
 #---------------------------------------------------------------------------
 # Output formats
