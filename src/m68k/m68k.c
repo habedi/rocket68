@@ -255,7 +255,7 @@ u32 m68k_read_32(M68kCpu* cpu, u32 address) {
     }
     if (is_valid_address(cpu, address) && is_valid_address(cpu, address + 3)) {
         return ((u32)cpu->memory[address] << 24) | ((u32)cpu->memory[address + 1] << 16) |
-        ((u32)cpu->memory[address + 2] << 8) | (u32)cpu->memory[address + 3];
+               ((u32)cpu->memory[address + 2] << 8) | (u32)cpu->memory[address + 3];
     }
     if (!cpu->in_bus_error) {
         capture_access_fault(cpu, raw_address, false, false);
@@ -493,21 +493,21 @@ M68kEA m68k_calc_ea_ex(M68kCpu* cpu, int mode, int reg, M68kSize size, bool fetc
                     break;
             }
             break;
-                case 6: {
-                    u16 ext = fetch_extension(cpu);
-                    s8 disp8 = (s8)(ext & 0xFF);
-                    int xn_reg_num = (ext >> 12) & 0x7;
-                    int xn_is_addr = (ext >> 15) & 0x1;
-                    int xn_is_long = (ext >> 11) & 0x1;
+        case 6: {
+            u16 ext = fetch_extension(cpu);
+            s8 disp8 = (s8)(ext & 0xFF);
+            int xn_reg_num = (ext >> 12) & 0x7;
+            int xn_is_addr = (ext >> 15) & 0x1;
+            int xn_is_long = (ext >> 11) & 0x1;
 
-                    u32 xn_val = xn_is_addr ? cpu->a_regs[xn_reg_num].l : cpu->d_regs[xn_reg_num].l;
-                    if (!xn_is_long) {
-                        xn_val = (s32)(s16)(xn_val & 0xFFFF);
-                    }
+            u32 xn_val = xn_is_addr ? cpu->a_regs[xn_reg_num].l : cpu->d_regs[xn_reg_num].l;
+            if (!xn_is_long) {
+                xn_val = (s32)(s16)(xn_val & 0xFFFF);
+            }
 
-                    ea.address = cpu->a_regs[reg].l + xn_val + disp8;
-                    if (fetch_value) ea.value = m68k_read_size(cpu, ea.address, size);
-                } break;
+            ea.address = cpu->a_regs[reg].l + xn_val + disp8;
+            if (fetch_value) ea.value = m68k_read_size(cpu, ea.address, size);
+        } break;
     }
     return ea;
 }
@@ -1139,16 +1139,16 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             cycles = 6;
             goto done;
         } else if ((opmode == 5 && ((opcode >> 3) & 0x1F) == 0x08) ||
-            (opmode == 5 && ((opcode >> 3) & 0x1F) == 0x09) ||
-            (opmode == 6 && ((opcode >> 3) & 0x1F) == 0x11)) {
+                   (opmode == 5 && ((opcode >> 3) & 0x1F) == 0x09) ||
+                   (opmode == 6 && ((opcode >> 3) & 0x1F) == 0x11)) {
             m68k_exec_exg(cpu, opcode);
-        cycles = 6;
-        goto done;
-            } else {
-                m68k_exec_and(cpu, opcode);
-                cycles = 4;
-                goto done;
-            }
+            cycles = 6;
+            goto done;
+        } else {
+            m68k_exec_and(cpu, opcode);
+            cycles = 4;
+            goto done;
+        }
     }
 
     if ((opcode & 0xF000) == 0xD000) {
@@ -1179,7 +1179,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
     }
     cycles = 34;
 
-    done:
+done:
     cpu->fault_trap_active = false;
 
     if ((cpu->pc & 1) && !cpu->in_address_error) {
