@@ -855,16 +855,31 @@ void m68k_exec_negx(M68kCpu* cpu, u16 opcode) {
         m68k_write_size(cpu, ea.address, result, size);
     }
 
-    bool old_z = (cpu->sr & M68K_SR_Z) != 0;
-    update_flags_sub(cpu, src, 0, result, size);
-
+    u32 msb_mask = (size == SIZE_BYTE) ? 0x80 : (size == SIZE_WORD) ? 0x8000 : 0x80000000;
     u32 value_mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
+
+    bool old_z = (cpu->sr & M68K_SR_Z) != 0;
+    cpu->sr &= ~(M68K_SR_N | M68K_SR_Z | M68K_SR_V | M68K_SR_C | M68K_SR_X);
+
+    if (result & msb_mask) cpu->sr |= M68K_SR_N;
+
     if ((result & value_mask) != 0) {
-        cpu->sr &= ~M68K_SR_Z;
+        /* Z is cleared if result is non-zero, otherwise unchanged */
     } else if (old_z) {
         cpu->sr |= M68K_SR_Z;
-    } else {
-        cpu->sr &= ~M68K_SR_Z;
+    }
+
+    /* V: overflow if sign changed unexpectedly.
+     * For 0 - src - X: overflow when src had MSB set and result also has MSB set
+     * (negating the most-negative value), adjusted for the X borrow. */
+    bool sm = (src & msb_mask) != 0;
+    bool rm = (result & msb_mask) != 0;
+    if (sm && rm) cpu->sr |= M68K_SR_V;
+
+    /* C/X: borrow occurred if (masked) src or result has MSB set */
+    if (sm || rm) {
+        cpu->sr |= M68K_SR_C;
+        cpu->sr |= M68K_SR_X;
     }
 }
 

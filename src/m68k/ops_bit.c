@@ -162,13 +162,7 @@ void m68k_exec_tas(M68kCpu* cpu, u16 opcode) {
     int reg = opcode & 0x7;
 
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_BYTE);
-    u8 data;
-
-    if (ea.is_reg && !ea.is_addr) {
-        data = cpu->d_regs[ea.reg_num].l & 0xFF;
-    } else {
-        data = m68k_read_8(cpu, ea.address);
-    }
+    u8 data = ea.value & 0xFF;
 
     cpu->sr &= ~(M68K_SR_N | M68K_SR_Z | M68K_SR_V | M68K_SR_C);
     if (data == 0) cpu->sr |= M68K_SR_Z;
