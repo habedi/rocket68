@@ -696,6 +696,7 @@ static bool check_interrupts(M68kCpu* cpu) {
         m68k_exception(cpu, vector);
         cpu->sr &= ~0x0700;
         cpu->sr |= (cpu->irq_level << 8);
+        cpu->irq_level = 0;
         cpu->stopped = false;
 
         return true;
