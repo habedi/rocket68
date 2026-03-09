@@ -1,7 +1,7 @@
 [project]
 name = "rocket68"
 version = "0.1.0"
-description = "The Python environment for the `m68k-emul` project"
+description = "The Python environment for the `rocket68` project"
 
 requires-python = ">=3.10,<4.0"
 dependencies = [
