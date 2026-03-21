@@ -175,6 +175,7 @@ This project is licensed under the MIT License (see [LICENSE](LICENSE)).
 ### Acknowledgements
 
 - The logo is from [SVG Repo](https://www.svgrepo.com/svg/142843/cpu) with some modifications.
+- Rocket 68 is used in the [Sandopolis](https://github.com/pixel-clover/sandopolis) Sega Genesis/Mega Drive emulator project.
 - Tests (code and data) from the following projects were used to verify the correctness of Rocket 68:
     - [Musashi](https://github.com/kstenerud/Musashi)
     - [68k-bcd-verifier](https://github.com/flamewing/68k-bcd-verifier)
