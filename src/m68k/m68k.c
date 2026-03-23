@@ -822,7 +822,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
             if (mode == 1) {
                 m68k_exec_movep(cpu, opcode);
-                cycles = 16;
+                cycles = ((opcode >> 6) & 0x1) ? 24 : 16; /* long=24, word=16 */
                 goto done;
             }
 
@@ -924,13 +924,13 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
         if ((opcode & 0xFFC0) == 0x4E80) {
             m68k_exec_jmp(cpu, opcode);
-            cycles = 16;
+            cycles = 8; /* JSR base; EA timing adds the rest */
             goto done;
         }
 
         if ((opcode & 0xFFC0) == 0x4EC0) {
             m68k_exec_jmp(cpu, opcode);
-            cycles = 8;
+            cycles = 0; /* JMP base; EA timing adds the rest */
             goto done;
         }
 
@@ -960,7 +960,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
         if ((opcode & 0xF1C0) == 0x41C0) {
             m68k_exec_lea(cpu, opcode);
-            cycles = 4;
+            cycles = 0; /* LEA timing is entirely EA-mode dependent */
             goto done;
         }
 
@@ -1057,7 +1057,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
                 goto done;
             } else {
                 m68k_exec_scc(cpu, opcode);
-                cycles = 8;
+                cycles = 0; /* handler deducts 4/6/8 */
                 goto done;
             }
         }
@@ -1066,13 +1066,25 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             m68k_exec_subq(cpu, opcode);
         else
             m68k_exec_addq(cpu, opcode);
-        cycles = 4;
+        {
+            int aq_mode = (opcode >> 3) & 0x7;
+            int aq_size = (opcode >> 6) & 0x3;
+            if (aq_mode == 1) {
+                cycles = 8; /* An: always 8 */
+            } else if (aq_mode == 0 && aq_size == 2) {
+                cycles = 8; /* Dn long: 8 */
+            } else if (aq_mode == 0) {
+                cycles = 4; /* Dn byte/word: 4 */
+            } else {
+                cycles = 8; /* memory: 8 + EA (EA already charged) */
+            }
+        }
         goto done;
     }
 
     if ((opcode & 0xF000) == 0x6000) {
         m68k_exec_bcc(cpu, opcode);
-        cycles = 10;
+        cycles = 0; /* handler deducts 8/10/12/18 */
         goto done;
     }
 
@@ -1166,7 +1178,21 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
     if ((opcode & 0xF000) == 0xE000) {
         m68k_exec_shift(cpu, opcode);
-        cycles = 6;
+        if ((opcode & 0x00C0) == 0x00C0) {
+            cycles = 8; /* memory shift: 8 + EA (EA already charged) */
+        } else {
+            /* register shift: 6 + 2n where n = shift count */
+            int sh_count;
+            bool sh_ir = ((opcode >> 5) & 0x1) != 0;
+            if (sh_ir) {
+                sh_count = (int)(cpu->d_regs[(opcode >> 9) & 0x7].l & 63);
+            } else {
+                sh_count = (opcode >> 9) & 0x7;
+                if (sh_count == 0) sh_count = 8;
+            }
+            int sh_size = (opcode >> 6) & 0x3;
+            cycles = (sh_size == 2 ? 8 : 6) + 2 * sh_count;
+        }
         goto done;
     }
 

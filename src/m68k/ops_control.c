@@ -51,22 +51,30 @@ bool m68k_check_condition(M68kCpu* cpu, int condition) {
 void m68k_exec_bcc(M68kCpu* cpu, u16 opcode) {
     int cond = (opcode >> 8) & 0xF;
     s32 disp = (s8)(opcode & 0xFF);
+    bool is_word = (opcode & 0xFF) == 0;
 
-    if ((opcode & 0xFF) == 0) {
+    if (is_word) {
         disp = (s16)m68k_fetch(cpu);
     }
 
     if (cond == 1) {
+        /* BSR */
         m68k_push_32(cpu, cpu->pc);
-        if ((opcode & 0xFF) == 0)
+        if (is_word)
             m68k_set_pc(cpu, (cpu->pc - 2) + disp);
         else
             m68k_set_pc(cpu, cpu->pc + disp);
+        cpu->cycles_remaining -= 18;
     } else if (m68k_check_condition(cpu, cond)) {
-        if ((opcode & 0xFF) == 0)
+        /* Bcc taken */
+        if (is_word)
             m68k_set_pc(cpu, (cpu->pc - 2) + disp);
         else
             m68k_set_pc(cpu, cpu->pc + disp);
+        cpu->cycles_remaining -= 10;
+    } else {
+        /* Bcc not taken */
+        cpu->cycles_remaining -= is_word ? 12 : 8;
     }
 }
 
@@ -103,8 +111,10 @@ void m68k_exec_scc(M68kCpu* cpu, u16 opcode) {
     M68kEA ea = m68k_calc_ea_addr(cpu, mode, reg, SIZE_BYTE);
     if (ea.is_reg && !ea.is_addr) {
         cpu->d_regs[ea.reg_num].l = (cpu->d_regs[ea.reg_num].l & 0xFFFFFF00) | val;
+        cpu->cycles_remaining -= result ? 6 : 4;
     } else {
         m68k_write_8(cpu, ea.address, val);
+        cpu->cycles_remaining -= 8;
     }
 }
 
