@@ -227,13 +227,17 @@ void m68k_exec_clr(M68kCpu* cpu, u16 opcode) {
         return;
     }
 
-    /* MC68000 CLR performs a read-before-write cycle for memory operands */
+    /* MC68000 CLR performs a read-before-write cycle for memory operands.
+     * The read result is discarded but its side effects (bus cycles, hardware
+     * register acknowledgment) must occur.  Many Genesis games rely on this
+     * for VDP status register reads via CLR instructions. */
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
 
     if (ea.is_reg && !ea.is_addr) {
         u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
         cpu->d_regs[ea.reg_num].l &= ~mask;
     } else {
+        (void)m68k_read_size(cpu, ea.address, size); /* 68000 read-before-write */
         m68k_write_size(cpu, ea.address, 0, size);
     }
 
