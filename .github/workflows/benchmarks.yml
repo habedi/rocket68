@@ -42,4 +42,6 @@ jobs:
           make install-deps
 
       - name: Run Benchmarks
-        run: make bench
+        run: |
+          BUILD_TYPE=release make all
+          make bench
