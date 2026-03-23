@@ -704,6 +704,27 @@ static bool check_interrupts(M68kCpu* cpu) {
     return false;
 }
 
+/* 68000 base cycle cost for ALU-class instructions (ADD, SUB, CMP, AND, OR, EOR,
+ * NEG, NOT, CLR, etc.).  The real 68000 charges extra cycles for .L operations
+ * and for memory-destination (read-modify-write) access patterns.
+ *
+ * dir: 0 = <ea> to register, 1 = register to <ea> (memory r/m/w)
+ * size: SIZE_BYTE, SIZE_WORD, SIZE_LONG
+ * ea_mode: addressing mode of the <ea> operand (0=Dn, 1=An, 2+=memory)
+ */
+static int alu_base_cycles(int dir, M68kSize size, int ea_mode) {
+    if (dir == 0) {
+        /* <ea> to Dn: B/W = 4, L = 8 if ea is Dn/An/#imm, else 6 */
+        if (size == SIZE_LONG) {
+            return (ea_mode <= 1 || ea_mode == 7) ? 8 : 6;
+        }
+        return 4;
+    } else {
+        /* Dn to <ea> (memory): B/W = 8, L = 12.  EA cycles added separately. */
+        return (size == SIZE_LONG) ? 12 : 8;
+    }
+}
+
 void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
     // These are re-entrancy guards for access helpers, not architectural state.
     cpu->in_address_error = false;
@@ -1025,25 +1046,49 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
         if ((opcode & 0xFF00) == 0x4000) {
             m68k_exec_negx(cpu, opcode);
-            cycles = 4;
+            {
+                int un_mode = (opcode >> 3) & 0x7;
+                M68kSize un_sz = ((opcode >> 6) & 3) == 2 ? SIZE_LONG :
+                                 ((opcode >> 6) & 3) == 1 ? SIZE_WORD : SIZE_BYTE;
+                cycles = (un_mode == 0) ? (un_sz == SIZE_LONG ? 6 : 4) :
+                         (un_sz == SIZE_LONG ? 12 : 8);
+            }
             goto done;
         }
 
         if ((opcode & 0xFF00) == 0x4200) {
             m68k_exec_clr(cpu, opcode);
-            cycles = 4;
+            {
+                int cl_mode = (opcode >> 3) & 0x7;
+                M68kSize cl_sz = ((opcode >> 6) & 3) == 2 ? SIZE_LONG :
+                                 ((opcode >> 6) & 3) == 1 ? SIZE_WORD : SIZE_BYTE;
+                cycles = (cl_mode == 0) ? (cl_sz == SIZE_LONG ? 6 : 4) :
+                         (cl_sz == SIZE_LONG ? 12 : 8);
+            }
             goto done;
         }
 
         if ((opcode & 0xFF00) == 0x4400) {
             m68k_exec_neg(cpu, opcode);
-            cycles = 4;
+            {
+                int ng_mode = (opcode >> 3) & 0x7;
+                M68kSize ng_sz = ((opcode >> 6) & 3) == 2 ? SIZE_LONG :
+                                 ((opcode >> 6) & 3) == 1 ? SIZE_WORD : SIZE_BYTE;
+                cycles = (ng_mode == 0) ? (ng_sz == SIZE_LONG ? 6 : 4) :
+                         (ng_sz == SIZE_LONG ? 12 : 8);
+            }
             goto done;
         }
 
         if ((opcode & 0xFF00) == 0x4600) {
             m68k_exec_not(cpu, opcode);
-            cycles = 4;
+            {
+                int nt_mode = (opcode >> 3) & 0x7;
+                M68kSize nt_sz = ((opcode >> 6) & 3) == 2 ? SIZE_LONG :
+                                 ((opcode >> 6) & 3) == 1 ? SIZE_WORD : SIZE_BYTE;
+                cycles = (nt_mode == 0) ? (nt_sz == SIZE_LONG ? 6 : 4) :
+                         (nt_sz == SIZE_LONG ? 12 : 8);
+            }
             goto done;
         }
     }
@@ -1099,7 +1144,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         int mode = (opcode >> 3) & 0x7;
         if (opmode == 3 || opmode == 7) {
             m68k_exec_div(cpu, opcode);
-            cycles = 140;
+            cycles = (opmode == 7) ? 158 : 140; /* DIVS=158, DIVU=140 */
             goto done;
         } else if (opmode == 4 && (mode == 0 || mode == 1)) {
             m68k_exec_sbcd(cpu, opcode);
@@ -1107,7 +1152,13 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             goto done;
         } else {
             m68k_exec_or(cpu, opcode);
-            cycles = 4;
+            {
+                int or_dir = (opcode >> 8) & 1;
+                M68kSize or_sz = (opmode <= 2) ?
+                    ((opmode == 0) ? SIZE_BYTE : (opmode == 1) ? SIZE_WORD : SIZE_LONG) :
+                    ((opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG);
+                cycles = alu_base_cycles(or_dir, or_sz, mode);
+            }
             goto done;
         }
     }
@@ -1117,11 +1168,22 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         int mode = (opcode >> 3) & 0x7;
         if ((opmode >= 4 && opmode <= 6) && (mode == 0 || mode == 1)) {
             m68k_exec_subx(cpu, opcode);
-            cycles = 4;
+            M68kSize sxsz = (opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG;
+            cycles = (sxsz == SIZE_LONG) ? 8 : 4;
             goto done;
         }
         m68k_exec_sub(cpu, opcode);
-        cycles = 4;
+        {
+            int sub_dir = (opcode >> 8) & 1;
+            M68kSize sub_sz = (opmode <= 2) ?
+                ((opmode == 0) ? SIZE_BYTE : (opmode == 1) ? SIZE_WORD : SIZE_LONG) :
+                ((opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG);
+            if (opmode == 3 || opmode == 7) {
+                cycles = (opmode == 7) ? 6 : 8;
+            } else {
+                cycles = alu_base_cycles(sub_dir, sub_sz, mode);
+            }
+        }
         goto done;
     }
 
@@ -1132,10 +1194,21 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         bool is_eor = (opmode >= 4 && opmode <= 6 && !is_cmpm);
         if (is_eor) {
             m68k_exec_eor(cpu, opcode);
+            {
+                M68kSize eor_sz = (opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG;
+                cycles = alu_base_cycles(1, eor_sz, mode); /* EOR is always Dn to <ea> */
+            }
         } else {
             m68k_exec_cmp(cpu, opcode);
+            if (opmode == 3 || opmode == 7) {
+                /* CMPA: always 6 */
+                cycles = 6;
+            } else {
+                M68kSize cmp_sz = (opmode == 0) ? SIZE_BYTE : (opmode == 1) ? SIZE_WORD : SIZE_LONG;
+                /* CMP is <ea> to Dn (read only, no writeback) */
+                cycles = (cmp_sz == SIZE_LONG) ? 6 : 4;
+            }
         }
-        cycles = 4;
         goto done;
     }
 
@@ -1158,7 +1231,13 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             goto done;
         } else {
             m68k_exec_and(cpu, opcode);
-            cycles = 4;
+            {
+                int and_dir = (opcode >> 8) & 1;
+                M68kSize and_sz = (opmode <= 2) ?
+                    ((opmode == 0) ? SIZE_BYTE : (opmode == 1) ? SIZE_WORD : SIZE_LONG) :
+                    ((opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG);
+                cycles = alu_base_cycles(and_dir, and_sz, mode);
+            }
             goto done;
         }
     }
@@ -1168,11 +1247,23 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         int mode = (opcode >> 3) & 0x7;
         if ((opmode >= 4 && opmode <= 6) && (mode == 0 || mode == 1)) {
             m68k_exec_addx(cpu, opcode);
-            cycles = 4;
+            M68kSize axsz = (opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG;
+            cycles = (axsz == SIZE_LONG) ? 8 : 4;
             goto done;
         }
         m68k_exec_add(cpu, opcode);
-        cycles = 4;
+        {
+            int add_dir = (opcode >> 8) & 1;
+            M68kSize add_sz = (opmode <= 2) ?
+                ((opmode == 0) ? SIZE_BYTE : (opmode == 1) ? SIZE_WORD : SIZE_LONG) :
+                ((opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG);
+            if (opmode == 3 || opmode == 7) {
+                /* ADDA: word=8, long=6 */
+                cycles = (opmode == 7) ? 6 : 8;
+            } else {
+                cycles = alu_base_cycles(add_dir, add_sz, mode);
+            }
+        }
         goto done;
     }
 
