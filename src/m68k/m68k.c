@@ -1053,7 +1053,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             int mode = (opcode >> 3) & 0x7;
             if (mode == 1) {
                 m68k_exec_dbcc(cpu, opcode);
-                cycles = 10;
+                cycles = 0; /* handler already deducts 10/12/14 */
                 goto done;
             } else {
                 m68k_exec_scc(cpu, opcode);
