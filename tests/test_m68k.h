@@ -78,5 +78,14 @@ void test_regression_divu_overflow_n_flag();
 void test_regression_divs_overflow_n_flag();
 void test_regression_chk_only_modifies_n();
 void test_regression_write_oob_triggers_bus_error();
+void test_regression_dbcc_cycle_count();
+void test_regression_bcc_not_taken_cycles();
+void test_regression_bsr_cycles();
+void test_regression_scc_register_cycles();
+void test_regression_addq_long_dn_cycles();
+void test_regression_subq_an_cycles();
+void test_regression_shift_register_cycles();
+void test_regression_clr_memory_reads_before_write();
+void test_regression_movem_predec_writes_initial_an();
 
 #endif

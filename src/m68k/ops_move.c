@@ -145,11 +145,20 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
         if (mode == 3) cpu->a_regs[reg].l = addr;
     } else {
         if (mode == 4) {
+            /* 68000: if the register list includes the base An, the value
+             * written is the initial (pre-decrement) value of An. Save it
+             * before the loop so the correct value is stored. */
+            u32 initial_an = cpu->a_regs[reg].l;
             for (int i = 0; i < 16; i++) {
                 if (mask & (1 << i)) {
                     int reg_idx = 15 - i;
                     addr -= step;
-                    u32 val = (reg_idx < 8) ? cpu->d_regs[reg_idx].l : cpu->a_regs[reg_idx - 8].l;
+                    u32 val;
+                    if (reg_idx >= 8 && (reg_idx - 8) == reg) {
+                        val = initial_an;
+                    } else {
+                        val = (reg_idx < 8) ? cpu->d_regs[reg_idx].l : cpu->a_regs[reg_idx - 8].l;
+                    }
                     if (!size_long) val &= 0xFFFF;
                     m68k_write_size(cpu, addr, val, size);
                 }
