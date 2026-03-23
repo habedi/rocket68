@@ -596,6 +596,252 @@ void test_regression_chk_only_modifies_n() {
     printf("Regression: CHK only modifies N test passed!\n");
 }
 
+void test_regression_dbcc_cycle_count() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    /* DBRA D0, loop back to start with D0=1 => two iterations */
+    cpu.d_regs[0].l = 1;
+    /* 51C8 FFFE = DBF D0, displacement -2 from ext word => target 0x0000 */
+    m68k_write_16(&cpu, 0, 0x51C8);
+    m68k_write_16(&cpu, 2, 0xFFFE);
+    m68k_end_timeslice(&cpu);
+
+    /* First iteration: branch taken (counter 1->0, not expired) = 10 cycles */
+    int cycles1 = m68k_execute(&cpu, 10);
+    assert(cycles1 == 10);
+    assert(cpu.pc == 0x0000);
+    assert((cpu.d_regs[0].l & 0xFFFF) == 0);
+
+    /* Second iteration: counter 0->FFFF, expired = 14 cycles */
+    int cycles2 = m68k_execute(&cpu, 14);
+    assert(cycles2 == 14);
+    assert(cpu.pc == 0x0004);
+    assert((cpu.d_regs[0].l & 0xFFFF) == 0xFFFF);
+
+    printf("Regression: DBcc cycle count test passed!\n");
+}
+
+void test_regression_bcc_not_taken_cycles() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    /* BEQ.B $+4 when Z=0 (not taken) should cost 8 cycles */
+    cpu.sr = 0x2700 & ~M68K_SR_Z;  /* Z clear */
+    /* 6702 = BEQ.B $+4 (byte displacement 2) */
+    m68k_write_16(&cpu, 0, 0x6702);
+    m68k_write_16(&cpu, 2, 0x4E71); /* NOP as fallthrough */
+    m68k_end_timeslice(&cpu);
+
+    int cycles = m68k_execute(&cpu, 8);
+    assert(cycles == 8);
+    assert(cpu.pc == 0x0002); /* fell through, not branched */
+
+    printf("Regression: Bcc not-taken cycles test passed!\n");
+}
+
+void test_regression_bsr_cycles() {
+    M68kCpu cpu;
+    u8 memory[4096];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+
+    /* BSR.B $+8 (byte displacement 6) should cost 18 cycles */
+    /* 6106 = BSR.B displacement=6 => target = PC+2+6 = 8 */
+    m68k_write_16(&cpu, 0, 0x6106);
+    m68k_write_16(&cpu, 8, 0x4E71); /* NOP at target */
+    m68k_end_timeslice(&cpu);
+
+    int cycles = m68k_execute(&cpu, 18);
+    assert(cycles == 18);
+    assert(cpu.pc == 0x0008); /* branched to target */
+
+    printf("Regression: BSR cycles test passed!\n");
+}
+
+void test_regression_scc_register_cycles() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    /* ST D0 (condition true = always) should cost 6 cycles */
+    /* 50C0 = ST D0 */
+    m68k_write_16(&cpu, 0, 0x50C0);
+    m68k_end_timeslice(&cpu);
+    int cycles_true = m68k_execute(&cpu, 6);
+    assert(cycles_true == 6);
+    assert((cpu.d_regs[0].l & 0xFF) == 0xFF);
+
+    /* SF D1 (condition false = never) should cost 4 cycles */
+    /* 51C1 = SF D1 */
+    m68k_write_16(&cpu, 2, 0x51C1);
+    m68k_end_timeslice(&cpu);
+    int cycles_false = m68k_execute(&cpu, 4);
+    assert(cycles_false == 4);
+    assert((cpu.d_regs[1].l & 0xFF) == 0x00);
+
+    printf("Regression: Scc register cycles test passed!\n");
+}
+
+void test_regression_addq_long_dn_cycles() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    /* ADDQ.L #1,D0 should cost 8 cycles (long to Dn) */
+    /* 5280 = ADDQ.L #1,D0 */
+    m68k_write_16(&cpu, 0, 0x5280);
+    m68k_end_timeslice(&cpu);
+    int cycles = m68k_execute(&cpu, 8);
+    assert(cycles == 8);
+    assert(cpu.d_regs[0].l == 1);
+
+    printf("Regression: ADDQ.L Dn cycles test passed!\n");
+}
+
+void test_regression_subq_an_cycles() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.a_regs[0].l = 0x100;
+
+    /* SUBQ.W #1,A0 should cost 8 cycles (any size to An) */
+    /* 5348 = SUBQ.W #1,A0 */
+    m68k_write_16(&cpu, 0, 0x5348);
+    m68k_end_timeslice(&cpu);
+    int cycles = m68k_execute(&cpu, 8);
+    assert(cycles == 8);
+    assert(cpu.a_regs[0].l == 0xFF);
+
+    printf("Regression: SUBQ An cycles test passed!\n");
+}
+
+void test_regression_shift_register_cycles() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.d_regs[0].l = 0xFF;
+
+    /* ASL.W #4,D0 should cost 6 + 2*4 = 14 cycles */
+    /* E940 = ASL.W #4,D0 */
+    m68k_write_16(&cpu, 0, 0xE940);
+    m68k_end_timeslice(&cpu);
+    int cycles = m68k_execute(&cpu, 14);
+    assert(cycles == 14);
+    assert((cpu.d_regs[0].l & 0xFFFF) == 0x0FF0);
+
+    printf("Regression: Shift register cycles test passed!\n");
+}
+
+static int clr_read_hit = 0;
+static u8 clr_read_value = 0;
+
+static u8 clr_test_read8(M68kCpu* cpu, u32 address) {
+    (void)cpu;
+    if (address == 0x200) {
+        clr_read_hit++;
+        return clr_read_value;
+    }
+    return 0;
+}
+
+static void clr_test_write8(M68kCpu* cpu, u32 address, u8 value) {
+    (void)cpu;
+    (void)address;
+    (void)value;
+}
+
+static u16 clr_test_read16(M68kCpu* cpu, u32 address) {
+    (void)cpu;
+    if (address == 0x200) {
+        clr_read_hit++;
+        return clr_read_value;
+    }
+    /* Instruction fetches from ROM area */
+    if (address < 0x100) {
+        return (u16)(cpu->memory[address] << 8) | cpu->memory[address + 1];
+    }
+    return 0;
+}
+
+static void clr_test_write16(M68kCpu* cpu, u32 address, u16 value) {
+    (void)cpu;
+    (void)address;
+    (void)value;
+}
+
+void test_regression_clr_memory_reads_before_write() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    m68k_set_read8_callback(&cpu, clr_test_read8);
+    m68k_set_write8_callback(&cpu, clr_test_write8);
+    m68k_set_read16_callback(&cpu, clr_test_read16);
+    m68k_set_write16_callback(&cpu, clr_test_write16);
+
+    /* CLR.B $200 should read address $200 before writing 0 (68000 behavior) */
+    /* 4239 0000 0200 = CLR.B $00000200.L */
+    cpu.memory[0] = 0x42;
+    cpu.memory[1] = 0x39;
+    cpu.memory[2] = 0x00;
+    cpu.memory[3] = 0x00;
+    cpu.memory[4] = 0x02;
+    cpu.memory[5] = 0x00;
+    clr_read_hit = 0;
+    clr_read_value = 0x42;
+
+    m68k_step(&cpu);
+
+    /* The read callback should have been hit for the read-before-write */
+    assert(clr_read_hit >= 1);
+
+    m68k_set_read8_callback(&cpu, NULL);
+    m68k_set_write8_callback(&cpu, NULL);
+    m68k_set_read16_callback(&cpu, NULL);
+    m68k_set_write16_callback(&cpu, NULL);
+
+    printf("Regression: CLR memory reads before write test passed!\n");
+}
+
+void test_regression_movem_predec_writes_initial_an() {
+    M68kCpu cpu;
+    u8 memory[4096];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    /* MOVEM.L A0,-(A0): should write the INITIAL value of A0, not decremented */
+    cpu.a_regs[0].l = 0x200;
+
+    /* 48E0 0100 = MOVEM.L A0,-(A0) — register mask 0x0100 = bit 8 = A0 reversed */
+    /* In predecrement mode the mask is reversed: bit 0=A7 ... bit 7=A0 bit 8=D7 ... bit 15=D0 */
+    /* A0 in reversed mask = bit 7 = 0x0080 */
+    m68k_write_16(&cpu, 0, 0x48E0);
+    m68k_write_16(&cpu, 2, 0x0080);
+    m68k_step(&cpu);
+
+    /* A0 should now be 0x1FC (decremented by 4 for one long register) */
+    assert(cpu.a_regs[0].l == 0x1FC);
+
+    /* The value written to memory at 0x1FC should be the INITIAL 0x200, not 0x1FC */
+    u32 stored = ((u32)memory[0x1FC] << 24) | ((u32)memory[0x1FD] << 16) |
+                 ((u32)memory[0x1FE] << 8) | (u32)memory[0x1FF];
+    assert(stored == 0x200);
+
+    printf("Regression: MOVEM predec writes initial An test passed!\n");
+}
+
 void test_regression_write_oob_triggers_bus_error() {
     M68kCpu cpu;
     u8 memory[256];

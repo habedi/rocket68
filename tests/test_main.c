@@ -91,6 +91,15 @@ int main() {
     test_regression_divs_overflow_n_flag();
     test_regression_chk_only_modifies_n();
     test_regression_write_oob_triggers_bus_error();
+    test_regression_dbcc_cycle_count();
+    test_regression_bcc_not_taken_cycles();
+    test_regression_bsr_cycles();
+    test_regression_scc_register_cycles();
+    test_regression_addq_long_dn_cycles();
+    test_regression_subq_an_cycles();
+    test_regression_shift_register_cycles();
+    test_regression_clr_memory_reads_before_write();
+    test_regression_movem_predec_writes_initial_an();
 
     extern void run_loader_tests();
     run_loader_tests();
