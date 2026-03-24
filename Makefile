@@ -215,7 +215,7 @@ docs: ## Generate project documentation (Doxygen and MkDocs)
 	doxygen Doxyfile
 
 .PHONY: docs-serve
-docs-serve: docs ## Serve Vq MkDocs locally
+docs-serve: docs ## Serve project docs (MkDocs) locally
 	@echo "Serving documentation locally..."
 	python -m http.server --directory ./site
 
