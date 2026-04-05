@@ -1857,7 +1857,9 @@ Addresses are masked to 24-bit internally before bounds checks.</p>
 <h2 id="callback-api">Callback API<a class="headerlink" href="#callback-api" title="Permanent link">&para;</a></h2>
 <p>All callbacks are per-instance.</p>
 <h3 id="void-m68k_set_wait_bus_callbackm68kcpu-cpu-m68kwaitbuscallback-callback"><code>void m68k_set_wait_bus_callback(M68kCpu* cpu, M68kWaitBusCallback callback);</code><a class="headerlink" href="#void-m68k_set_wait_bus_callbackm68kcpu-cpu-m68kwaitbuscallback-callback" title="Permanent link">&para;</a></h3>
-<p>Called before each memory/fetch bus access.</p>
+<p>Called before each memory/fetch bus access.
+The callback receives the 24-bit address, access size, and a write flag, and
+returns extra cycles to deduct for bus contention or wait states.</p>
 <h3 id="void-m68k_set_int_ack_callbackm68kcpu-cpu-m68kintackcallback-callback"><code>void m68k_set_int_ack_callback(M68kCpu* cpu, M68kIntAckCallback callback);</code><a class="headerlink" href="#void-m68k_set_int_ack_callbackm68kcpu-cpu-m68kintackcallback-callback" title="Permanent link">&para;</a></h3>
 <p>Called when an interrupt is acknowledged.
 Return vector number, <code>M68K_INT_ACK_AUTOVECTOR</code>, or <code>M68K_INT_ACK_SPURIOUS</code>.</p>

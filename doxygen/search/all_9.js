@@ -152,7 +152,7 @@ var searchData=
   ['m68kresetcallback_149',['M68kResetCallback',['../m68k_8h.html#a52ed09b4cf386ffd760712049d3d5271',1,'m68k.h']]],
   ['m68ksize_150',['M68kSize',['../m68k_8h.html#a71dd7bbc3e91d469b620b09b81fbf936',1,'m68k.h']]],
   ['m68ktascallback_151',['M68kTasCallback',['../m68k_8h.html#a4bc37481c221d5f07ea8ff73ad5e7629',1,'m68k.h']]],
-  ['m68kwaitbuscallback_152',['M68kWaitBusCallback',['../m68k_8h.html#ad062cae7336e832272370f1de005ce09',1,'m68k.h']]],
+  ['m68kwaitbuscallback_152',['M68kWaitBusCallback',['../m68k_8h.html#a2c03948728871a08152224728e74f9a9',1,'m68k.h']]],
   ['m68kwrite16callback_153',['M68kWrite16Callback',['../m68k_8h.html#ab886616ebdbe16b397ba281c81195ea5',1,'m68k.h']]],
   ['m68kwrite32callback_154',['M68kWrite32Callback',['../m68k_8h.html#ae5f6ebdfc206941477ac721d28693899',1,'m68k.h']]],
   ['m68kwrite8callback_155',['M68kWrite8Callback',['../m68k_8h.html#a3704ea7d2534271da9cb2a37e3c0da07',1,'m68k.h']]],

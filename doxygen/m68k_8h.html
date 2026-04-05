@@ -178,9 +178,9 @@ Typedefs</h2></td></tr>
 <tr class="memitem:aeaa67a71feeeff4727a8b740b267df3f" id="r_aeaa67a71feeeff4727a8b740b267df3f"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structM68kCpu.html">M68kCpu</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#aeaa67a71feeeff4727a8b740b267df3f">M68kCpu</a></td></tr>
 <tr class="memdesc:aeaa67a71feeeff4727a8b740b267df3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Forward declaration of the CPU context.  <br /></td></tr>
 <tr class="separator:aeaa67a71feeeff4727a8b740b267df3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad062cae7336e832272370f1de005ce09" id="r_ad062cae7336e832272370f1de005ce09"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ad062cae7336e832272370f1de005ce09">M68kWaitBusCallback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#a71dd7bbc3e91d469b620b09b81fbf936">M68kSize</a> size)</td></tr>
-<tr class="memdesc:ad062cae7336e832272370f1de005ce09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bus wait callback.  <br /></td></tr>
-<tr class="separator:ad062cae7336e832272370f1de005ce09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c03948728871a08152224728e74f9a9" id="r_a2c03948728871a08152224728e74f9a9"><td class="memItemLeft" align="right" valign="top">typedef int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a2c03948728871a08152224728e74f9a9">M68kWaitBusCallback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#a71dd7bbc3e91d469b620b09b81fbf936">M68kSize</a> size, bool is_write)</td></tr>
+<tr class="memdesc:a2c03948728871a08152224728e74f9a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bus wait callback.  <br /></td></tr>
+<tr class="separator:a2c03948728871a08152224728e74f9a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b812bcc496591f8b1c352e0971e5f8f" id="r_a6b812bcc496591f8b1c352e0971e5f8f"><td class="memItemLeft" align="right" valign="top">typedef int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a6b812bcc496591f8b1c352e0971e5f8f">M68kIntAckCallback</a>) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, int level)</td></tr>
 <tr class="memdesc:a6b812bcc496591f8b1c352e0971e5f8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interrupt acknowledge callback.  <br /></td></tr>
 <tr class="separator:a6b812bcc496591f8b1c352e0971e5f8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -320,7 +320,7 @@ Functions</h2></td></tr>
 <tr class="memitem:a84bebd2fb1bcb64f1fbe36da8d1f1b3b" id="r_a84bebd2fb1bcb64f1fbe36da8d1f1b3b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#a84bebd2fb1bcb64f1fbe36da8d1f1b3b">m68k_write_32</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> value)</td></tr>
 <tr class="memdesc:a84bebd2fb1bcb64f1fbe36da8d1f1b3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write one longword to emulated memory.  <br /></td></tr>
 <tr class="separator:a84bebd2fb1bcb64f1fbe36da8d1f1b3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab0c68b6ad033a61b6ff3e0dff0cda990" id="r_ab0c68b6ad033a61b6ff3e0dff0cda990"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ab0c68b6ad033a61b6ff3e0dff0cda990">m68k_set_wait_bus_callback</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#ad062cae7336e832272370f1de005ce09">M68kWaitBusCallback</a> callback)</td></tr>
+<tr class="memitem:ab0c68b6ad033a61b6ff3e0dff0cda990" id="r_ab0c68b6ad033a61b6ff3e0dff0cda990"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ab0c68b6ad033a61b6ff3e0dff0cda990">m68k_set_wait_bus_callback</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#a2c03948728871a08152224728e74f9a9">M68kWaitBusCallback</a> callback)</td></tr>
 <tr class="memdesc:ab0c68b6ad033a61b6ff3e0dff0cda990"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install wait bus callback.  <br /></td></tr>
 <tr class="separator:ab0c68b6ad033a61b6ff3e0dff0cda990"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab15a68eb16bda76c9d218d84ac875735" id="r_ab15a68eb16bda76c9d218d84ac875735"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="m68k_8h.html#ab15a68eb16bda76c9d218d84ac875735">m68k_set_int_ack_callback</a> (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#a6b812bcc496591f8b1c352e0971e5f8f">M68kIntAckCallback</a> callback)</td></tr>
@@ -762,20 +762,30 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ad062cae7336e832272370f1de005ce09" name="ad062cae7336e832272370f1de005ce09"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad062cae7336e832272370f1de005ce09">&#9670;&#160;</a></span>M68kWaitBusCallback</h2>
+<a id="a2c03948728871a08152224728e74f9a9" name="a2c03948728871a08152224728e74f9a9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2c03948728871a08152224728e74f9a9">&#9670;&#160;</a></span>M68kWaitBusCallback</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef void(* M68kWaitBusCallback) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#a71dd7bbc3e91d469b620b09b81fbf936">M68kSize</a> size)</td>
+          <td class="memname">typedef int(* M68kWaitBusCallback) (<a class="el" href="structM68kCpu.html">M68kCpu</a> *cpu, <a class="el" href="m68k_8h.html#afaa62991928fb9fb18ff0db62a040aba">u32</a> address, <a class="el" href="m68k_8h.html#a71dd7bbc3e91d469b620b09b81fbf936">M68kSize</a> size, bool is_write)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Bus wait callback. </p>
-<p>Called on memory accesses to model wait states. </p>
+<p>Called on every memory access (reads, writes, and instruction fetches) before the access occurs. Returns the number of extra M68K cycles to deduct for bus contention or wait states. Return 0 for no delay.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>CPU context. </td></tr>
+    <tr><td class="paramname">address</td><td>24-bit physical address. </td></tr>
+    <tr><td class="paramname">size</td><td>Operand size (byte, word, or long). </td></tr>
+    <tr><td class="paramname">is_write</td><td>true for write accesses, false for reads and fetches. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Extra M68K cycles to deduct (0 = no wait). </dd></dl>
 
 </div>
 </div>
@@ -2100,7 +2110,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="m68k_8h.html#ad062cae7336e832272370f1de005ce09">M68kWaitBusCallback</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="m68k_8h.html#a2c03948728871a08152224728e74f9a9">M68kWaitBusCallback</a>&#160;</td>
           <td class="paramname"><em>callback</em>&#160;</td>
         </tr>
         <tr>
