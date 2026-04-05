@@ -94,12 +94,13 @@ void setup_interrupt_demo(M68kCpu* cpu) {
 ```c
 #include "rocket68.h"
 
-static void wait_bus(M68kCpu* cpu, u32 address, M68kSize size) {
+static int wait_bus(M68kCpu* cpu, u32 address, M68kSize size, bool is_write) {
     (void)address;
     (void)size;
+    (void)is_write;
 
     /* Add 2 extra cycles for each bus access. */
-    cpu->cycles_remaining -= 2;
+    return 2;
 }
 
 void attach_wait_states(M68kCpu* cpu) {

@@ -187,14 +187,21 @@ int m68k_ea_cycles(int mode, int reg, M68kSize size) {
     return ea_cycles[idx][size == SIZE_LONG ? 1 : 0];
 }
 
+static inline void apply_wait_bus(M68kCpu* cpu, u32 address, M68kSize size, bool is_write) {
+    if (cpu->wait_bus) {
+        int wait = cpu->wait_bus(cpu, address, size, is_write);
+        if (wait > 0) cpu->cycles_remaining -= wait;
+    }
+}
+
 u8 m68k_read_8(M68kCpu* cpu, u32 address) {
     u32 raw_address = address;
     address = mask_address_24(address);
+    apply_wait_bus(cpu, address, SIZE_BYTE, false);
     if (cpu->read8_cb) {
         return cpu->read8_cb(cpu, address);
     }
     set_fc(cpu, false);
-    if (cpu->wait_bus) cpu->wait_bus(cpu, address, SIZE_BYTE);
     if (is_valid_address(cpu, address)) {
         return cpu->memory[address];
     }
@@ -211,11 +218,11 @@ u8 m68k_read_8(M68kCpu* cpu, u32 address) {
 u16 m68k_read_16(M68kCpu* cpu, u32 address) {
     u32 raw_address = address;
     address = mask_address_24(address);
+    apply_wait_bus(cpu, address, SIZE_WORD, false);
     if (cpu->read16_cb) {
         return cpu->read16_cb(cpu, address);
     }
     set_fc(cpu, false);
-    if (cpu->wait_bus) cpu->wait_bus(cpu, address, SIZE_WORD);
     if ((address & 1) && !cpu->in_address_error) {
         capture_access_fault(cpu, raw_address, false, false);
         cpu->in_address_error = true;
@@ -240,11 +247,11 @@ u16 m68k_read_16(M68kCpu* cpu, u32 address) {
 u32 m68k_read_32(M68kCpu* cpu, u32 address) {
     u32 raw_address = address;
     address = mask_address_24(address);
+    apply_wait_bus(cpu, address, SIZE_LONG, false);
     if (cpu->read32_cb) {
         return cpu->read32_cb(cpu, address);
     }
     set_fc(cpu, false);
-    if (cpu->wait_bus) cpu->wait_bus(cpu, address, SIZE_LONG);
     if ((address & 1) && !cpu->in_address_error) {
         capture_access_fault(cpu, raw_address, false, false);
         cpu->in_address_error = true;
@@ -270,12 +277,12 @@ u32 m68k_read_32(M68kCpu* cpu, u32 address) {
 void m68k_write_8(M68kCpu* cpu, u32 address, u8 value) {
     u32 raw_address = address;
     address = mask_address_24(address);
+    apply_wait_bus(cpu, address, SIZE_BYTE, true);
     if (cpu->write8_cb) {
         cpu->write8_cb(cpu, address, value);
         return;
     }
     set_fc(cpu, false);
-    if (cpu->wait_bus) cpu->wait_bus(cpu, address, SIZE_BYTE);
     if (address < cpu->memory_size) {
         cpu->memory[address] = value;
     } else if (!cpu->in_bus_error) {
@@ -290,12 +297,12 @@ void m68k_write_8(M68kCpu* cpu, u32 address, u8 value) {
 void m68k_write_16(M68kCpu* cpu, u32 address, u16 value) {
     u32 raw_address = address;
     address = mask_address_24(address);
+    apply_wait_bus(cpu, address, SIZE_WORD, true);
     if (cpu->write16_cb) {
         cpu->write16_cb(cpu, address, value);
         return;
     }
     set_fc(cpu, false);
-    if (cpu->wait_bus) cpu->wait_bus(cpu, address, SIZE_WORD);
     if ((address & 1) && !cpu->in_address_error) {
         capture_access_fault(cpu, raw_address, true, false);
         cpu->in_address_error = true;
@@ -319,12 +326,12 @@ void m68k_write_16(M68kCpu* cpu, u32 address, u16 value) {
 void m68k_write_32(M68kCpu* cpu, u32 address, u32 value) {
     u32 raw_address = address;
     address = mask_address_24(address);
+    apply_wait_bus(cpu, address, SIZE_LONG, true);
     if (cpu->write32_cb) {
         cpu->write32_cb(cpu, address, value);
         return;
     }
     set_fc(cpu, false);
-    if (cpu->wait_bus) cpu->wait_bus(cpu, address, SIZE_LONG);
     if ((address & 1) && !cpu->in_address_error) {
         capture_access_fault(cpu, raw_address, true, false);
         cpu->in_address_error = true;
@@ -351,7 +358,7 @@ u16 m68k_fetch(M68kCpu* cpu) {
     set_fc(cpu, true);
     u32 raw_fetch_addr = cpu->pc;
     u32 fetch_addr = mask_address_24(raw_fetch_addr);
-    if (cpu->wait_bus) cpu->wait_bus(cpu, fetch_addr, SIZE_WORD);
+    apply_wait_bus(cpu, fetch_addr, SIZE_WORD, false);
     u16 opcode = 0;
 
     if ((fetch_addr & 1) && !cpu->in_address_error) {
