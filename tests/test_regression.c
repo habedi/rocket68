@@ -10,12 +10,14 @@ static u32 watched_bus_address = 0;
 static int watched_bus_hits = 0;
 static M68kCpu* nested_exception_cpu = NULL;
 
-static void regression_wait_bus_watch(M68kCpu* cpu, u32 address, M68kSize size) {
+static int regression_wait_bus_watch(M68kCpu* cpu, u32 address, M68kSize size, bool is_write) {
     (void)cpu;
     (void)size;
+    (void)is_write;
     if (address == watched_bus_address) {
         watched_bus_hits++;
     }
+    return 0;
 }
 
 static void regression_nested_exception_cb(M68kCpu* cpu, u32 new_pc) {

@@ -37,9 +37,17 @@ typedef struct M68kCpu M68kCpu;
 /**
  * @brief Bus wait callback.
  *
- * Called on memory accesses to model wait states.
+ * Called on every memory access (reads, writes, and instruction fetches)
+ * before the access occurs.  Returns the number of extra M68K cycles to
+ * deduct for bus contention or wait states.  Return 0 for no delay.
+ *
+ * @param cpu       CPU context.
+ * @param address   24-bit physical address.
+ * @param size      Operand size (byte, word, or long).
+ * @param is_write  true for write accesses, false for reads and fetches.
+ * @return Extra M68K cycles to deduct (0 = no wait).
  */
-typedef void (*M68kWaitBusCallback)(M68kCpu* cpu, u32 address, M68kSize size);
+typedef int (*M68kWaitBusCallback)(M68kCpu* cpu, u32 address, M68kSize size, bool is_write);
 
 /** @brief INT ACK callback return value for autovector. */
 #define M68K_INT_ACK_AUTOVECTOR 0xffffffff
