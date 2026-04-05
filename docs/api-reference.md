@@ -168,6 +168,8 @@ All callbacks are per-instance.
 ### `void m68k_set_wait_bus_callback(M68kCpu* cpu, M68kWaitBusCallback callback);`
 
 Called before each memory/fetch bus access.
+The callback receives the 24-bit address, access size, and a write flag, and
+returns extra cycles to deduct for bus contention or wait states.
 
 ### `void m68k_set_int_ack_callback(M68kCpu* cpu, M68kIntAckCallback callback);`
 

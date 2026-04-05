@@ -92,11 +92,12 @@ Use this pattern when your host controls boot flow explicitly.
 ## 5. Callback Wiring (Optional)
 
 ```c
-static void wait_bus(M68kCpu* cpu, u32 address, M68kSize size) {
+static int wait_bus(M68kCpu* cpu, u32 address, M68kSize size, bool is_write) {
     (void)address;
     (void)size;
+    (void)is_write;
     /* Add 2 wait-state cycles for each access */
-    cpu->cycles_remaining -= 2;
+    return 2;
 }
 
 static int int_ack(M68kCpu* cpu, int level) {
