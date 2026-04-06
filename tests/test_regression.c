@@ -633,7 +633,7 @@ void test_regression_bcc_not_taken_cycles() {
     m68k_init(&cpu, memory, sizeof(memory));
 
     /* BEQ.B $+4 when Z=0 (not taken) should cost 8 cycles */
-    cpu.sr = 0x2700 & ~M68K_SR_Z;  /* Z clear */
+    cpu.sr = 0x2700 & ~M68K_SR_Z; /* Z clear */
     /* 6702 = BEQ.B $+4 (byte displacement 2) */
     m68k_write_16(&cpu, 0, 0x6702);
     m68k_write_16(&cpu, 2, 0x4E71); /* NOP as fallthrough */
