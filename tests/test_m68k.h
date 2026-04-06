@@ -87,5 +87,6 @@ void test_regression_subq_an_cycles();
 void test_regression_shift_register_cycles();
 void test_regression_clr_memory_reads_before_write();
 void test_regression_movem_predec_writes_initial_an();
+void test_regression_move_predec_dest_cycles();
 
 #endif

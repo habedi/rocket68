@@ -880,7 +880,11 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         int size_bits = (opcode >> 12) & 0x3;
         if (size_bits != 0) {
             m68k_exec_move(cpu, opcode);
-            cycles = 4;
+            /* The M68000 overlaps the predecrement with the write
+             * for MOVE to -(An), saving 2 cycles vs the generic EA
+             * cost charged inside m68k_calc_ea_addr. */
+            int dest_mode = (opcode >> 6) & 0x7;
+            cycles = (dest_mode == 4) ? 2 : 4;
             goto done;
         }
     }

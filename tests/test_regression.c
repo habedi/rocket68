@@ -844,6 +844,57 @@ void test_regression_movem_predec_writes_initial_an() {
     printf("Regression: MOVEM predec writes initial An test passed!\n");
 }
 
+void test_regression_move_predec_dest_cycles() {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    int before, after, cycles;
+
+    /* MOVE.W D0,-(A0): 8 M68K cycles per M68000 manual.
+     * The -(An) destination overlaps the predecrement with the write,
+     * saving 2 cycles vs the generic EA table cost. */
+    cpu.d_regs[0].l = 0x1234;
+    cpu.a_regs[0].l = 0x200;
+
+    /* 3100 = MOVE.W D0,-(A0) */
+    m68k_write_16(&cpu, 0, 0x3100);
+
+    before = m68k_cycles_run(&cpu);
+    m68k_step(&cpu);
+    after = m68k_cycles_run(&cpu);
+    cycles = after - before;
+    assert(cycles == 8);
+    assert(cpu.a_regs[0].l == 0x1FE);
+    assert(m68k_read_16(&cpu, 0x1FE) == 0x1234);
+
+    /* MOVE.L D0,-(A0): 12 M68K cycles per M68000 manual. */
+    cpu.pc = 0;
+    cpu.a_regs[0].l = 0x200;
+    m68k_write_16(&cpu, 0, 0x2100);
+
+    before = m68k_cycles_run(&cpu);
+    m68k_step(&cpu);
+    cycles = m68k_cycles_run(&cpu) - before;
+    assert(cycles == 12);
+
+    /* MOVE.W (A1),-(A0): 12 M68K cycles per M68000 manual.
+     * Opcode: 00 11 000 100 010 001 = 0x3111 */
+    cpu.pc = 0;
+    cpu.a_regs[0].l = 0x200;
+    cpu.a_regs[1].l = 0x100;
+    m68k_write_16(&cpu, 0x100, 0x5678);
+    m68k_write_16(&cpu, 0, 0x3111);
+
+    before = m68k_cycles_run(&cpu);
+    m68k_step(&cpu);
+    cycles = m68k_cycles_run(&cpu) - before;
+    assert(cycles == 12);
+
+    printf("Regression: MOVE predecrement destination cycle count test passed!\n");
+}
+
 void test_regression_write_oob_triggers_bus_error() {
     M68kCpu cpu;
     u8 memory[256];
