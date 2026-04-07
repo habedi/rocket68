@@ -100,6 +100,7 @@ int main() {
     test_regression_shift_register_cycles();
     test_regression_clr_memory_reads_before_write();
     test_regression_movem_predec_writes_initial_an();
+    test_regression_move_predec_dest_cycles();
 
     extern void run_loader_tests();
     run_loader_tests();

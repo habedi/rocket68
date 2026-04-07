@@ -880,7 +880,11 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         int size_bits = (opcode >> 12) & 0x3;
         if (size_bits != 0) {
             m68k_exec_move(cpu, opcode);
-            cycles = 4;
+            /* The M68000 overlaps the predecrement with the write
+             * for MOVE to -(An), saving 2 cycles vs the generic EA
+             * cost charged inside m68k_calc_ea_addr. */
+            int dest_mode = (opcode >> 6) & 0x7;
+            cycles = (dest_mode == 4) ? 2 : 4;
             goto done;
         }
     }
@@ -1055,10 +1059,11 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             m68k_exec_negx(cpu, opcode);
             {
                 int un_mode = (opcode >> 3) & 0x7;
-                M68kSize un_sz = ((opcode >> 6) & 3) == 2 ? SIZE_LONG :
-                                 ((opcode >> 6) & 3) == 1 ? SIZE_WORD : SIZE_BYTE;
-                cycles = (un_mode == 0) ? (un_sz == SIZE_LONG ? 6 : 4) :
-                         (un_sz == SIZE_LONG ? 12 : 8);
+                M68kSize un_sz = ((opcode >> 6) & 3) == 2   ? SIZE_LONG
+                                 : ((opcode >> 6) & 3) == 1 ? SIZE_WORD
+                                                            : SIZE_BYTE;
+                cycles =
+                    (un_mode == 0) ? (un_sz == SIZE_LONG ? 6 : 4) : (un_sz == SIZE_LONG ? 12 : 8);
             }
             goto done;
         }
@@ -1067,10 +1072,11 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             m68k_exec_clr(cpu, opcode);
             {
                 int cl_mode = (opcode >> 3) & 0x7;
-                M68kSize cl_sz = ((opcode >> 6) & 3) == 2 ? SIZE_LONG :
-                                 ((opcode >> 6) & 3) == 1 ? SIZE_WORD : SIZE_BYTE;
-                cycles = (cl_mode == 0) ? (cl_sz == SIZE_LONG ? 6 : 4) :
-                         (cl_sz == SIZE_LONG ? 12 : 8);
+                M68kSize cl_sz = ((opcode >> 6) & 3) == 2   ? SIZE_LONG
+                                 : ((opcode >> 6) & 3) == 1 ? SIZE_WORD
+                                                            : SIZE_BYTE;
+                cycles =
+                    (cl_mode == 0) ? (cl_sz == SIZE_LONG ? 6 : 4) : (cl_sz == SIZE_LONG ? 12 : 8);
             }
             goto done;
         }
@@ -1079,10 +1085,11 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             m68k_exec_neg(cpu, opcode);
             {
                 int ng_mode = (opcode >> 3) & 0x7;
-                M68kSize ng_sz = ((opcode >> 6) & 3) == 2 ? SIZE_LONG :
-                                 ((opcode >> 6) & 3) == 1 ? SIZE_WORD : SIZE_BYTE;
-                cycles = (ng_mode == 0) ? (ng_sz == SIZE_LONG ? 6 : 4) :
-                         (ng_sz == SIZE_LONG ? 12 : 8);
+                M68kSize ng_sz = ((opcode >> 6) & 3) == 2   ? SIZE_LONG
+                                 : ((opcode >> 6) & 3) == 1 ? SIZE_WORD
+                                                            : SIZE_BYTE;
+                cycles =
+                    (ng_mode == 0) ? (ng_sz == SIZE_LONG ? 6 : 4) : (ng_sz == SIZE_LONG ? 12 : 8);
             }
             goto done;
         }
@@ -1091,10 +1098,11 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             m68k_exec_not(cpu, opcode);
             {
                 int nt_mode = (opcode >> 3) & 0x7;
-                M68kSize nt_sz = ((opcode >> 6) & 3) == 2 ? SIZE_LONG :
-                                 ((opcode >> 6) & 3) == 1 ? SIZE_WORD : SIZE_BYTE;
-                cycles = (nt_mode == 0) ? (nt_sz == SIZE_LONG ? 6 : 4) :
-                         (nt_sz == SIZE_LONG ? 12 : 8);
+                M68kSize nt_sz = ((opcode >> 6) & 3) == 2   ? SIZE_LONG
+                                 : ((opcode >> 6) & 3) == 1 ? SIZE_WORD
+                                                            : SIZE_BYTE;
+                cycles =
+                    (nt_mode == 0) ? (nt_sz == SIZE_LONG ? 6 : 4) : (nt_sz == SIZE_LONG ? 12 : 8);
             }
             goto done;
         }
@@ -1161,9 +1169,12 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             m68k_exec_or(cpu, opcode);
             {
                 int or_dir = (opcode >> 8) & 1;
-                M68kSize or_sz = (opmode <= 2) ?
-                    ((opmode == 0) ? SIZE_BYTE : (opmode == 1) ? SIZE_WORD : SIZE_LONG) :
-                    ((opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG);
+                M68kSize or_sz = (opmode <= 2) ? ((opmode == 0)   ? SIZE_BYTE
+                                                  : (opmode == 1) ? SIZE_WORD
+                                                                  : SIZE_LONG)
+                                               : ((opmode == 4)   ? SIZE_BYTE
+                                                  : (opmode == 5) ? SIZE_WORD
+                                                                  : SIZE_LONG);
                 cycles = alu_base_cycles(or_dir, or_sz, mode);
             }
             goto done;
@@ -1182,9 +1193,12 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         m68k_exec_sub(cpu, opcode);
         {
             int sub_dir = (opcode >> 8) & 1;
-            M68kSize sub_sz = (opmode <= 2) ?
-                ((opmode == 0) ? SIZE_BYTE : (opmode == 1) ? SIZE_WORD : SIZE_LONG) :
-                ((opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG);
+            M68kSize sub_sz = (opmode <= 2) ? ((opmode == 0)   ? SIZE_BYTE
+                                               : (opmode == 1) ? SIZE_WORD
+                                                               : SIZE_LONG)
+                                            : ((opmode == 4)   ? SIZE_BYTE
+                                               : (opmode == 5) ? SIZE_WORD
+                                                               : SIZE_LONG);
             if (opmode == 3 || opmode == 7) {
                 cycles = (opmode == 7) ? 6 : 8;
             } else {
@@ -1240,9 +1254,12 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             m68k_exec_and(cpu, opcode);
             {
                 int and_dir = (opcode >> 8) & 1;
-                M68kSize and_sz = (opmode <= 2) ?
-                    ((opmode == 0) ? SIZE_BYTE : (opmode == 1) ? SIZE_WORD : SIZE_LONG) :
-                    ((opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG);
+                M68kSize and_sz = (opmode <= 2) ? ((opmode == 0)   ? SIZE_BYTE
+                                                   : (opmode == 1) ? SIZE_WORD
+                                                                   : SIZE_LONG)
+                                                : ((opmode == 4)   ? SIZE_BYTE
+                                                   : (opmode == 5) ? SIZE_WORD
+                                                                   : SIZE_LONG);
                 cycles = alu_base_cycles(and_dir, and_sz, mode);
             }
             goto done;
@@ -1261,9 +1278,12 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         m68k_exec_add(cpu, opcode);
         {
             int add_dir = (opcode >> 8) & 1;
-            M68kSize add_sz = (opmode <= 2) ?
-                ((opmode == 0) ? SIZE_BYTE : (opmode == 1) ? SIZE_WORD : SIZE_LONG) :
-                ((opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG);
+            M68kSize add_sz = (opmode <= 2) ? ((opmode == 0)   ? SIZE_BYTE
+                                               : (opmode == 1) ? SIZE_WORD
+                                                               : SIZE_LONG)
+                                            : ((opmode == 4)   ? SIZE_BYTE
+                                               : (opmode == 5) ? SIZE_WORD
+                                                               : SIZE_LONG);
             if (opmode == 3 || opmode == 7) {
                 /* ADDA: word=8, long=6 */
                 cycles = (opmode == 7) ? 6 : 8;
