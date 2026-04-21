@@ -11,6 +11,7 @@
 [![Code Coverage](https://img.shields.io/codecov/c/github/habedi/rocket68?label=coverage&style=flat&labelColor=282c34&logo=codecov)](https://codecov.io/gh/habedi/rocket68)
 [![Docs](https://img.shields.io/badge/docs-read-007ec6?label=docs&style=flat&labelColor=282c34&logo=readthedocs)](https://habedi.github.io/rocket68/)
 [![License](https://img.shields.io/badge/license-MIT-007ec6?label=license&style=flat&labelColor=282c34&logo=open-source-initiative)](LICENSE)
+[![Zig](https://img.shields.io/badge/zig-0.15.2-F7A41D?style=flat&labelColor=282c34&logo=zig)](https://ziglang.org/download/)
 [![Release](https://img.shields.io/github/release/habedi/rocket68.svg?label=release&style=flat&labelColor=282c34&logo=github)](https://github.com/habedi/rocket68/releases/latest)
 
 A Motorola 68000 CPU emulator in C
@@ -175,7 +176,7 @@ This project is licensed under the MIT License (see [LICENSE](LICENSE)).
 ### Acknowledgements
 
 - The logo is from [SVG Repo](https://www.svgrepo.com/svg/142843/cpu) with some modifications.
-- Rocket 68 is used in the [Sandopolis](https://github.com/pixel-clover/sandopolis) Sega Genesis/Mega Drive emulator project.
+- Rocket 68 is used in the [Sandopolis](https://github.com/pixel-clover/sandopolis) emulator project.
 - Tests (code and data) from the following projects were used to verify the correctness of Rocket 68:
     - [Musashi](https://github.com/kstenerud/Musashi)
     - [68k-bcd-verifier](https://github.com/flamewing/68k-bcd-verifier)
