@@ -105,7 +105,9 @@ Sets SR with masking (`0xA71F`) and performs USP/SSP swap when supervisor state 
 
 ### `void m68k_set_irq(M68kCpu* cpu, int level);`
 
-Sets pending interrupt level (0-7).
+Sets the asserted interrupt level (0-7), modeling the IPL lines.
+Levels 1-6 are level-sensitive: without an INT ACK callback the request clears automatically when serviced; with a callback installed the level stays asserted until the host sets 0 or a new level.
+Level 7 is edge-sensitive: each transition to 7 latches one non-maskable interrupt.
 
 ### Register accessors
 
@@ -156,10 +158,10 @@ Addresses are masked to 24-bit internally before bounds checks.
 
 Behavior notes:
 
-- If a host memory callback is installed for the requested width, it is called first.
-- When callbacks are used, default flat-buffer address/alignment/bus-error checks for that access are bypassed and are expected to be handled by the host.
-- Word/long accesses on odd addresses trigger address error handling.
-- Out-of-range accesses trigger bus error handling.
+- Word/long accesses on odd addresses trigger address error handling before any callback dispatch.
+- If a host memory callback is installed for the requested width, it is called for the access; addresses passed to callbacks are masked to 24 bits for data access and instruction fetch alike.
+- When callbacks are used, default flat-buffer range (bus error) checks for that access are bypassed and are expected to be handled by the host.
+- Out-of-range flat-memory accesses trigger bus error handling.
 
 ## Callback API
 
@@ -230,7 +232,7 @@ Restores context from `src`, while preserving destination-instance runtime bindi
 
 - memory pointer and memory size
 - internal fault trap storage
-- installed callbacks
+- installed callbacks, including the host memory read/write callbacks
 
 ## Loader API (`loader.h`)
 
@@ -239,12 +241,15 @@ Restores context from `src`, while preserving destination-instance runtime bindi
 Loads Motorola S-record data into memory.
 Returns `false` only when the file cannot be opened.
 Malformed records are reported to `stderr` and skipped.
-Entry-point records (`S7/S8/S9`) set `cpu->pc` directly.
+Data bytes are written directly into bound flat memory; loading does not run emulated bus cycles, invoke host memory callbacks, or raise bus errors.
+Bytes outside bound memory are reported to `stderr` and skipped.
+Entry-point records (`S7/S8/S9`) set the program counter through `m68k_set_pc`, so the PC-changed callback fires.
 
 ### `bool m68k_load_bin(M68kCpu* cpu, const char* filename, u32 address);`
 
 Loads raw binary bytes into memory starting at `address`.
 Returns `false` only when the file cannot be opened.
+Bytes are written directly into bound flat memory; loading stops at the first out-of-range byte, which is reported to `stderr`.
 
 ## Disassembler API (`disasm.h`)
 
@@ -252,6 +257,7 @@ Returns `false` only when the file cannot be opened.
 
 Disassembles one instruction at `pc` into `buffer`.
 Returns number of bytes consumed by that instruction.
+Disassembly is side-effect free: it does not charge wait states or cycles, and it does not raise address or bus errors.
 
 ## Version
 

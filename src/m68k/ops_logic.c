@@ -288,6 +288,12 @@ void m68k_exec_shift(M68kCpu* cpu, u16 opcode) {
         int mode = (opcode >> 3) & 0x7;
         reg = opcode & 0x7;
 
+        /* Only memory alterable EAs are valid for memory-form shifts. */
+        if (mode < 2 || (mode == 7 && reg > 1)) {
+            m68k_exception(cpu, 4);
+            return;
+        }
+
         ea = m68k_calc_ea(cpu, mode, reg, size);
         value = ea.value & 0xFFFF;
     } else {

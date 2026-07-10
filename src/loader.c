@@ -18,6 +18,18 @@ static int hex_val(char c) {
 
 static u8 parse_byte(const char* ptr) { return (hex_val(ptr[0]) << 4) | hex_val(ptr[1]); }
 
+/* Loading is a host-side operation: write directly into bound flat memory
+ * instead of running emulated bus cycles, so out-of-range records cannot
+ * trigger the CPU bus-error machinery. */
+static bool loader_store(M68kCpu* cpu, u32 address, u8 value) {
+    address &= 0x00FFFFFFu;
+    if (cpu->memory && address < cpu->memory_size) {
+        cpu->memory[address] = value;
+        return true;
+    }
+    return false;
+}
+
 bool m68k_load_srec(M68kCpu* cpu, const char* filename) {
     FILE* f = fopen(filename, "r");
     if (!f) {
@@ -88,10 +100,14 @@ bool m68k_load_srec(M68kCpu* cpu, const char* filename) {
             for (int i = 0; i < data_len; i++) {
                 u8 val = parse_byte(&line[data_offset]);
                 data_offset += 2;
-                m68k_write_8(cpu, addr + i, val);
+                if (!loader_store(cpu, addr + i, val)) {
+                    fprintf(stderr, "Line %d: Address %06X is outside bound memory\n", line_num,
+                            (addr + i) & 0x00FFFFFFu);
+                    break;
+                }
             }
         } else if (type == '7' || type == '8' || type == '9') {
-            cpu->pc = addr;
+            m68k_set_pc(cpu, addr);
             printf("Entry point set to %08X\n", addr);
 
             break;
@@ -115,7 +131,13 @@ bool m68k_load_bin(M68kCpu* cpu, const char* filename, u32 address) {
 
     while ((bytes = fread(buffer, 1, sizeof(buffer), f)) > 0) {
         for (size_t i = 0; i < bytes; i++) {
-            m68k_write_8(cpu, current_addr++, buffer[i]);
+            if (!loader_store(cpu, current_addr, buffer[i])) {
+                fprintf(stderr, "Address %06X is outside bound memory\n",
+                        current_addr & 0x00FFFFFFu);
+                fclose(f);
+                return true;
+            }
+            current_addr++;
         }
     }
 

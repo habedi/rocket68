@@ -124,7 +124,7 @@ void m68k_exec_jmp(M68kCpu* cpu, u16 opcode) {
 
     bool is_jsr = ((opcode >> 6) & 1) == 0;
 
-    M68kEA ea = m68k_calc_ea_addr(cpu, mode, reg, SIZE_LONG);
+    M68kEA ea = m68k_calc_ea_ctl(cpu, mode, reg, true);
 
     if (is_jsr) {
         m68k_push_32(cpu, cpu->pc);

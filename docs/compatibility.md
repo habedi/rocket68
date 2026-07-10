@@ -41,11 +41,14 @@ This page lists current compatibility notes and scope limits based on the curren
 - `m68k_load_srec` and `m68k_load_bin` return `false` only when file open fails.
 - `m68k_load_srec` reports malformed lines and continues parsing.
 - S-record checksum validity is not explicitly validated.
-- S-record entry records (`S7/S8/S9`) set `cpu->pc` directly.
+- Loaders write directly into bound flat memory; they do not run emulated bus cycles, invoke host memory callbacks, or raise bus errors, and out-of-range bytes are reported and skipped.
+- S-record entry records (`S7/S8/S9`) set the program counter through `m68k_set_pc`.
 - `m68k_disasm` returns instruction bytes consumed; unsupported decode cases may still produce `???` output text.
 
 ## JSON Compatibility Harness
 
 - The JSON compatibility runner (`tests/test_json.c`) has a relaxed default for exception-path state checks.
+- Tests skipped under the relaxed default are counted and reported per file.
 - Strict exception-path checking is available with `ROCKET68_JSON_STRICT=1`.
+- Per-test cycle count verification is available with `ROCKET68_JSON_CYCLES=1`.
 - This behavior is test-harness policy, not a runtime core API toggle.

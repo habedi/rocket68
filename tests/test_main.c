@@ -101,6 +101,23 @@ int main() {
     test_regression_clr_memory_reads_before_write();
     test_regression_movem_predec_writes_initial_an();
     test_regression_move_predec_dest_cycles();
+    test_regression_group0_abort_after_prior_exception();
+    test_regression_illegal_4afc_traps();
+    test_regression_tas_invalid_ea_traps();
+    test_regression_set_context_preserves_memory_callbacks();
+    test_regression_fetch_callback_gets_masked_address();
+    test_regression_movem_mem_to_reg_no_spurious_read();
+    test_regression_odd_data_access_with_callback_raises_address_error();
+    test_regression_alu_long_abs_source_cycles();
+    test_regression_control_flow_ea_cycles();
+    test_regression_disasm_cmpi_eori();
+    test_regression_disasm_is_side_effect_free();
+    test_regression_shift_memory_invalid_mode_traps();
+    test_regression_loader_oob_is_harmless();
+    test_regression_irq_level_triggered_with_ack_callback();
+    test_regression_nmi_is_edge_triggered();
+    test_regression_irq_autoclear_without_ack_callback();
+    test_regression_movem_cycles();
 
     extern void run_loader_tests();
     run_loader_tests();

@@ -4,7 +4,7 @@ This file provides guidance to coding agents collaborating on this repository.
 
 ## Mission
 
-Rocket68 is a modern, fast, cycle-accurate Motorola 68000 core in C11.
+Rocket 68 is a modern, fast, cycle-accurate Motorola 68000 core in C11.
 Priorities, in order:
 
 1. Correctness and cycle accuracy.
@@ -24,6 +24,18 @@ Quick examples:
 
 - Good: add a per-instance callback field in `M68kCpu` and configure it via `m68k_set_*`.
 - Bad: add a static/global callback pointer shared by all CPU instances.
+
+## Writing Style
+
+- Use Oxford commas in inline lists: "a, b, and c" not "a, b, c".
+- Do not use em dashes. Restructure the sentence, or use a colon or semicolon instead.
+- Avoid colorful adjectives and adverbs. Write "graph generator" not "powerful graph generator".
+- Prefer using noun phrases for checklist items, not imperative verbs. Write "negative weight detection" not "detect negative weights".
+- Headings in Markdown files must be in title case: "Build from Source" not "Build from source". Minor words (a, an, the, and, but, or, for, in, on,
+  at, to, by, of) stay lowercase unless they are the first word.
+- Write correct and complete sentences.
+- Avoid made-up words, abbreviations, and colons in the middle of sentences.
+- Don't use pretentious language and made-up words.
 
 ## Repository Layout
 

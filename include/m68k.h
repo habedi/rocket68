@@ -147,12 +147,14 @@ typedef struct M68kCpu {
     u8* memory;      /**< Bound flat memory pointer. */
     u32 memory_size; /**< Size of bound memory in bytes. */
 
-    int irq_level;             /**< Pending interrupt level (0-7). */
+    int irq_level;             /**< Asserted interrupt level (0-7). */
+    bool nmi_pending;          /**< Level 7 edge latched and not yet serviced. */
     u32 usp;                   /**< User stack pointer. */
     u32 ssp;                   /**< Supervisor stack pointer shadow. */
     bool stopped;              /**< STOP state latch. */
     bool trace_pending;        /**< Trace pending latch. */
     int exception_thrown;      /**< Exception state marker. */
+    int exception_depth;       /**< Nesting depth of active exception processing. */
     bool in_address_error;     /**< Address error re-entry guard. */
     bool in_bus_error;         /**< Bus error re-entry guard. */
     u32 fault_address;         /**< Fault address latched for exception frames. */
@@ -160,6 +162,7 @@ typedef struct M68kCpu {
     u16 fault_ssw;             /**< Fault status word for exception frames. */
     bool fault_program_access; /**< Fault access type marker. */
     bool fault_valid;          /**< Fault information validity flag. */
+    bool group0_fault;         /**< Group-0 fault latched for the current step. */
     bool fault_trap_active;    /**< Group-0 fault trap active for the current step. */
     jmp_buf fault_trap;        /**< Non-local escape target for group-0 fault aborts. */
 
@@ -315,7 +318,14 @@ void m68k_end_timeslice(M68kCpu* cpu);
 void m68k_set_sr(M68kCpu* cpu, u16 new_sr);
 
 /**
- * @brief Set pending interrupt level.
+ * @brief Set the asserted interrupt level (the virtual IPL lines).
+ *
+ * Levels 1-6 are level-sensitive.  Without an INT ACK callback the request
+ * clears automatically when serviced; with a callback installed the level
+ * stays asserted until the host calls this function with 0 (or a new level).
+ * Level 7 is edge-sensitive: each transition to 7 latches one non-maskable
+ * interrupt.
+ *
  * @param cpu CPU context.
  * @param level Interrupt level in range [0,7].
  */

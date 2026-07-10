@@ -125,6 +125,7 @@ static uint32_t read_transactions(FILE* f) {
 
 int _test_id_counter = 0;
 int global_test_id_counter = 0;
+static int g_exception_skips = 0;
 
 static bool run_test(M68kCpu* cpu, Test_Rec* test, FILE* logf) {
     // 1. Reset memory
@@ -157,12 +158,15 @@ static bool run_test(M68kCpu* cpu, Test_Rec* test, FILE* logf) {
     cpu->exception_thrown = 0;
     cpu->stopped = false;
     cpu->trace_pending = false;
+    int cycles_before = cpu->cycles_remaining;
     m68k_step_ex(cpu, false);
+    int cycles_used = cycles_before - cpu->cycles_remaining;
 
     // Exception-path state is not fully modeled for the JSON corpus yet.
     // Keep strict mode available for focused bring-up/debug sessions.
     const bool strict_exception_checks = getenv("ROCKET68_JSON_STRICT") != NULL;
     if (!strict_exception_checks && cpu->exception_thrown != 0) {
+        g_exception_skips++;
         return true;
     }
 
@@ -235,6 +239,13 @@ static bool run_test(M68kCpu* cpu, Test_Rec* test, FILE* logf) {
                 test->name, cpu->pc, expected_final_pc, test->initial.pc, test->final.pc);
     }
 
+    // Cycle verification is opt-in until the corpus timing fully matches.
+    if (getenv("ROCKET68_JSON_CYCLES") != NULL && (uint32_t)cycles_used != test->len) {
+        ok = false;
+        fprintf(logf, "[%03d %s] Mismatch cycles: got %d, exp %u\n", _test_id_counter, test->name,
+                cycles_used, test->len);
+    }
+
     // 6. Verify RAM edits
     if (!skip_ram_verification) {
         for (uint32_t i = 0; i < test->final.ram_count; i++) {
@@ -266,6 +277,7 @@ static int process_file(M68kCpu* cpu, const char* path, FILE* err_log) {
     int passed = 0;
 
     global_test_id_counter = 0;
+    g_exception_skips = 0;
 
     for (uint32_t i = 0; i < num_tests; i++) {
         Test_Rec test;
@@ -288,9 +300,15 @@ static int process_file(M68kCpu* cpu, const char* path, FILE* err_log) {
     fclose(f);
 
     if (passed == num_tests) {
-        printf("\r[\033[32mPASS\033[0m] %s (%d tests)\n", path, num_tests);
+        if (g_exception_skips > 0) {
+            printf("\r[\033[32mPASS\033[0m] %s (%d tests, %d exception tests skipped)\n", path,
+                   num_tests, g_exception_skips);
+        } else {
+            printf("\r[\033[32mPASS\033[0m] %s (%d tests)\n", path, num_tests);
+        }
     } else {
-        printf("\r[\033[31mFAIL\033[0m] %s (%d/%d passed)\n", path, passed, num_tests);
+        printf("\r[\033[31mFAIL\033[0m] %s (%d/%d passed, %d exception tests skipped)\n", path,
+               passed, num_tests, g_exception_skips);
     }
 
     return passed == num_tests;

@@ -161,6 +161,12 @@ void m68k_exec_tas(M68kCpu* cpu, u16 opcode) {
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
 
+    /* Only data alterable EAs are valid. This also covers 0x4AFC (ILLEGAL). */
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_BYTE);
     u8 data = ea.value & 0xFF;
 
