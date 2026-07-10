@@ -105,7 +105,9 @@ Sets SR with masking (`0xA71F`) and performs USP/SSP swap when supervisor state 
 
 ### `void m68k_set_irq(M68kCpu* cpu, int level);`
 
-Sets pending interrupt level (0-7).
+Sets the asserted interrupt level (0-7), modeling the IPL lines.
+Levels 1-6 are level-sensitive: without an INT ACK callback the request clears automatically when serviced; with a callback installed the level stays asserted until the host sets 0 or a new level.
+Level 7 is edge-sensitive: each transition to 7 latches one non-maskable interrupt.
 
 ### Register accessors
 
@@ -239,12 +241,15 @@ Restores context from `src`, while preserving destination-instance runtime bindi
 Loads Motorola S-record data into memory.
 Returns `false` only when the file cannot be opened.
 Malformed records are reported to `stderr` and skipped.
-Entry-point records (`S7/S8/S9`) set `cpu->pc` directly.
+Data bytes are written directly into bound flat memory; loading does not run emulated bus cycles, invoke host memory callbacks, or raise bus errors.
+Bytes outside bound memory are reported to `stderr` and skipped.
+Entry-point records (`S7/S8/S9`) set the program counter through `m68k_set_pc`, so the PC-changed callback fires.
 
 ### `bool m68k_load_bin(M68kCpu* cpu, const char* filename, u32 address);`
 
 Loads raw binary bytes into memory starting at `address`.
 Returns `false` only when the file cannot be opened.
+Bytes are written directly into bound flat memory; loading stops at the first out-of-range byte, which is reported to `stderr`.
 
 ## Disassembler API (`disasm.h`)
 

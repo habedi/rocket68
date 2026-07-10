@@ -122,9 +122,16 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
     if (mode == 4 && !dir_mem_to_reg) {
         addr = cpu->a_regs[reg].l;
     } else {
-        ea = m68k_calc_ea_addr(cpu, mode, reg, size);
+        ea = m68k_calc_ea_addr_nocost(cpu, mode, reg, size);
         addr = ea.address;
     }
+
+    int reg_count = 0;
+    for (int i = 0; i < 16; i++) {
+        if (mask & (1 << i)) reg_count++;
+    }
+    cpu->cycles_remaining -=
+        m68k_movem_ea_cycles(mode, reg, dir_mem_to_reg) + reg_count * (size_long ? 8 : 4);
 
     if (dir_mem_to_reg) {
         for (int i = 0; i < 16; i++) {

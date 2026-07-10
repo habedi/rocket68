@@ -34,6 +34,7 @@ void m68k_reset(M68kCpu* cpu) {
     cpu->trace_pending = false;
     cpu->exception_thrown = 0;
     cpu->irq_level = 0;
+    cpu->nmi_pending = false;
     cpu->in_address_error = false;
     cpu->in_bus_error = false;
     cpu->fault_program_access = false;
@@ -582,6 +583,41 @@ M68kEA m68k_calc_ea_ctl(M68kCpu* cpu, int mode, int reg, bool is_jmp) {
     return m68k_calc_ea_ex(cpu, mode, reg, SIZE_LONG, false);
 }
 
+M68kEA m68k_calc_ea_addr_nocost(M68kCpu* cpu, int mode, int reg, M68kSize size) {
+    return m68k_calc_ea_ex(cpu, mode, reg, size, false);
+}
+
+/* MOVEM lead-in times before the 4 (word) or 8 (long) cycles per register. */
+int m68k_movem_ea_cycles(int mode, int reg, bool mem_to_reg) {
+    switch (mode) {
+        case 2:
+            return mem_to_reg ? 12 : 8;
+        case 3:
+            return 12; /* (An)+ is memory-to-register only */
+        case 4:
+            return 8; /* -(An) is register-to-memory only */
+        case 5:
+            return mem_to_reg ? 16 : 12;
+        case 6:
+            return mem_to_reg ? 18 : 14;
+        case 7:
+            switch (reg) {
+                case 0:
+                    return mem_to_reg ? 16 : 12;
+                case 1:
+                    return mem_to_reg ? 20 : 16;
+                case 2:
+                    return 16; /* d16(PC), memory-to-register only */
+                case 3:
+                    return 18; /* d8(PC,Xn), memory-to-register only */
+                default:
+                    return 0;
+            }
+        default:
+            return 0;
+    }
+}
+
 void update_flags_add(M68kCpu* cpu, u32 src, u32 dest, u32 result, M68kSize size) {
     cpu->sr &= ~(M68K_SR_N | M68K_SR_Z | M68K_SR_V | M68K_SR_C | M68K_SR_X);
 
@@ -734,14 +770,23 @@ void m68k_exception(M68kCpu* cpu, int vector) {
     cpu->exception_depth--;
 }
 
-void m68k_set_irq(M68kCpu* cpu, int level) { cpu->irq_level = level; }
+void m68k_set_irq(M68kCpu* cpu, int level) {
+    if (level == 7 && cpu->irq_level != 7) {
+        cpu->nmi_pending = true;
+    }
+    cpu->irq_level = level;
+}
 
 static bool check_interrupts(M68kCpu* cpu) {
     if (cpu->irq_level == 0) return false;
 
     int current_level = (cpu->sr >> 8) & 0x7;
 
-    if (cpu->irq_level > current_level || cpu->irq_level == 7) {
+    /* Levels 1-6 are level-sensitive against the SR mask.  Level 7 is
+     * edge-sensitive: only a latched transition to 7 is serviced. */
+    bool take = (cpu->irq_level == 7) ? cpu->nmi_pending : (cpu->irq_level > current_level);
+
+    if (take) {
         int vector;
 
         if (cpu->int_ack) {
@@ -760,7 +805,12 @@ static bool check_interrupts(M68kCpu* cpu) {
         m68k_exception(cpu, vector);
         cpu->sr &= ~0x0700;
         cpu->sr |= (cpu->irq_level << 8);
-        cpu->irq_level = 0;
+        cpu->nmi_pending = false;
+        /* Without an INT ACK callback the request clears automatically.
+         * With one installed the line is level-held by the host. */
+        if (!cpu->int_ack) {
+            cpu->irq_level = 0;
+        }
         cpu->stopped = false;
 
         return true;
@@ -1067,7 +1117,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
                 goto done;
             }
             m68k_exec_movem(cpu, opcode);
-            cycles = 12;
+            cycles = 0; /* handler charges the MOVEM lead-in and per-register cost */
             goto done;
         }
 

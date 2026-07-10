@@ -74,12 +74,12 @@ all: static shared ## Build static and shared library versions of Rocket 68
 # Build object files with dependency generation
 $(TARGET_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
 $(COVERAGE_TARGET_DIR)/%.o: CFLAGS += -fprofile-arcs -ftest-coverage -fprofile-prefix-map=$(PWD)=.
 $(COVERAGE_TARGET_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
 .PHONY: test
 test: test-unit test-json ## Run unit tests plus JSON compatibility suite

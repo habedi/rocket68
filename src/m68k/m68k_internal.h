@@ -41,7 +41,9 @@ u32 fetch_extension(M68kCpu * cpu);
 M68kEA m68k_calc_ea(M68kCpu* cpu, int mode, int reg, M68kSize size);
 M68kEA m68k_calc_ea_addr(M68kCpu* cpu, int mode, int reg, M68kSize size);
 M68kEA m68k_calc_ea_ctl(M68kCpu* cpu, int mode, int reg, bool is_jmp);
+M68kEA m68k_calc_ea_addr_nocost(M68kCpu* cpu, int mode, int reg, M68kSize size);
 int m68k_control_ea_cycles(int mode, int reg, bool is_jmp);
+int m68k_movem_ea_cycles(int mode, int reg, bool mem_to_reg);
 
 void m68k_push_32(M68kCpu* cpu, u32 value);
 u32 m68k_pop_32(M68kCpu * cpu);

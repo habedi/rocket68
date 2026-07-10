@@ -1243,3 +1243,204 @@ void test_regression_shift_memory_invalid_mode_traps() {
 
     printf("Regression: shift memory invalid mode traps test passed!\n");
 }
+
+static u32 captured_pc_change = 0;
+
+static void regression_pc_changed_cb(M68kCpu* cpu, u32 new_pc) {
+    (void)cpu;
+    captured_pc_change = new_pc;
+}
+
+static int regression_autovector_ack_cb(M68kCpu* cpu, int level) {
+    (void)cpu;
+    (void)level;
+    return (int)M68K_INT_ACK_AUTOVECTOR;
+}
+
+void test_regression_loader_oob_is_harmless() {
+    M68kCpu cpu;
+    u8 memory[256];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x80;
+    m68k_set_pc_changed_callback(&cpu, regression_pc_changed_cb);
+    captured_pc_change = 0;
+
+    const char* filename = "test_oob.srec";
+    FILE* f = fopen(filename, "w");
+    assert(f != NULL);
+    fprintf(f, "S1040080AB00\n");   /* one byte 0xAB at 0x80 (in range) */
+    fprintf(f, "S10502001234FF\n"); /* two bytes at 0x200 (out of range) */
+    fprintf(f, "S903001000\n");     /* entry point 0x10 */
+    fclose(f);
+
+    bool success = m68k_load_srec(&cpu, filename);
+    remove(filename);
+
+    assert(success);
+    assert(memory[0x80] == 0xAB);
+    /* Out-of-range records must not run the CPU bus-error machinery. */
+    assert(cpu.exception_thrown == 0);
+    assert(cpu.a_regs[7].l == 0x80);
+    /* The entry point goes through m68k_set_pc, so the hook fires. */
+    assert(cpu.pc == 0x10);
+    assert(captured_pc_change == 0x10);
+
+    const char* binname = "test_oob.bin";
+    f = fopen(binname, "wb");
+    assert(f != NULL);
+    u8 data[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+    fwrite(data, 1, sizeof(data), f);
+    fclose(f);
+
+    success = m68k_load_bin(&cpu, binname, 0xFC); /* runs past the 256-byte end */
+    remove(binname);
+
+    assert(success);
+    assert(memory[0xFC] == 1);
+    assert(memory[0xFF] == 4);
+    assert(cpu.exception_thrown == 0);
+    assert(cpu.a_regs[7].l == 0x80);
+
+    printf("Regression: loader out-of-range is harmless test passed!\n");
+}
+
+void test_regression_irq_level_triggered_with_ack_callback() {
+    M68kCpu cpu;
+    u8 memory[65536];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    m68k_set_int_ack_callback(&cpu, regression_autovector_ack_cb);
+
+    cpu.pc = 0x100;
+    cpu.sr = 0x2000; /* supervisor, mask 0 */
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+
+    m68k_write_16(&cpu, 0x100, 0x4E71); /* NOP */
+    m68k_write_16(&cpu, 0x102, 0x4E71); /* NOP */
+    m68k_write_32(&cpu, 28 * 4, 0x500); /* level 4 autovector */
+    m68k_write_16(&cpu, 0x500, 0x4E73); /* RTE */
+
+    m68k_set_irq(&cpu, 4);
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x500);
+    /* With an INT ACK callback the line is level-held until the host
+     * clears it. */
+    assert(cpu.irq_level == 4);
+
+    m68k_step(&cpu); /* RTE, mask drops back to 0 */
+    assert(cpu.pc == 0x100);
+
+    m68k_step(&cpu); /* line still asserted: interrupt taken again */
+    assert(cpu.pc == 0x500);
+
+    m68k_set_irq(&cpu, 0);
+    m68k_step(&cpu); /* RTE */
+    m68k_step(&cpu); /* NOP runs, no further interrupt */
+    assert(cpu.pc == 0x102);
+
+    printf("Regression: level-triggered IRQ with ACK callback test passed!\n");
+}
+
+void test_regression_nmi_is_edge_triggered() {
+    M68kCpu cpu;
+    u8 memory[65536];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    m68k_set_int_ack_callback(&cpu, regression_autovector_ack_cb);
+
+    cpu.pc = 0x100;
+    cpu.sr = 0x2000; /* supervisor, mask 0 */
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+
+    m68k_write_16(&cpu, 0x100, 0x4E71); /* NOP */
+    m68k_write_16(&cpu, 0x102, 0x4E71); /* NOP */
+    m68k_write_32(&cpu, 31 * 4, 0x600); /* level 7 autovector */
+    m68k_write_16(&cpu, 0x600, 0x4E73); /* RTE */
+
+    m68k_set_irq(&cpu, 7);
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+    assert(cpu.irq_level == 7); /* line still held */
+
+    m68k_step(&cpu); /* RTE, mask drops back to 0 */
+    assert(cpu.pc == 0x100);
+
+    /* A held level 7 line must not retrigger without a new edge. */
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x102);
+
+    /* A new 0 -> 7 transition triggers again. */
+    m68k_set_irq(&cpu, 0);
+    m68k_set_irq(&cpu, 7);
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+
+    printf("Regression: NMI is edge triggered test passed!\n");
+}
+
+void test_regression_irq_autoclear_without_ack_callback() {
+    M68kCpu cpu;
+    u8 memory[65536];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    cpu.pc = 0x100;
+    cpu.sr = 0x2000;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+
+    m68k_write_16(&cpu, 0x100, 0x4E71);
+    m68k_write_32(&cpu, 28 * 4, 0x500);
+
+    m68k_set_irq(&cpu, 4);
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x500);
+    /* Without an INT ACK callback the request clears automatically. */
+    assert(cpu.irq_level == 0);
+
+    printf("Regression: IRQ auto-clear without ACK callback test passed!\n");
+}
+
+void test_regression_movem_cycles() {
+    M68kCpu cpu;
+    u8 memory[65536];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    /* MOVEM.L (A0),D0-D1 = 12 + 8 * 2 = 28 cycles */
+    m68k_write_16(&cpu, 0x1000, 0x4CD0);
+    m68k_write_16(&cpu, 0x1002, 0x0003);
+    cpu.pc = 0x1000;
+    cpu.a_regs[0].l = 0x2000;
+    m68k_end_timeslice(&cpu);
+    int cycles = m68k_execute(&cpu, 28);
+    assert(cycles == 28);
+
+    /* MOVEM.W D0-D3,-(A0) = 8 + 4 * 4 = 24 cycles */
+    memset(memory, 0, sizeof(memory));
+    m68k_write_16(&cpu, 0x1000, 0x48A0);
+    m68k_write_16(&cpu, 0x1002, 0xF000);
+    cpu.pc = 0x1000;
+    cpu.a_regs[0].l = 0x2000;
+    m68k_end_timeslice(&cpu);
+    cycles = m68k_execute(&cpu, 24);
+    assert(cpu.a_regs[0].l == 0x2000 - 8);
+    assert(cycles == 24);
+
+    /* MOVEM.W $2000.W,D0 = 16 + 4 = 20 cycles */
+    memset(memory, 0, sizeof(memory));
+    m68k_write_16(&cpu, 0x1000, 0x4CB8);
+    m68k_write_16(&cpu, 0x1002, 0x0001);
+    m68k_write_16(&cpu, 0x1004, 0x2000);
+    cpu.pc = 0x1000;
+    m68k_end_timeslice(&cpu);
+    cycles = m68k_execute(&cpu, 20);
+    assert(cpu.pc == 0x1006);
+    assert(cycles == 20);
+
+    printf("Regression: MOVEM cycles test passed!\n");
+}

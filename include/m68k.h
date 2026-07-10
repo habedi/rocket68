@@ -147,7 +147,8 @@ typedef struct M68kCpu {
     u8* memory;      /**< Bound flat memory pointer. */
     u32 memory_size; /**< Size of bound memory in bytes. */
 
-    int irq_level;             /**< Pending interrupt level (0-7). */
+    int irq_level;             /**< Asserted interrupt level (0-7). */
+    bool nmi_pending;          /**< Level 7 edge latched and not yet serviced. */
     u32 usp;                   /**< User stack pointer. */
     u32 ssp;                   /**< Supervisor stack pointer shadow. */
     bool stopped;              /**< STOP state latch. */
@@ -317,7 +318,14 @@ void m68k_end_timeslice(M68kCpu* cpu);
 void m68k_set_sr(M68kCpu* cpu, u16 new_sr);
 
 /**
- * @brief Set pending interrupt level.
+ * @brief Set the asserted interrupt level (the virtual IPL lines).
+ *
+ * Levels 1-6 are level-sensitive.  Without an INT ACK callback the request
+ * clears automatically when serviced; with a callback installed the level
+ * stays asserted until the host calls this function with 0 (or a new level).
+ * Level 7 is edge-sensitive: each transition to 7 latches one non-maskable
+ * interrupt.
+ *
  * @param cpu CPU context.
  * @param level Interrupt level in range [0,7].
  */

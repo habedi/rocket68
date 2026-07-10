@@ -100,5 +100,10 @@ void test_regression_control_flow_ea_cycles();
 void test_regression_disasm_cmpi_eori();
 void test_regression_disasm_is_side_effect_free();
 void test_regression_shift_memory_invalid_mode_traps();
+void test_regression_loader_oob_is_harmless();
+void test_regression_irq_level_triggered_with_ack_callback();
+void test_regression_nmi_is_edge_triggered();
+void test_regression_irq_autoclear_without_ack_callback();
+void test_regression_movem_cycles();
 
 #endif
