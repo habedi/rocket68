@@ -136,14 +136,14 @@ void test_host_memory_callbacks() {
     assert(callback_last_addr == 0x010203u);
     assert(m68k_read_16(&cpu, 0x020304u) == 0x1234);
     assert(callback_last_addr == 0x020304u);
-    assert(m68k_read_32(&cpu, 0x030405u) == 0x89ABCDEFu);
-    assert(callback_last_addr == 0x030405u);
+    assert(m68k_read_32(&cpu, 0x030406u) == 0x89ABCDEFu);
+    assert(callback_last_addr == 0x030406u);
 
     m68k_write_8(&cpu, 0x040506u, 0x55);
     assert(callback_last_addr == 0x040506u);
     assert(callback_write_8_value == 0x55);
-    m68k_write_16(&cpu, 0x050607u, 0x7788);
-    assert(callback_last_addr == 0x050607u);
+    m68k_write_16(&cpu, 0x050608u, 0x7788);
+    assert(callback_last_addr == 0x050608u);
     assert(callback_write_16_value == 0x7788);
     m68k_write_32(&cpu, 0x060708u, 0x11223344u);
     assert(callback_last_addr == 0x060708u);

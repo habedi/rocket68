@@ -72,7 +72,7 @@ void m68k_exec_lea(M68kCpu* cpu, u16 opcode) {
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
 
-    M68kEA ea = m68k_calc_ea_addr(cpu, mode, reg, SIZE_LONG);
+    M68kEA ea = m68k_calc_ea_ctl(cpu, mode, reg, false);
     cpu->a_regs[reg_idx].l = ea.address;
 }
 
@@ -80,7 +80,7 @@ void m68k_exec_pea(M68kCpu* cpu, u16 opcode) {
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
 
-    M68kEA ea = m68k_calc_ea_addr(cpu, mode, reg, SIZE_LONG);
+    M68kEA ea = m68k_calc_ea_ctl(cpu, mode, reg, false);
     m68k_push_32(cpu, ea.address);
 }
 
@@ -122,8 +122,7 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
     if (mode == 4 && !dir_mem_to_reg) {
         addr = cpu->a_regs[reg].l;
     } else {
-        ea = dir_mem_to_reg ? m68k_calc_ea(cpu, mode, reg, size)
-                            : m68k_calc_ea_addr(cpu, mode, reg, size);
+        ea = m68k_calc_ea_addr(cpu, mode, reg, size);
         addr = ea.address;
     }
 

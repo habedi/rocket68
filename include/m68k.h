@@ -153,6 +153,7 @@ typedef struct M68kCpu {
     bool stopped;              /**< STOP state latch. */
     bool trace_pending;        /**< Trace pending latch. */
     int exception_thrown;      /**< Exception state marker. */
+    int exception_depth;       /**< Nesting depth of active exception processing. */
     bool in_address_error;     /**< Address error re-entry guard. */
     bool in_bus_error;         /**< Bus error re-entry guard. */
     u32 fault_address;         /**< Fault address latched for exception frames. */
@@ -160,6 +161,7 @@ typedef struct M68kCpu {
     u16 fault_ssw;             /**< Fault status word for exception frames. */
     bool fault_program_access; /**< Fault access type marker. */
     bool fault_valid;          /**< Fault information validity flag. */
+    bool group0_fault;         /**< Group-0 fault latched for the current step. */
     bool fault_trap_active;    /**< Group-0 fault trap active for the current step. */
     jmp_buf fault_trap;        /**< Non-local escape target for group-0 fault aborts. */
 

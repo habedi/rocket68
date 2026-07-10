@@ -15,9 +15,21 @@
 #define snprintf_s(buf, sz, fmt, ...) snprintf(buf, sz, fmt, ##__VA_ARGS__)
 #endif
 
-static u16 peek_word(M68kCpu* cpu, u32 pc) { return m68k_read_16(cpu, pc); }
+/* Side-effect-free instruction peek: no wait states, no faults, no cycles. */
+static u16 peek_word(M68kCpu* cpu, u32 pc) {
+    u32 address = pc & 0x00FFFFFFu;
+    if (cpu->read16_cb) {
+        return cpu->read16_cb(cpu, address);
+    }
+    if (cpu->memory && address + 1 < cpu->memory_size) {
+        return (u16)((cpu->memory[address] << 8) | cpu->memory[address + 1]);
+    }
+    return 0;
+}
 
-static u32 peek_long(M68kCpu* cpu, u32 pc) { return m68k_read_32(cpu, pc); }
+static u32 peek_long(M68kCpu* cpu, u32 pc) {
+    return ((u32)peek_word(cpu, pc) << 16) | peek_word(cpu, pc + 2);
+}
 
 static const char* size_str(int size_code) {
     switch (size_code) {
@@ -280,7 +292,7 @@ static int decode_imm_arith(M68kCpu* cpu, u32 pc, u16 opcode, char* op, char* ar
 }
 
 int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size) {
-    u16 opcode = m68k_read_16(cpu, pc);
+    u16 opcode = peek_word(cpu, pc);
     char op[32] = "???";
     char args[64] = "";
     int len = 2;
@@ -354,7 +366,7 @@ int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size) {
             len += 2;
         }
 
-        else if ((opcode & 0x0800) == 0) {
+        else {
             switch (top4) {
                 case 0x00:
                     len = decode_imm_arith(cpu, pc, opcode, op, args, "ORI");

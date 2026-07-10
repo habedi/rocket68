@@ -88,5 +88,17 @@ void test_regression_shift_register_cycles();
 void test_regression_clr_memory_reads_before_write();
 void test_regression_movem_predec_writes_initial_an();
 void test_regression_move_predec_dest_cycles();
+void test_regression_group0_abort_after_prior_exception();
+void test_regression_illegal_4afc_traps();
+void test_regression_tas_invalid_ea_traps();
+void test_regression_set_context_preserves_memory_callbacks();
+void test_regression_fetch_callback_gets_masked_address();
+void test_regression_movem_mem_to_reg_no_spurious_read();
+void test_regression_odd_data_access_with_callback_raises_address_error();
+void test_regression_alu_long_abs_source_cycles();
+void test_regression_control_flow_ea_cycles();
+void test_regression_disasm_cmpi_eori();
+void test_regression_disasm_is_side_effect_free();
+void test_regression_shift_memory_invalid_mode_traps();
 
 #endif
