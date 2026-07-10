@@ -167,7 +167,7 @@ static const int ea_cycles[12][2] = {
     {10, 14}, {8, 12}, {12, 16}, {8, 12}, {10, 14}, {4, 8},
 };
 
-int m68k_ea_cycles(int mode, int reg, M68kSize size) {
+static int m68k_ea_cycles(int mode, int reg, M68kSize size) {
     int idx;
     if (mode <= 6) {
         idx = mode;
@@ -414,7 +414,7 @@ void m68k_write_size(M68kCpu* cpu, u32 address, u32 value, M68kSize size) {
         m68k_write_32(cpu, address, value);
 }
 
-M68kEA m68k_calc_ea_ex(M68kCpu* cpu, int mode, int reg, M68kSize size, bool fetch_value) {
+static M68kEA m68k_calc_ea_ex(M68kCpu* cpu, int mode, int reg, M68kSize size, bool fetch_value) {
     M68kEA ea = {0};
 
     switch (mode) {
@@ -797,7 +797,6 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
     cpu->fault_valid = false;
     cpu->group0_fault = false;
     cpu->fault_trap_active = false;
-    cpu->exception_depth = 0;
 
     if (cpu->stopped) {
         if (check_exceptions && check_interrupts(cpu)) {

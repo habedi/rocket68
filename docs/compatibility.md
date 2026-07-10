@@ -47,5 +47,7 @@ This page lists current compatibility notes and scope limits based on the curren
 ## JSON Compatibility Harness
 
 - The JSON compatibility runner (`tests/test_json.c`) has a relaxed default for exception-path state checks.
+- Tests skipped under the relaxed default are counted and reported per file.
 - Strict exception-path checking is available with `ROCKET68_JSON_STRICT=1`.
+- Per-test cycle count verification is available with `ROCKET68_JSON_CYCLES=1`.
 - This behavior is test-harness policy, not a runtime core API toggle.

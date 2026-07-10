@@ -156,10 +156,10 @@ Addresses are masked to 24-bit internally before bounds checks.
 
 Behavior notes:
 
-- If a host memory callback is installed for the requested width, it is called first.
-- When callbacks are used, default flat-buffer address/alignment/bus-error checks for that access are bypassed and are expected to be handled by the host.
-- Word/long accesses on odd addresses trigger address error handling.
-- Out-of-range accesses trigger bus error handling.
+- Word/long accesses on odd addresses trigger address error handling before any callback dispatch.
+- If a host memory callback is installed for the requested width, it is called for the access; addresses passed to callbacks are masked to 24 bits for data access and instruction fetch alike.
+- When callbacks are used, default flat-buffer range (bus error) checks for that access are bypassed and are expected to be handled by the host.
+- Out-of-range flat-memory accesses trigger bus error handling.
 
 ## Callback API
 
@@ -230,7 +230,7 @@ Restores context from `src`, while preserving destination-instance runtime bindi
 
 - memory pointer and memory size
 - internal fault trap storage
-- installed callbacks
+- installed callbacks, including the host memory read/write callbacks
 
 ## Loader API (`loader.h`)
 
@@ -252,6 +252,7 @@ Returns `false` only when the file cannot be opened.
 
 Disassembles one instruction at `pc` into `buffer`.
 Returns number of bytes consumed by that instruction.
+Disassembly is side-effect free: it does not charge wait states or cycles, and it does not raise address or bus errors.
 
 ## Version
 
