@@ -4,13 +4,13 @@ This page shows the smallest path from source files to a running 68000 program.
 
 ## 1. Build and Link
 
-### Option A: Compile core sources directly
+### Option A: Compile Core Sources Directly
 
 ```bash
 gcc -std=c11 -O3 -Iinclude src/m68k/*.c your_app.c -o your_app
 ```
 
-### Option B: Build library with Make
+### Option B: Build Library with Make
 
 ```bash
 BUILD_TYPE=release make static
