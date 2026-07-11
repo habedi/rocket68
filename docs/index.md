@@ -16,15 +16,15 @@ hard to integrate them into other projects.
 Rocket 68 focuses on correctness first: instruction behavior, exception handling, and cycle timing closely follow real hardware so projects
 can rely on predictable and accurate CPU behavior.
 
-Rocket 68 is designed to be used a portable library.
+Rocket 68 is designed to be used as a portable library.
 All state lives inside a single `M68kCpu` instance, with no shared global state.
 This makes it relatively straightforward to run multiple CPUs or integrate the core into larger systems.
 Additionally, the codebase uses modern C11 with a small and explicit API that makes the project easy to use and extend.
 
 ## Features
 
-- Have a simple API and easy to integrate into other projects
-- Supports all Motorola 68000 instructions and different addressing modes
+- Simple API that is easy to integrate into other projects
+- Support for all Motorola 68000 instructions and addressing modes
 - Baseline cycle accounting with an optional wait-state callback for bus timing
 - Full hardware interrupt support (with auto-vectoring, address error traps, trace mode, and halted states)
 - Built-in instruction disassembler and support for loading binary and S-record programs

@@ -25,7 +25,7 @@ Or include only what you need:
 
 ## Core Types
 
-### Integer aliases
+### Integer Aliases
 
 - `u8`, `u16`, `u32`
 - `s8`, `s16`, `s32`
@@ -46,7 +46,7 @@ Register union used for `D0-D7` and `A0-A7`.
 One complete CPU instance with registers, execution state, memory binding, and callbacks.
 `d_regs` is aligned to 64 bytes.
 
-### Host memory callback types
+### Host Memory Callback Types
 
 - `M68kRead8Callback`
 - `M68kRead16Callback`
@@ -109,7 +109,7 @@ Sets the asserted interrupt level (0-7), modeling the IPL lines.
 Levels 1-6 are level-sensitive: without an INT ACK callback the request clears automatically when serviced; with a callback installed the level stays asserted until the host sets 0 or a new level.
 Level 7 is edge-sensitive: each transition to 7 latches one non-maskable interrupt.
 
-### Register accessors
+### Register Accessors
 
 - `void m68k_set_dr(M68kCpu* cpu, int reg, u32 value);`
 - `u32 m68k_get_dr(M68kCpu* cpu, int reg);`
@@ -132,7 +132,7 @@ Equivalent to `m68k_step_ex(cpu, true)`.
 
 Adds `cycles` to the timeslice, runs until `cycles_remaining <= 0`, and returns consumed cycles for this call.
 
-### Timeslice helpers
+### Timeslice Helpers
 
 - `int m68k_cycles_run(M68kCpu* cpu);`
 - `int m68k_cycles_remaining(M68kCpu* cpu);`
@@ -204,7 +204,7 @@ Called by `TAS`; non-zero return allows write-back, zero blocks write-back.
 Registers an illegal-opcode callback pointer.
 Current core decode path does not invoke this callback yet.
 
-### Host memory callbacks
+### Host Memory Callbacks
 
 - `void m68k_set_read8_callback(M68kCpu* cpu, M68kRead8Callback callback);`
 - `void m68k_set_read16_callback(M68kCpu* cpu, M68kRead16Callback callback);`
@@ -242,7 +242,7 @@ Loads Motorola S-record data into memory.
 Returns `false` only when the file cannot be opened.
 Malformed records are reported to `stderr` and skipped.
 Data bytes are written directly into bound flat memory; loading does not run emulated bus cycles, invoke host memory callbacks, or raise bus errors.
-Bytes outside bound memory are reported to `stderr` and skipped.
+When a record reaches an address outside bound memory, the first out-of-range byte is reported to `stderr`, the rest of that record is skipped, and parsing continues with the next record.
 Entry-point records (`S7/S8/S9`) set the program counter through `m68k_set_pc`, so the PC-changed callback fires.
 
 ### `bool m68k_load_bin(M68kCpu* cpu, const char* filename, u32 address);`

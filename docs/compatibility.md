@@ -12,14 +12,14 @@ This page lists current compatibility notes and scope limits based on the curren
 
 - All memory accesses are against one flat memory buffer (`cpu->memory`, `cpu->memory_size`).
 - Addresses are masked to 24-bit (`address & 0x00FFFFFF`) before bounds checks.
-- There is no per-access memory read/write callback API for custom bus mapping; integration is currently done by sharing a memory buffer plus optional timing callbacks.
+- Per-access host memory callbacks (`m68k_set_read8_callback` and related setters) can replace flat-buffer access for each width; see the API reference for details.
 
 ## Callback Behavior Notes
 
 - `fc_callback` is emitted for memory reads/writes and instruction fetches.
 - `M68K_FC_INT_ACK` is defined, but the current interrupt acknowledge path does not emit FC callback events with this code.
 - `pc_changed_callback` is triggered when PC is changed through `m68k_set_pc`.
-- Direct PC writes (for example in `m68k_reset`, `m68k_fetch`, and S-record entry-point load) do not call `pc_changed_callback`.
+- Direct PC writes (for example in `m68k_reset` and `m68k_fetch`) do not call `pc_changed_callback`.
 - `reset_callback` is tied to execution of the `RESET` instruction, not to `m68k_reset()`.
 - `illg_callback` can be installed, but the current decode/exception path does not call it.
 
@@ -41,7 +41,7 @@ This page lists current compatibility notes and scope limits based on the curren
 - `m68k_load_srec` and `m68k_load_bin` return `false` only when file open fails.
 - `m68k_load_srec` reports malformed lines and continues parsing.
 - S-record checksum validity is not explicitly validated.
-- Loaders write directly into bound flat memory; they do not run emulated bus cycles, invoke host memory callbacks, or raise bus errors, and out-of-range bytes are reported and skipped.
+- Loaders write directly into bound flat memory; they do not run emulated bus cycles, invoke host memory callbacks, or raise bus errors. When a record reaches an out-of-range address, the first out-of-range byte is reported to `stderr`, the rest of that record is skipped, and parsing continues with the next record.
 - S-record entry records (`S7/S8/S9`) set the program counter through `m68k_set_pc`.
 - `m68k_disasm` returns instruction bytes consumed; unsupported decode cases may still produce `???` output text.
 
