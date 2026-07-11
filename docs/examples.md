@@ -52,14 +52,17 @@ Use this when your platform sets CPU state directly instead of using vector tabl
 M68kCpu cpu;
 m68k_init(&cpu, ram, mem_size);
 
+m68k_set_sr(&cpu, 0x2700);        /* Supervisor mode */
 m68k_set_ar(&cpu, 7, 0x0000FF00); /* A7/SP */
-m68k_set_sr(&cpu, 0x2700);         /* Supervisor mode */
 m68k_set_pc(&cpu, 0x00001000);
 
 for (int i = 0; i < 100 && !cpu.stopped; i++) {
     m68k_step(&cpu);
 }
 ```
+
+Set SR before A7.
+`m68k_set_sr` swaps the active stack pointer when the supervisor bit changes, so setting A7 first would leave the supervisor stack pointer unset.
 
 ## 3. Interrupt Handling with `int_ack`
 

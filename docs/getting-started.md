@@ -75,12 +75,13 @@ int main(void) {
 You can also set state directly:
 
 ```c
+m68k_set_sr(&cpu, 0x2700);        /* supervisor mode */
 m68k_set_ar(&cpu, 7, 0x0000FF00); /* A7/SP */
-m68k_set_sr(&cpu, 0x2700);         /* supervisor mode */
 m68k_set_pc(&cpu, 0x00000100);
 ```
 
 Use this pattern when your host controls boot flow explicitly.
+Set SR before A7: `m68k_set_sr` swaps the active stack pointer when the supervisor bit changes, so setting A7 first would leave the supervisor stack pointer unset.
 
 ## 4. Basic Execution Model
 
