@@ -1,7 +1,13 @@
 const std = @import("std");
 
 fn rootPathExists(b: *std.Build, rel_path: []const u8) bool {
-    std.fs.accessAbsolute(b.pathFromRoot(rel_path), .{}) catch return false;
+    const abs_path = b.pathFromRoot(rel_path);
+    // Zig 0.16 removed std.fs.accessAbsolute in favor of the std.Io interface.
+    if (comptime @hasDecl(std.fs, "accessAbsolute")) {
+        std.fs.accessAbsolute(abs_path, .{}) catch return false;
+    } else {
+        std.Io.Dir.accessAbsolute(b.graph.io, abs_path, .{}) catch return false;
+    }
     return true;
 }
 
@@ -20,8 +26,8 @@ pub fn build(b: *std.Build) void {
         .root_module = lib_mod,
     });
 
-    lib.addIncludePath(b.path("include"));
-    lib.linkLibC();
+    lib_mod.addIncludePath(b.path("include"));
+    lib_mod.link_libc = true;
 
     const c_flags = &.{
         "-std=c11",
@@ -41,7 +47,7 @@ pub fn build(b: *std.Build) void {
         "src/m68k/ops_move.c",
     };
 
-    lib.addCSourceFiles(.{
+    lib_mod.addCSourceFiles(.{
         .files = src_files,
         .flags = c_flags,
     });
@@ -68,8 +74,8 @@ pub fn build(b: *std.Build) void {
         .root_module = wasm_mod,
     });
 
-    wasm_lib.addIncludePath(b.path("include"));
-    wasm_lib.linkLibC();
+    wasm_mod.addIncludePath(b.path("include"));
+    wasm_mod.link_libc = true;
 
     // Include core CPU files only (no `loader.c` and `disasm.c` because they use file I/O)
     const wasm_src_files = &.{
@@ -91,7 +97,7 @@ pub fn build(b: *std.Build) void {
         "-wasm-enable-sjlj",
     };
 
-    wasm_lib.addCSourceFiles(.{
+    wasm_mod.addCSourceFiles(.{
         .files = wasm_src_files,
         .flags = wasm_c_flags,
     });
@@ -107,9 +113,9 @@ pub fn build(b: *std.Build) void {
         .root_module = wasm_exe_mod,
     });
 
-    wasm_exe.addIncludePath(b.path("include"));
-    wasm_exe.linkLibC();
-    wasm_exe.addCSourceFiles(.{
+    wasm_exe_mod.addIncludePath(b.path("include"));
+    wasm_exe_mod.link_libc = true;
+    wasm_exe_mod.addCSourceFiles(.{
         .files = wasm_src_files,
         .flags = wasm_c_flags,
     });
@@ -147,14 +153,14 @@ pub fn build(b: *std.Build) void {
             .name = "test_main",
             .root_module = test_mod,
         });
-        test_exe.addIncludePath(b.path("include"));
-        test_exe.linkLibC();
+        test_mod.addIncludePath(b.path("include"));
+        test_mod.link_libc = true;
 
-        test_exe.addCSourceFiles(.{
+        test_mod.addCSourceFiles(.{
             .files = src_files,
             .flags = c_flags,
         });
-        test_exe.addCSourceFiles(.{
+        test_mod.addCSourceFiles(.{
             .files = test_files,
             .flags = c_flags,
         });
@@ -175,16 +181,16 @@ pub fn build(b: *std.Build) void {
             .name = "benchmark_rocket68",
             .root_module = bench_mod,
         });
-        bench_exe.addIncludePath(b.path("include"));
-        bench_exe.addIncludePath(b.path("benches"));
-        bench_exe.linkLibC();
-        bench_exe.linkLibrary(lib);
+        bench_mod.addIncludePath(b.path("include"));
+        bench_mod.addIncludePath(b.path("benches"));
+        bench_mod.link_libc = true;
+        bench_mod.linkLibrary(lib);
 
         const bench_files = &.{
             "benches/benchmark_rocket68.c",
         };
 
-        bench_exe.addCSourceFiles(.{
+        bench_mod.addCSourceFiles(.{
             .files = bench_files,
             .flags = c_flags,
         });
@@ -207,10 +213,10 @@ pub fn build(b: *std.Build) void {
                 .name = "benchmark_musashi",
                 .root_module = musashi_mod,
             });
-            musashi_exe.addIncludePath(b.path("external/musashi"));
-            musashi_exe.addIncludePath(b.path("benches"));
-            musashi_exe.linkLibC();
-            musashi_exe.linkSystemLibrary("m");
+            musashi_mod.addIncludePath(b.path("external/musashi"));
+            musashi_mod.addIncludePath(b.path("benches"));
+            musashi_mod.link_libc = true;
+            musashi_mod.linkSystemLibrary("m", .{});
 
             musashi_exe.step.dependOn(&make_musashi.step);
 
@@ -218,14 +224,14 @@ pub fn build(b: *std.Build) void {
                 "benches/benchmark_musashi.c",
             };
 
-            musashi_exe.addCSourceFiles(.{
+            musashi_mod.addCSourceFiles(.{
                 .files = musashi_files,
                 .flags = c_flags,
             });
-            musashi_exe.addObjectFile(b.path("external/musashi/m68kcpu.o"));
-            musashi_exe.addObjectFile(b.path("external/musashi/m68kops.o"));
-            musashi_exe.addObjectFile(b.path("external/musashi/m68kdasm.o"));
-            musashi_exe.addObjectFile(b.path("external/musashi/softfloat/softfloat.o"));
+            musashi_mod.addObjectFile(b.path("external/musashi/m68kcpu.o"));
+            musashi_mod.addObjectFile(b.path("external/musashi/m68kops.o"));
+            musashi_mod.addObjectFile(b.path("external/musashi/m68kdasm.o"));
+            musashi_mod.addObjectFile(b.path("external/musashi/softfloat/softfloat.o"));
 
             const run_musashi = b.addRunArtifact(musashi_exe);
             run_musashi.step.dependOn(&run_bench.step);
@@ -244,10 +250,10 @@ pub fn build(b: *std.Build) void {
                 .name = "benchmark_moira",
                 .root_module = moira_mod,
             });
-            moira_exe.addIncludePath(b.path("external/moira/Moira"));
-            moira_exe.addIncludePath(b.path("benches"));
-            moira_exe.linkLibC();
-            moira_exe.linkLibCpp();
+            moira_mod.addIncludePath(b.path("external/moira/Moira"));
+            moira_mod.addIncludePath(b.path("benches"));
+            moira_mod.link_libc = true;
+            moira_mod.link_libcpp = true;
 
             const cxx_flags: []const []const u8 = &.{
                 "-std=c++20",
@@ -255,7 +261,7 @@ pub fn build(b: *std.Build) void {
                 "-Wno-missing-field-initializers",
             };
 
-            moira_exe.addCSourceFiles(.{
+            moira_mod.addCSourceFiles(.{
                 .files = &.{
                     "benches/benchmark_moira.cpp",
                     "external/moira/Moira/Moira.cpp",
