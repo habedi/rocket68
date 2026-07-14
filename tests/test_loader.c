@@ -7,9 +7,9 @@
 #include "loader.h"
 #include "m68k.h"
 
-void run_loader_tests();
+void run_loader_tests(void);
 
-void test_load_srec() {
+void test_load_srec(void) {
     M68kCpu cpu;
     u8 memory[65536];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -52,7 +52,7 @@ void test_load_srec() {
     printf("S-Record Loader test passed!\n");
 }
 
-void test_load_bin() {
+void test_load_bin(void) {
     M68kCpu cpu;
     u8 memory[65536];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -79,7 +79,7 @@ void test_load_bin() {
     printf("Binary Loader test passed!\n");
 }
 
-void test_disasm() {
+void test_disasm(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -102,7 +102,7 @@ void test_disasm() {
     assert(strstr(buf, "RTS"));
 }
 
-void test_disasm_full() {
+void test_disasm_full(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -156,7 +156,7 @@ void test_disasm_full() {
     assert(strstr(buf, "CHK"));
 }
 
-void test_io() {
+void test_io(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -167,7 +167,7 @@ void test_io() {
 }
 
 // Expose for the main test runner
-void run_loader_tests() {
+void run_loader_tests(void) {
     test_load_srec();
     test_load_bin();
     test_disasm();

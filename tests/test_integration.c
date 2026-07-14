@@ -6,7 +6,7 @@
 #include "m68k.h"
 #include "test_m68k.h"
 
-void test_fibonacci() {
+void test_fibonacci(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -53,7 +53,7 @@ void test_fibonacci() {
     printf("Integration: Fibonacci test passed!\n");
 }
 
-void test_string_copy() {
+void test_string_copy(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -97,7 +97,7 @@ void test_string_copy() {
     printf("Integration: String copy test passed!\n");
 }
 
-void test_exception_handler() {
+void test_exception_handler(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));

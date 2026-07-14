@@ -6,7 +6,7 @@
 #include "m68k.h"
 #include "test_m68k.h"
 
-void test_control_flow() {
+void test_control_flow(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -55,7 +55,7 @@ void test_control_flow() {
     printf("Control Flow test passed!\n");
 }
 
-void test_dbcc_scc() {
+void test_dbcc_scc(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -106,7 +106,7 @@ void test_dbcc_scc() {
     printf("Loop (DBcc/Scc) test passed!\n");
 }
 
-void test_misc_control() {
+void test_misc_control(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -124,7 +124,7 @@ void test_misc_control() {
     printf("Misc Control (CHK) test passed!\n");
 }
 
-void test_exceptions() {
+void test_exceptions(void) {
     M68kCpu cpu;
     u8 memory[4096];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -164,7 +164,7 @@ void test_exceptions() {
     printf("Exception test passed!\n");
 }
 
-void test_nop_bsr_rtr() {
+void test_nop_bsr_rtr(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -196,7 +196,7 @@ void test_nop_bsr_rtr() {
     printf("NOP/BSR/RTR test passed!\n");
 }
 
-void test_movec() {
+void test_movec(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -244,7 +244,7 @@ void test_movec() {
     printf("MOVEC test passed!\n");
 }
 
-void test_trapv() {
+void test_trapv(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -269,7 +269,7 @@ void test_trapv() {
     printf("TRAPV test passed!\n");
 }
 
-void test_rtd() {
+void test_rtd(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -291,7 +291,7 @@ void test_rtd() {
     printf("RTD test passed!\n");
 }
 
-void test_bkpt() {
+void test_bkpt(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));

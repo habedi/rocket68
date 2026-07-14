@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "disasm.h"
+#include "loader.h"
 #include "m68k.h"
 #include "test_m68k.h"
 
@@ -29,7 +30,7 @@ static void regression_nested_exception_cb(M68kCpu* cpu, u32 new_pc) {
     }
 }
 
-void test_regression_postinc_predec_byte() {
+void test_regression_postinc_predec_byte(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -62,7 +63,7 @@ void test_regression_postinc_predec_byte() {
     printf("Regression: Postinc/predec byte test passed!\n");
 }
 
-void test_regression_reset_vectors() {
+void test_regression_reset_vectors(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -80,7 +81,7 @@ void test_regression_reset_vectors() {
     printf("Regression: Reset vectors test passed!\n");
 }
 
-void test_regression_jmp_dispatch() {
+void test_regression_jmp_dispatch(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -102,7 +103,7 @@ void test_regression_jmp_dispatch() {
     printf("Regression: JMP dispatch test passed!\n");
 }
 
-void test_regression_div_by_zero() {
+void test_regression_div_by_zero(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -122,7 +123,7 @@ void test_regression_div_by_zero() {
     printf("Regression: Div-by-zero exception test passed!\n");
 }
 
-void test_regression_addx_subx_zflag() {
+void test_regression_addx_subx_zflag(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -160,7 +161,7 @@ void test_regression_addx_subx_zflag() {
     printf("Regression: ADDX/SUBX Z-flag test passed!\n");
 }
 
-void test_regression_sbcd() {
+void test_regression_sbcd(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -186,7 +187,7 @@ void test_regression_sbcd() {
     printf("Regression: SBCD borrow test passed!\n");
 }
 
-void test_regression_nbcd() {
+void test_regression_nbcd(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -210,7 +211,7 @@ void test_regression_nbcd() {
     printf("Regression: NBCD test passed!\n");
 }
 
-void test_regression_stop_privilege() {
+void test_regression_stop_privilege(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -232,7 +233,7 @@ void test_regression_stop_privilege() {
     printf("Regression: STOP privilege test passed!\n");
 }
 
-void test_regression_ext_dispatch() {
+void test_regression_ext_dispatch(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -255,7 +256,7 @@ void test_regression_ext_dispatch() {
     printf("Regression: EXT dispatch test passed!\n");
 }
 
-void test_regression_no_spurious_ea_read_on_write() {
+void test_regression_no_spurious_ea_read_on_write(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -279,7 +280,7 @@ void test_regression_no_spurious_ea_read_on_write() {
     printf("Regression: No spurious EA read on write test passed!\n");
 }
 
-void test_regression_stop_rte_resume_pc() {
+void test_regression_stop_rte_resume_pc(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -313,7 +314,7 @@ void test_regression_stop_rte_resume_pc() {
     printf("Regression: STOP/RTE resume PC test passed!\n");
 }
 
-void test_regression_execute_wakes_stopped_cpu_on_irq() {
+void test_regression_execute_wakes_stopped_cpu_on_irq(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -345,7 +346,7 @@ void test_regression_execute_wakes_stopped_cpu_on_irq() {
     printf("Regression: execute() wakes stopped CPU on IRQ test passed!\n");
 }
 
-void test_regression_exception_guards_are_per_instance() {
+void test_regression_exception_guards_are_per_instance(void) {
     M68kCpu cpu1;
     M68kCpu cpu2;
     u8 memory1[256];
@@ -378,7 +379,7 @@ void test_regression_exception_guards_are_per_instance() {
     printf("Regression: Exception guards are per-instance test passed!\n");
 }
 
-void test_regression_masked_irq_does_not_exit_stop() {
+void test_regression_masked_irq_does_not_exit_stop(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -407,7 +408,7 @@ void test_regression_masked_irq_does_not_exit_stop() {
     printf("Regression: Masked IRQ does not exit STOP test passed!\n");
 }
 
-void test_regression_interrupt_stacks_original_sr() {
+void test_regression_interrupt_stacks_original_sr(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -434,7 +435,7 @@ void test_regression_interrupt_stacks_original_sr() {
     printf("Regression: Interrupt stacks original SR test passed!\n");
 }
 
-void test_regression_clr_illegal_mode_traps() {
+void test_regression_clr_illegal_mode_traps(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -460,7 +461,7 @@ void test_regression_clr_illegal_mode_traps() {
 
 static void dummy_reset_cb(M68kCpu* cpu) { (void)cpu; }
 
-void test_regression_set_context_preserves_callbacks() {
+void test_regression_set_context_preserves_callbacks(void) {
     M68kCpu cpu1;
     M68kCpu cpu2;
     u8 memory1[1024];
@@ -490,7 +491,7 @@ void test_regression_set_context_preserves_callbacks() {
     printf("Regression: set_context preserves callbacks test passed!\n");
 }
 
-void test_regression_ori_ccr_preserves_upper_bits() {
+void test_regression_ori_ccr_preserves_upper_bits(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -506,7 +507,7 @@ void test_regression_ori_ccr_preserves_upper_bits() {
     printf("Regression: ORI to CCR preserves upper bits test passed!\n");
 }
 
-void test_regression_eori_ccr_preserves_upper_bits() {
+void test_regression_eori_ccr_preserves_upper_bits(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -522,7 +523,7 @@ void test_regression_eori_ccr_preserves_upper_bits() {
     printf("Regression: EORI to CCR preserves upper bits test passed!\n");
 }
 
-void test_regression_divu_overflow_n_flag() {
+void test_regression_divu_overflow_n_flag(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -547,7 +548,7 @@ void test_regression_divu_overflow_n_flag() {
     printf("Regression: DIVU overflow N flag test passed!\n");
 }
 
-void test_regression_divs_overflow_n_flag() {
+void test_regression_divs_overflow_n_flag(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -572,7 +573,7 @@ void test_regression_divs_overflow_n_flag() {
     printf("Regression: DIVS overflow N flag test passed!\n");
 }
 
-void test_regression_chk_only_modifies_n() {
+void test_regression_chk_only_modifies_n(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -599,7 +600,7 @@ void test_regression_chk_only_modifies_n() {
     printf("Regression: CHK only modifies N test passed!\n");
 }
 
-void test_regression_dbcc_cycle_count() {
+void test_regression_dbcc_cycle_count(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -627,7 +628,7 @@ void test_regression_dbcc_cycle_count() {
     printf("Regression: DBcc cycle count test passed!\n");
 }
 
-void test_regression_bcc_not_taken_cycles() {
+void test_regression_bcc_not_taken_cycles(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -647,7 +648,7 @@ void test_regression_bcc_not_taken_cycles() {
     printf("Regression: Bcc not-taken cycles test passed!\n");
 }
 
-void test_regression_bsr_cycles() {
+void test_regression_bsr_cycles(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -668,7 +669,7 @@ void test_regression_bsr_cycles() {
     printf("Regression: BSR cycles test passed!\n");
 }
 
-void test_regression_scc_register_cycles() {
+void test_regression_scc_register_cycles(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -693,7 +694,7 @@ void test_regression_scc_register_cycles() {
     printf("Regression: Scc register cycles test passed!\n");
 }
 
-void test_regression_addq_long_dn_cycles() {
+void test_regression_addq_long_dn_cycles(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -710,7 +711,7 @@ void test_regression_addq_long_dn_cycles() {
     printf("Regression: ADDQ.L Dn cycles test passed!\n");
 }
 
-void test_regression_subq_an_cycles() {
+void test_regression_subq_an_cycles(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -728,7 +729,7 @@ void test_regression_subq_an_cycles() {
     printf("Regression: SUBQ An cycles test passed!\n");
 }
 
-void test_regression_shift_register_cycles() {
+void test_regression_shift_register_cycles(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -783,7 +784,7 @@ static void clr_test_write16(M68kCpu* cpu, u32 address, u16 value) {
     (void)value;
 }
 
-void test_regression_clr_memory_reads_before_write() {
+void test_regression_clr_memory_reads_before_write(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -818,7 +819,7 @@ void test_regression_clr_memory_reads_before_write() {
     printf("Regression: CLR memory reads before write test passed!\n");
 }
 
-void test_regression_movem_predec_writes_initial_an() {
+void test_regression_movem_predec_writes_initial_an(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -845,7 +846,7 @@ void test_regression_movem_predec_writes_initial_an() {
     printf("Regression: MOVEM predec writes initial An test passed!\n");
 }
 
-void test_regression_move_predec_dest_cycles() {
+void test_regression_move_predec_dest_cycles(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -896,7 +897,7 @@ void test_regression_move_predec_dest_cycles() {
     printf("Regression: MOVE predecrement destination cycle count test passed!\n");
 }
 
-void test_regression_write_oob_triggers_bus_error() {
+void test_regression_write_oob_triggers_bus_error(void) {
     M68kCpu cpu;
     u8 memory[256];
     memset(memory, 0, sizeof(memory));
@@ -936,7 +937,7 @@ static int regression_wait_two_cycles(M68kCpu* cpu, u32 address, M68kSize size, 
     return 2;
 }
 
-void test_regression_group0_abort_after_prior_exception() {
+void test_regression_group0_abort_after_prior_exception(void) {
     M68kCpu cpu;
     u8 memory[65536];
     memset(memory, 0, sizeof(memory));
@@ -965,7 +966,7 @@ void test_regression_group0_abort_after_prior_exception() {
     printf("Regression: group-0 abort after prior exception test passed!\n");
 }
 
-void test_regression_illegal_4afc_traps() {
+void test_regression_illegal_4afc_traps(void) {
     M68kCpu cpu;
     u8 memory[65536];
     memset(memory, 0, sizeof(memory));
@@ -989,7 +990,7 @@ void test_regression_illegal_4afc_traps() {
     printf("Regression: ILLEGAL 0x4AFC traps test passed!\n");
 }
 
-void test_regression_tas_invalid_ea_traps() {
+void test_regression_tas_invalid_ea_traps(void) {
     M68kCpu cpu;
     u8 memory[65536];
     memset(memory, 0, sizeof(memory));
@@ -1011,7 +1012,7 @@ void test_regression_tas_invalid_ea_traps() {
     printf("Regression: TAS invalid EA traps test passed!\n");
 }
 
-void test_regression_set_context_preserves_memory_callbacks() {
+void test_regression_set_context_preserves_memory_callbacks(void) {
     M68kCpu cpu1;
     M68kCpu cpu2;
     u8 memory1[1024];
@@ -1035,7 +1036,7 @@ void test_regression_set_context_preserves_memory_callbacks() {
     printf("Regression: set_context preserves memory callbacks test passed!\n");
 }
 
-void test_regression_fetch_callback_gets_masked_address() {
+void test_regression_fetch_callback_gets_masked_address(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -1051,7 +1052,7 @@ void test_regression_fetch_callback_gets_masked_address() {
     printf("Regression: fetch callback gets masked address test passed!\n");
 }
 
-void test_regression_movem_mem_to_reg_no_spurious_read() {
+void test_regression_movem_mem_to_reg_no_spurious_read(void) {
     M68kCpu cpu;
     u8 memory[65536];
     memset(memory, 0, sizeof(memory));
@@ -1079,7 +1080,7 @@ void test_regression_movem_mem_to_reg_no_spurious_read() {
     printf("Regression: MOVEM mem-to-reg no spurious read test passed!\n");
 }
 
-void test_regression_odd_data_access_with_callback_raises_address_error() {
+void test_regression_odd_data_access_with_callback_raises_address_error(void) {
     M68kCpu cpu;
     u8 memory[65536];
     memset(memory, 0, sizeof(memory));
@@ -1104,7 +1105,7 @@ void test_regression_odd_data_access_with_callback_raises_address_error() {
     printf("Regression: odd data access with callback raises address error test passed!\n");
 }
 
-void test_regression_alu_long_abs_source_cycles() {
+void test_regression_alu_long_abs_source_cycles(void) {
     M68kCpu cpu;
     u8 memory[65536];
     memset(memory, 0, sizeof(memory));
@@ -1123,7 +1124,7 @@ void test_regression_alu_long_abs_source_cycles() {
     printf("Regression: ADD.L absolute source cycles test passed!\n");
 }
 
-void test_regression_control_flow_ea_cycles() {
+void test_regression_control_flow_ea_cycles(void) {
     M68kCpu cpu;
     u8 memory[65536];
     memset(memory, 0, sizeof(memory));
@@ -1174,7 +1175,7 @@ void test_regression_control_flow_ea_cycles() {
     printf("Regression: control flow EA cycles test passed!\n");
 }
 
-void test_regression_disasm_cmpi_eori() {
+void test_regression_disasm_cmpi_eori(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -1194,7 +1195,7 @@ void test_regression_disasm_cmpi_eori() {
     printf("Regression: disasm CMPI/EORI test passed!\n");
 }
 
-void test_regression_disasm_is_side_effect_free() {
+void test_regression_disasm_is_side_effect_free(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -1220,7 +1221,7 @@ void test_regression_disasm_is_side_effect_free() {
     printf("Regression: disasm is side-effect free test passed!\n");
 }
 
-void test_regression_shift_memory_invalid_mode_traps() {
+void test_regression_shift_memory_invalid_mode_traps(void) {
     M68kCpu cpu;
     u8 memory[65536];
     memset(memory, 0, sizeof(memory));
@@ -1257,7 +1258,7 @@ static int regression_autovector_ack_cb(M68kCpu* cpu, int level) {
     return (int)M68K_INT_ACK_AUTOVECTOR;
 }
 
-void test_regression_loader_oob_is_harmless() {
+void test_regression_loader_oob_is_harmless(void) {
     M68kCpu cpu;
     u8 memory[256];
     memset(memory, 0, sizeof(memory));
@@ -1306,7 +1307,7 @@ void test_regression_loader_oob_is_harmless() {
     printf("Regression: loader out-of-range is harmless test passed!\n");
 }
 
-void test_regression_irq_level_triggered_with_ack_callback() {
+void test_regression_irq_level_triggered_with_ack_callback(void) {
     M68kCpu cpu;
     u8 memory[65536];
     memset(memory, 0, sizeof(memory));
@@ -1344,7 +1345,7 @@ void test_regression_irq_level_triggered_with_ack_callback() {
     printf("Regression: level-triggered IRQ with ACK callback test passed!\n");
 }
 
-void test_regression_nmi_is_edge_triggered() {
+void test_regression_nmi_is_edge_triggered(void) {
     M68kCpu cpu;
     u8 memory[65536];
     memset(memory, 0, sizeof(memory));
@@ -1382,7 +1383,7 @@ void test_regression_nmi_is_edge_triggered() {
     printf("Regression: NMI is edge triggered test passed!\n");
 }
 
-void test_regression_irq_autoclear_without_ack_callback() {
+void test_regression_irq_autoclear_without_ack_callback(void) {
     M68kCpu cpu;
     u8 memory[65536];
     memset(memory, 0, sizeof(memory));
@@ -1405,7 +1406,7 @@ void test_regression_irq_autoclear_without_ack_callback() {
     printf("Regression: IRQ auto-clear without ACK callback test passed!\n");
 }
 
-void test_regression_movem_cycles() {
+void test_regression_movem_cycles(void) {
     M68kCpu cpu;
     u8 memory[65536];
     memset(memory, 0, sizeof(memory));

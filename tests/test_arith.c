@@ -6,7 +6,7 @@
 #include "m68k.h"
 #include "test_m68k.h"
 
-void test_arithmetic() {
+void test_arithmetic(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -35,7 +35,7 @@ void test_arithmetic() {
     printf("Arithmetic instruction test passed!\n");
 }
 
-void test_negx() {
+void test_negx(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -61,7 +61,7 @@ void test_negx() {
     printf("NEGX test passed!\n");
 }
 
-void test_adda_suba() {
+void test_adda_suba(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -89,7 +89,7 @@ void test_adda_suba() {
     printf("ADDA/SUBA instruction test passed!\n");
 }
 
-void test_addx_subx() {
+void test_addx_subx(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -120,7 +120,7 @@ void test_addx_subx() {
     printf("ADDX/SUBX instruction test passed!\n");
 }
 
-void test_bcd() {
+void test_bcd(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -177,7 +177,7 @@ void test_bcd() {
     printf("BCD instruction test passed!\n");
 }
 
-void test_immediate_alu() {
+void test_immediate_alu(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
