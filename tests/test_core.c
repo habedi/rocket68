@@ -8,7 +8,7 @@
 
 u16 m68k_fetch(M68kCpu* cpu);
 
-void test_initialization() {
+void test_initialization(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -27,7 +27,7 @@ void test_initialization() {
     printf("Initialization test passed!\n");
 }
 
-void test_register_access() {
+void test_register_access(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -41,7 +41,7 @@ void test_register_access() {
     printf("Register access test passed!\n");
 }
 
-void test_memory_access() {
+void test_memory_access(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -111,7 +111,7 @@ static void mock_write_32(M68kCpu* cpu, u32 address, u32 value) {
     callback_write_32_value = value;
 }
 
-void test_host_memory_callbacks() {
+void test_host_memory_callbacks(void) {
     M68kCpu cpu;
     u8 memory[128];
     memset(memory, 0, sizeof(memory));
@@ -162,7 +162,7 @@ void test_host_memory_callbacks() {
     printf("Host memory callbacks test passed!\n");
 }
 
-void test_fetch() {
+void test_fetch(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -180,7 +180,7 @@ void test_fetch() {
     printf("Fetch test passed!\n");
 }
 
-void test_usp_switching() {
+void test_usp_switching(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -203,7 +203,7 @@ void test_usp_switching() {
     printf("USP switching test passed!\n");
 }
 
-void test_trace_mode() {
+void test_trace_mode(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -223,7 +223,7 @@ void test_trace_mode() {
     printf("Trace mode test passed!\n");
 }
 
-void test_stopped_state() {
+void test_stopped_state(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -254,7 +254,7 @@ void test_stopped_state() {
     printf("Stopped state test passed!\n");
 }
 
-void test_address_error() {
+void test_address_error(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -273,7 +273,7 @@ void test_address_error() {
     printf("Address error test passed!\n");
 }
 
-void test_interrupts() {
+void test_interrupts(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -326,7 +326,7 @@ static int mock_int_ack_cb(M68kCpu* cpu, int level) {
     return mock_iack_vector;
 }
 
-void test_int_ack() {
+void test_int_ack(void) {
     M68kCpu cpu;
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
@@ -387,7 +387,7 @@ void test_int_ack() {
 static unsigned int mock_fc = 0;
 static void mock_fc_cb(M68kCpu* cpu, unsigned int fc) { mock_fc = fc; }
 
-void test_fc() {
+void test_fc(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -439,7 +439,7 @@ static void handle_pc_changed(M68kCpu* cpu, u32 pc) { mock_pc_changed = pc; }
 static void handle_reset(M68kCpu* cpu) { mock_reset_called = true; }
 static int handle_tas(M68kCpu* cpu) { return mock_tas_result; }
 
-void test_hooks() {
+void test_hooks(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -507,7 +507,7 @@ static void timeslice_hook(M68kCpu* cpu, u32 pc) {
     m68k_end_timeslice(timeslice_test_cpu);
 }
 
-void test_timeslice() {
+void test_timeslice(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -534,7 +534,7 @@ void test_timeslice() {
     printf("Advanced Timeslice logic test passed!\n");
 }
 
-void test_serialization() {
+void test_serialization(void) {
     M68kCpu cpu1;
     M68kCpu cpu2;
     u8 memory1[1024];

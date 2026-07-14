@@ -6,7 +6,7 @@
 #include "m68k.h"
 #include "test_m68k.h"
 
-int main() {
+int main(void) {
     test_initialization();
     test_register_access();
     test_memory_access();

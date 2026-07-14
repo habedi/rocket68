@@ -6,7 +6,7 @@
 #include "m68k.h"
 #include "test_m68k.h"
 
-void test_addressing_mode_6() {
+void test_addressing_mode_6(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -26,7 +26,7 @@ void test_addressing_mode_6() {
     printf("Addressing Mode 6 test passed!\n");
 }
 
-void test_pcrel() {
+void test_pcrel(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));

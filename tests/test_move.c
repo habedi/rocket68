@@ -6,7 +6,7 @@
 #include "m68k.h"
 #include "test_m68k.h"
 
-void test_move() {
+void test_move(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -50,7 +50,7 @@ void test_move() {
     printf("MOVE instruction test passed!\n");
 }
 
-void test_movem() {
+void test_movem(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -118,7 +118,7 @@ void test_movem() {
     printf("MOVEM instruction test passed!\n");
 }
 
-void test_movep() {
+void test_movep(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -144,7 +144,7 @@ void test_movep() {
     printf("MOVEP test passed!\n");
 }
 
-void test_exg() {
+void test_exg(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -187,7 +187,7 @@ void test_exg() {
     printf("EXG instruction test passed!\n");
 }
 
-void test_lea_pea() {
+void test_lea_pea(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -213,7 +213,7 @@ void test_lea_pea() {
     printf("LEA/PEA test passed!\n");
 }
 
-void test_stack_frame() {
+void test_stack_frame(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -247,7 +247,7 @@ void test_stack_frame() {
     printf("Stack Frame (LINK/UNLK) test passed!\n");
 }
 
-void test_move_sr() {
+void test_move_sr(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -281,7 +281,7 @@ void test_move_sr() {
     printf("MOVE to/from SR test passed!\n");
 }
 
-void test_move_ccr() {
+void test_move_ccr(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -298,7 +298,7 @@ void test_move_ccr() {
     printf("MOVE to CCR test passed!\n");
 }
 
-void test_move_usp() {
+void test_move_usp(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -330,7 +330,7 @@ void test_move_usp() {
     printf("MOVE USP test passed!\n");
 }
 
-void test_moves() {
+void test_moves(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));

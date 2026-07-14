@@ -6,7 +6,7 @@
 #include "m68k.h"
 #include "test_m68k.h"
 
-void test_logic() {
+void test_logic(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -48,7 +48,7 @@ void test_logic() {
     printf("Logic instruction test passed!\n");
 }
 
-void test_data_manipulation() {
+void test_data_manipulation(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -109,7 +109,7 @@ void test_data_manipulation() {
 // Tests for Phase 1-3 New Features
 // =============================================================================
 
-void test_bit_manipulation() {
+void test_bit_manipulation(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -162,7 +162,7 @@ void test_bit_manipulation() {
     printf("Bit manipulation test passed!\n");
 }
 
-void test_shift_rotate() {
+void test_shift_rotate(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -207,7 +207,7 @@ void test_shift_rotate() {
     printf("Shift/Rotate test passed!\n");
 }
 
-void test_cmp_tst() {
+void test_cmp_tst(void) {
     M68kCpu cpu;
     u8 memory[1024];
     m68k_init(&cpu, memory, sizeof(memory));
@@ -258,7 +258,7 @@ void test_cmp_tst() {
     printf("CMP/TST test passed!\n");
 }
 
-void test_new_tas() {
+void test_new_tas(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -283,7 +283,7 @@ void test_new_tas() {
     printf("TAS test passed!\n");
 }
 
-void test_logic_not() {
+void test_logic_not(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -307,7 +307,7 @@ void test_logic_not() {
     printf("NOT test passed!\n");
 }
 
-void test_logic_ccr_sr() {
+void test_logic_ccr_sr(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
@@ -348,7 +348,7 @@ void test_logic_ccr_sr() {
     printf("CCR/SR Logic test passed!\n");
 }
 
-void test_andi_ori_eori() {
+void test_andi_ori_eori(void) {
     M68kCpu cpu;
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));

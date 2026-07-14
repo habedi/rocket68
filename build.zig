@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 
 fn rootPathExists(b: *std.Build, rel_path: []const u8) bool {
     const abs_path = b.pathFromRoot(rel_path);
@@ -57,10 +58,19 @@ pub fn build(b: *std.Build) void {
     // --- WASM build step ---
     const wasm_step = b.step("wasm", "Build Rocket 68 as a WASM library (wasm32-wasi)");
 
+    // Zig 0.16.0's bundled clang crashes while compiling musl's EH-based
+    // setjmp runtime, so on 0.16 and later the WASM build drops the
+    // exception-handling feature and links the stubs from src/wasm_compat
+    // instead of the native setjmp/longjmp lowering.
+    const wasm_native_sjlj = comptime builtin.zig_version.order(.{ .major = 0, .minor = 16, .patch = 0 }) == .lt;
+
     const wasm_target = b.resolveTargetQuery(.{
         .cpu_arch = .wasm32,
         .os_tag = .wasi,
-        .cpu_features_add = std.Target.wasm.featureSet(&.{.exception_handling}),
+        .cpu_features_add = if (wasm_native_sjlj)
+            std.Target.wasm.featureSet(&.{.exception_handling})
+        else
+            std.Target.wasm.featureSet(&.{}),
     });
 
     const wasm_mod = b.createModule(.{
@@ -87,20 +97,35 @@ pub fn build(b: *std.Build) void {
         "src/m68k/ops_move.c",
     };
 
-    // Enable setjmp/longjmp via WASM exception handling proposal
-    const wasm_c_flags = &.{
+    // Enable setjmp/longjmp via the WASM exception handling proposal
+    const wasm_c_flags: []const []const u8 = if (wasm_native_sjlj) &.{
         "-std=c11",
         "-Wall",
         "-Wextra",
         "-pedantic",
         "-mllvm",
         "-wasm-enable-sjlj",
+    } else &.{
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-pedantic",
+    };
+    const wasm_stub_files: []const []const u8 = &.{
+        "src/wasm_compat/setjmp_stubs.c",
     };
 
     wasm_mod.addCSourceFiles(.{
         .files = wasm_src_files,
         .flags = wasm_c_flags,
     });
+    if (!wasm_native_sjlj) {
+        wasm_mod.addIncludePath(b.path("src/wasm_compat"));
+        wasm_mod.addCSourceFiles(.{
+            .files = wasm_stub_files,
+            .flags = wasm_c_flags,
+        });
+    }
 
     // Standalone .wasm module (WASI reactor — no main, all symbols exported)
     const wasm_exe_mod = b.createModule(.{
@@ -119,6 +144,13 @@ pub fn build(b: *std.Build) void {
         .files = wasm_src_files,
         .flags = wasm_c_flags,
     });
+    if (!wasm_native_sjlj) {
+        wasm_exe_mod.addIncludePath(b.path("src/wasm_compat"));
+        wasm_exe_mod.addCSourceFiles(.{
+            .files = wasm_stub_files,
+            .flags = wasm_c_flags,
+        });
+    }
     wasm_exe.entry = .disabled; // No main — WASI reactor
     wasm_exe.rdynamic = true; // Export all public symbols
     wasm_exe.import_symbols = true; // Allow unresolved symbols (wasi-libc __main_void)
