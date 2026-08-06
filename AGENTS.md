@@ -29,13 +29,30 @@ Quick examples:
 
 - Use Oxford commas in inline lists: "a, b, and c" not "a, b, c".
 - Do not use em dashes. Restructure the sentence, or use a colon or semicolon instead.
-- Avoid colorful adjectives and adverbs. Write "graph generator" not "powerful graph generator".
-- Prefer using noun phrases for checklist items, not imperative verbs. Write "negative weight detection" not "detect negative weights".
-- Headings in Markdown files must be in title case: "Build from Source" not "Build from source". Minor words (a, an, the, and, but, or, for, in, on,
-  at, to, by, of) stay lowercase unless they are the first word.
+- Avoid colorful adjectives and adverbs. Write "opcode dispatch" not "blazing opcode dispatch".
+- Prefer noun phrases for checklist items over imperative verbs. Write "address error detection" not "detect address errors".
+  Numbered procedure steps that are carried out in order are the exception, and stay imperative.
+- Headings in Markdown files must be in title case: "Build from Source" not "Build from source". Minor words stay lowercase
+  unless they are the first word: the articles (a, an, the), the coordinating conjunctions (and, but, or, nor, so, yet, for),
+  and the short prepositions (in, on, at, to, by, of, up, as, from, with, into, over). The example above is why the
+  prepositions are named: "from" has to be lowercase for "Build from Source" to be correct, and an earlier version of this
+  rule listed only through "of", which made its own example a violation.
+- Do not bold the lead-in of a list item. Write "Cycle accuracy: ..." not "**Cycle accuracy:** ...".
+- Use sentence case for the lead-in of a list item. Write "Prefetch queue: ..." not "Prefetch Queue: ...". Proper nouns keep
+  their capitals.
+- Capitalize only the first part of a hyphenated compound: "Cycle-accurate Timing" in a heading, "Side-effect-free" at the
+  start of a sentence, and "side-effect-free peek" elsewhere. Never write "Cycle-Accurate".
+- Start each sentence with a capital letter, capitalize proper nouns (C11, GCC, Musashi), and leave common nouns lowercase in
+  the middle of a sentence.
 - Write correct and complete sentences.
-- Avoid made-up words, abbreviations, and colons in the middle of sentences.
-- Don't use pretentious language and made-up words.
+- Avoid pretentious language and made-up words.
+- Do not use a colon in place of a verb. Three uses are fine: joining two clauses inside a complete sentence (the replacement
+  the em-dash rule above calls for), introducing the gloss of a list item, and introducing an enumeration, whether as a list
+  or inline ("Callbacks: read8, read16, read32, and so on"). What a colon must not do is turn a sentence into a label and a
+  definition: write "Reads a word without wait states, faults, or cycle cost" rather than "Side-effect-free peek: reads a
+  word without wait states". That shape belongs to a list item, and carrying it into prose (a doc comment summary, a
+  paragraph) leaves a fragment where a sentence was required.
+- Use participial phrases and abbreviations scarcely.
 
 ## Repository Layout
 
@@ -80,21 +97,22 @@ Recommended for risky or low-level changes:
 Use this sequence for your first change:
 
 1. Read `include/m68k.h` and the touched opcode/core files.
-2. Implement the smallest possible code change.
-3. Add or update tests in `tests/` that fail before and pass after.
+2. Add or update tests in `tests/` that fail against current behavior.
+3. Implement the smallest possible code change that makes those tests pass.
 4. Run `make test`.
 5. Run `make bench` if execution logic, opcodes, or timing changed.
-6. Update `docs/` if public API behavior or examples changed.
+6. Update `docs/` if public API behavior or examples are changed.
 
 Example scopes that are good first tasks:
 
 - add tests for an existing opcode edge case;
-- fix a callback wiring bug without changing API shape;
-- improve docs/examples to match current API behavior.
+- fix a callback wiring bug without changing the API shape;
+- improve docs/examples to match the current API behavior.
 
 ## Testing Expectations
 
 - No opcode or execution workflow change is complete without tests.
+- Write the test before the change, and confirm it fails for the expected reason first.
 - Unit tests should fully initialize `M68kCpu` and required callbacks/memory behavior.
 - Integration tests should verify realistic instruction sequences and state transitions.
 - Do not merge code that breaks existing tests.
