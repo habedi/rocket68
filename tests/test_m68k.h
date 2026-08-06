@@ -105,5 +105,7 @@ void test_regression_irq_level_triggered_with_ack_callback(void);
 void test_regression_nmi_is_edge_triggered(void);
 void test_regression_irq_autoclear_without_ack_callback(void);
 void test_regression_movem_cycles(void);
+void test_disasm_buffer_bounds(void);
+void test_disasm_truncates_small_buffers(void);
 
 #endif

@@ -119,6 +119,9 @@ int main(void) {
     test_regression_irq_autoclear_without_ack_callback();
     test_regression_movem_cycles();
 
+    test_disasm_buffer_bounds();
+    test_disasm_truncates_small_buffers();
+
     extern void run_loader_tests();
     run_loader_tests();
 
