@@ -591,6 +591,72 @@ void test_illg_callback(void) {
     printf("Illegal opcode callback test passed!\n");
 }
 
+void test_save_state(void) {
+    M68kCpu cpu;
+    u8 memory[4096];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    /* Populate distinctive architectural state. */
+    for (int i = 0; i < 8; i++) {
+        cpu.d_regs[i].l = 0x11110000u + (u32)i;
+        cpu.a_regs[i].l = 0x22220000u + (u32)i;
+    }
+    cpu.pc = 0x1234;
+    cpu.sr = 0x2715;
+    cpu.usp = 0x3000;
+    cpu.ssp = 0x4000;
+    cpu.vbr = 0x800;
+    cpu.sfc = 5;
+    cpu.dfc = 6;
+    cpu.stopped = true;
+    cpu.irq_level = 3;
+
+    /* Sizing call, then serialization into an exact-size buffer. */
+    size_t need = m68k_serialize(&cpu, NULL, 0);
+    assert(need > 0 && need < 512);
+    u8 blob[512];
+    assert(m68k_serialize(&cpu, blob, sizeof(blob)) == need);
+
+    /* A short buffer fails. */
+    assert(m68k_serialize(&cpu, blob, need - 1) == 0);
+
+    /* Restore into a fresh CPU with different bindings. */
+    M68kCpu other;
+    u8 other_memory[4096];
+    m68k_init(&other, other_memory, sizeof(other_memory));
+    m68k_set_illg_callback(&other, handle_illg);
+    assert(m68k_deserialize(&other, blob, need));
+
+    for (int i = 0; i < 8; i++) {
+        assert(other.d_regs[i].l == 0x11110000u + (u32)i);
+        assert(other.a_regs[i].l == 0x22220000u + (u32)i);
+    }
+    assert(other.pc == 0x1234);
+    assert(other.sr == 0x2715);
+    assert(other.usp == 0x3000);
+    assert(other.ssp == 0x4000);
+    assert(other.vbr == 0x800);
+    assert(other.sfc == 5);
+    assert(other.dfc == 6);
+    assert(other.stopped == true);
+    assert(other.irq_level == 3);
+
+    /* Host bindings survive deserialization. */
+    assert(other.memory == other_memory);
+    assert(other.illg_cb == handle_illg);
+
+    /* A corrupted magic is rejected. */
+    blob[0] ^= 0xFF;
+    assert(!m68k_deserialize(&other, blob, need));
+    blob[0] ^= 0xFF;
+
+    /* A truncated blob is rejected. */
+    assert(!m68k_deserialize(&other, blob, need - 3));
+
+    printf("Save state test passed!\n");
+}
+
 void test_timeslice(void) {
     M68kCpu cpu;
     u8 memory[1024];

@@ -4,9 +4,9 @@ This page lists current compatibility notes and scope limits based on the curren
 
 ## CPU Model Scope
 
-- The core exposes one execution profile through `M68kCpu`.
-- There is no public API to select CPU model variants (for example 68010/68020 mode switches).
-- Some later-family instructions exist (`MOVEC`, `MOVES`, `RTD`, `BKPT`), but model behavior is not fully parameterized.
+- `m68k_set_model` selects the CPU profile per instance; the default is `M68K_MODEL_68000`.
+- On the 68000 profile the later-family instructions (`MOVEC`, `MOVES`, `RTD`, and `BKPT`) raise illegal-instruction exceptions, matching real hardware.
+- On the 68010 profile those instructions execute. The 68010 profile is functional, not cycle accurate, and does not yet model 68010 frame formats or loop mode.
 
 ## Address Space and Memory Model
 
@@ -19,7 +19,7 @@ This page lists current compatibility notes and scope limits based on the curren
 - `fc_callback` is emitted for memory reads/writes and instruction fetches.
 - The interrupt acknowledge path emits the FC callback with `M68K_FC_INT_ACK` before the vector is resolved, for vectored and autovectored responses alike.
 - `pc_changed_callback` is triggered when PC is changed through `m68k_set_pc`.
-- Direct PC writes (for example in `m68k_reset` and `m68k_fetch`) do not call `pc_changed_callback`.
+- Direct PC writes (for example, in `m68k_reset` and `m68k_fetch`) do not call `pc_changed_callback`.
 - `reset_callback` is tied to execution of the `RESET` instruction, not to `m68k_reset()`.
 - `illg_callback` fires before an illegal-instruction exception (vector 4); a nonzero return suppresses the exception. Line-A and line-F opcodes (vectors 10 and 11) do not invoke it.
 

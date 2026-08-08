@@ -173,6 +173,7 @@ void test_vbr_exception_base(void) {
     cpu.a_regs[7].l = 0x1000;
     cpu.ssp = 0x1000;
     cpu.sr = 0x2700; /* supervisor, so MOVEC is allowed */
+    m68k_set_model(&cpu, M68K_MODEL_68010);
 
     /* Relocate the vector table to 0x800 with MOVEC D0, VBR. */
     cpu.d_regs[0].l = 0x800;
@@ -450,6 +451,46 @@ void test_odd_target_fault(void) {
     printf("Odd target fault test passed!\n");
 }
 
+void test_model_gating(void) {
+    M68kCpu cpu;
+    u8 memory[4096];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    /* The default model is the 68000, where MOVEC is an illegal
+     * instruction and takes vector 4. */
+    assert(m68k_get_model(&cpu) == M68K_MODEL_68000);
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    cpu.d_regs[0].l = 0x800;
+    m68k_write_32(&cpu, 4 * 4, 0x600); /* illegal instruction vector */
+    m68k_write_16(&cpu, 0x100, 0x4E7B); /* MOVEC D0, VBR */
+    m68k_write_16(&cpu, 0x102, 0x0801);
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+    assert(cpu.vbr == 0);
+
+    /* RTD is also illegal on the 68000. */
+    cpu.a_regs[7].l = 0x1000;
+    m68k_write_16(&cpu, 0x104, 0x4E74); /* RTD */
+    m68k_write_16(&cpu, 0x106, 0x0004);
+    cpu.pc = 0x104;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+
+    /* On the 68010, MOVEC executes. */
+    m68k_set_model(&cpu, M68K_MODEL_68010);
+    assert(m68k_get_model(&cpu) == M68K_MODEL_68010);
+    cpu.a_regs[7].l = 0x1000;
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.vbr == 0x800);
+
+    printf("Model gating test passed!\n");
+}
+
 void test_nop_bsr_rtr(void) {
     M68kCpu cpu;
     u8 memory[1024];
@@ -487,6 +528,7 @@ void test_movec(void) {
     u8 memory[4096];
     memset(memory, 0, sizeof(memory));
     m68k_init(&cpu, memory, sizeof(memory));
+    m68k_set_model(&cpu, M68K_MODEL_68010);
 
     cpu.sr = M68K_SR_S;  // Supervisor mode
 
@@ -561,6 +603,7 @@ void test_rtd(void) {
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
     m68k_init(&cpu, memory, sizeof(memory));
+    m68k_set_model(&cpu, M68K_MODEL_68010);
 
     // RTD #4 -> 0x4E74, 0x0004
     m68k_write_16(&cpu, 0, 0x4E74);
@@ -583,6 +626,7 @@ void test_bkpt(void) {
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
     m68k_init(&cpu, memory, sizeof(memory));
+    m68k_set_model(&cpu, M68K_MODEL_68010);
 
     // BKPT #7 -> 0x484F
     m68k_write_16(&cpu, 0, 0x484F);

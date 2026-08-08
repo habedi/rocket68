@@ -38,6 +38,7 @@ int main(void) {
     test_fc_int_ack();
     test_hooks();
     test_illg_callback();
+    test_save_state();
     test_timeslice();
     test_serialization();
 
@@ -78,6 +79,7 @@ int main(void) {
 
     test_movec();
     test_address_error_frame_pc();
+    test_model_gating();
     test_move_write_fault();
     test_rmw_fault_commits();
     test_odd_target_fault();

@@ -57,6 +57,10 @@ void m68k_set_pc(M68kCpu* cpu, u32 pc) {
 
 u32 m68k_get_pc(M68kCpu* cpu) { return cpu->pc; }
 
+void m68k_set_model(M68kCpu* cpu, M68kModel model) { cpu->model = model; }
+
+M68kModel m68k_get_model(M68kCpu* cpu) { return cpu->model; }
+
 void m68k_set_dr(M68kCpu* cpu, int reg, u32 value) {
     if (reg >= 0 && reg < 8) {
         cpu->d_regs[reg].l = value;
@@ -970,6 +974,12 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         int top4 = (opcode >> 8) & 0xF;
 
         if (top4 == 0x0E) {
+        /* A later-family instruction is illegal on the 68000. */
+        if (cpu->model < M68K_MODEL_68010) {
+            m68k_exception(cpu, 4);
+            cycles = 34;
+            goto done;
+        }
             m68k_exec_moves(cpu, opcode);
             cycles = 4;
             goto done;
@@ -1133,17 +1143,35 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         }
 
         if (opcode == 0x4E74) {
+        /* A later-family instruction is illegal on the 68000. */
+        if (cpu->model < M68K_MODEL_68010) {
+            m68k_exception(cpu, 4);
+            cycles = 34;
+            goto done;
+        }
             m68k_exec_rtd(cpu, opcode);
             cycles = 16;
             goto done;
         }
         if (opcode == 0x4E7A || opcode == 0x4E7B) {
+        /* A later-family instruction is illegal on the 68000. */
+        if (cpu->model < M68K_MODEL_68010) {
+            m68k_exception(cpu, 4);
+            cycles = 34;
+            goto done;
+        }
             m68k_exec_movec(cpu, opcode);
             cycles = 12;
             goto done;
         }
 
         if ((opcode & 0xFFF8) == 0x4848) {
+        /* A later-family instruction is illegal on the 68000. */
+        if (cpu->model < M68K_MODEL_68010) {
+            m68k_exception(cpu, 4);
+            cycles = 34;
+            goto done;
+        }
             m68k_exec_bkpt(cpu, opcode);
             cycles = 4;
             goto done;
@@ -1671,4 +1699,201 @@ void m68k_set_context(M68kCpu* cpu, const void* src) {
         cpu->write16_cb = old_write16_cb;
         cpu->write32_cb = old_write32_cb;
     }
+}
+
+/* Portable save states use a versioned, tagged, big-endian format so
+ * blobs survive compiler, ABI, and host-architecture changes. Unknown
+ * tags are skipped on restore for forward compatibility. */
+
+#define M68K_STATE_VERSION 1u
+
+enum {
+    M68K_TAG_DREGS = 1,
+    M68K_TAG_AREGS = 2,
+    M68K_TAG_PC = 3,
+    M68K_TAG_SR = 4,
+    M68K_TAG_USP = 5,
+    M68K_TAG_SSP = 6,
+    M68K_TAG_VBR = 7,
+    M68K_TAG_SFC = 8,
+    M68K_TAG_DFC = 9,
+    M68K_TAG_FLAGS = 10,
+    M68K_TAG_DECODE = 11,
+    M68K_TAG_CYCLES = 12
+};
+
+static void state_put_16(u8* p, u16 v) {
+    p[0] = (u8)(v >> 8);
+    p[1] = (u8)v;
+}
+
+static void state_put_32(u8* p, u32 v) {
+    p[0] = (u8)(v >> 24);
+    p[1] = (u8)(v >> 16);
+    p[2] = (u8)(v >> 8);
+    p[3] = (u8)v;
+}
+
+static u16 state_get_16(const u8* p) { return (u16)((p[0] << 8) | p[1]); }
+
+static u32 state_get_32(const u8* p) {
+    return ((u32)p[0] << 24) | ((u32)p[1] << 16) | ((u32)p[2] << 8) | (u32)p[3];
+}
+
+static u8* state_field(u8* p, u8 tag, u8 len) {
+    p[0] = tag;
+    p[1] = len;
+    return p + 2;
+}
+
+size_t m68k_serialize(const M68kCpu* cpu, u8* buffer, size_t capacity) {
+    /* Header 8, register blocks 2 + 32 each, and the scalar fields. */
+    const size_t need = 8 + (2 + 32) * 2 + (2 + 4) * 6 + (2 + 2) + (2 + 4) + (2 + 6) + (2 + 8);
+
+    if (buffer == NULL) return need;
+    if (capacity < need) return 0;
+
+    u8* p = buffer;
+    p[0] = 'R';
+    p[1] = '6';
+    p[2] = '8';
+    p[3] = 'S';
+    state_put_16(p + 4, M68K_STATE_VERSION);
+    state_put_16(p + 6, 0);
+    p += 8;
+
+    p = state_field(p, M68K_TAG_DREGS, 32);
+    for (int i = 0; i < 8; i++, p += 4) state_put_32(p, cpu->d_regs[i].l);
+    p = state_field(p, M68K_TAG_AREGS, 32);
+    for (int i = 0; i < 8; i++, p += 4) state_put_32(p, cpu->a_regs[i].l);
+
+    p = state_field(p, M68K_TAG_PC, 4);
+    state_put_32(p, cpu->pc);
+    p += 4;
+    p = state_field(p, M68K_TAG_SR, 2);
+    state_put_16(p, cpu->sr);
+    p += 2;
+    p = state_field(p, M68K_TAG_USP, 4);
+    state_put_32(p, cpu->usp);
+    p += 4;
+    p = state_field(p, M68K_TAG_SSP, 4);
+    state_put_32(p, cpu->ssp);
+    p += 4;
+    p = state_field(p, M68K_TAG_VBR, 4);
+    state_put_32(p, cpu->vbr);
+    p += 4;
+    p = state_field(p, M68K_TAG_SFC, 4);
+    state_put_32(p, cpu->sfc);
+    p += 4;
+    p = state_field(p, M68K_TAG_DFC, 4);
+    state_put_32(p, cpu->dfc);
+    p += 4;
+
+    p = state_field(p, M68K_TAG_FLAGS, 4);
+    p[0] = cpu->stopped ? 1 : 0;
+    p[1] = (u8)cpu->irq_level;
+    p[2] = cpu->nmi_pending ? 1 : 0;
+    p[3] = cpu->trace_pending ? 1 : 0;
+    p += 4;
+
+    p = state_field(p, M68K_TAG_DECODE, 6);
+    state_put_16(p, cpu->ir);
+    state_put_32(p + 2, cpu->ppc);
+    p += 6;
+
+    p = state_field(p, M68K_TAG_CYCLES, 8);
+    state_put_32(p, (u32)cpu->target_cycles);
+    state_put_32(p + 4, (u32)cpu->cycles_remaining);
+    p += 8;
+
+    return (size_t)(p - buffer);
+}
+
+bool m68k_deserialize(M68kCpu* cpu, const u8* buffer, size_t length) {
+    if (buffer == NULL || length < 8) return false;
+    if (buffer[0] != 'R' || buffer[1] != '6' || buffer[2] != '8' || buffer[3] != 'S') return false;
+    if (state_get_16(buffer + 4) != M68K_STATE_VERSION) return false;
+
+    const u8* p = buffer + 8;
+    const u8* end = buffer + length;
+
+    while (p < end) {
+        if ((size_t)(end - p) < 2) return false;
+        u8 tag = p[0];
+        u8 len = p[1];
+        p += 2;
+        if ((size_t)(end - p) < len) return false;
+
+        switch (tag) {
+            case M68K_TAG_DREGS:
+                if (len != 32) return false;
+                for (int i = 0; i < 8; i++) cpu->d_regs[i].l = state_get_32(p + i * 4);
+                break;
+            case M68K_TAG_AREGS:
+                if (len != 32) return false;
+                for (int i = 0; i < 8; i++) cpu->a_regs[i].l = state_get_32(p + i * 4);
+                break;
+            case M68K_TAG_PC:
+                if (len != 4) return false;
+                cpu->pc = state_get_32(p);
+                break;
+            case M68K_TAG_SR:
+                if (len != 2) return false;
+                cpu->sr = state_get_16(p);
+                break;
+            case M68K_TAG_USP:
+                if (len != 4) return false;
+                cpu->usp = state_get_32(p);
+                break;
+            case M68K_TAG_SSP:
+                if (len != 4) return false;
+                cpu->ssp = state_get_32(p);
+                break;
+            case M68K_TAG_VBR:
+                if (len != 4) return false;
+                cpu->vbr = state_get_32(p);
+                break;
+            case M68K_TAG_SFC:
+                if (len != 4) return false;
+                cpu->sfc = state_get_32(p);
+                break;
+            case M68K_TAG_DFC:
+                if (len != 4) return false;
+                cpu->dfc = state_get_32(p);
+                break;
+            case M68K_TAG_FLAGS:
+                if (len != 4) return false;
+                cpu->stopped = p[0] != 0;
+                cpu->irq_level = p[1];
+                cpu->nmi_pending = p[2] != 0;
+                cpu->trace_pending = p[3] != 0;
+                break;
+            case M68K_TAG_DECODE:
+                if (len != 6) return false;
+                cpu->ir = state_get_16(p);
+                cpu->ppc = state_get_32(p + 2);
+                break;
+            case M68K_TAG_CYCLES:
+                if (len != 8) return false;
+                cpu->target_cycles = (int)state_get_32(p);
+                cpu->cycles_remaining = (int)state_get_32(p + 4);
+                break;
+            default:
+                break; /* unknown tags are skipped */
+        }
+        p += len;
+    }
+
+    /* Transient fault latches never restore as active. */
+    cpu->exception_thrown = 0;
+    cpu->fault_valid = false;
+    cpu->fault_pc_valid = false;
+    cpu->fault_bus_word_valid = false;
+    cpu->operand_program_space = false;
+    cpu->group0_fault = false;
+    cpu->fault_trap_active = false;
+    cpu->in_address_error = false;
+    cpu->in_bus_error = false;
+
+    return true;
 }

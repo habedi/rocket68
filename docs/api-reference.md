@@ -99,6 +99,16 @@ Sets PC and triggers `pc_changed` callback if installed.
 
 Returns PC.
 
+### `void m68k_set_model(M68kCpu* cpu, M68kModel model);`
+
+Selects the CPU model profile for this instance.
+The default after `m68k_init` is `M68K_MODEL_68000`, where the later-family instructions `MOVEC`, `MOVES`, `RTD`, and `BKPT` raise illegal-instruction exceptions.
+`M68K_MODEL_68010` enables those instructions.
+
+### `M68kModel m68k_get_model(M68kCpu* cpu);`
+
+Returns the selected CPU model profile.
+
 ### `void m68k_set_sr(M68kCpu* cpu, u16 new_sr);`
 
 Sets SR with masking (`0xA71F`) and performs USP/SSP swap when supervisor state changes.
