@@ -129,6 +129,8 @@ void m68k_set_write32_callback(M68kCpu* cpu, M68kWrite32Callback callback) {
 
 static inline unsigned int current_fc(const M68kCpu* cpu, bool is_program) {
     bool is_supervisor = (cpu->sr & M68K_SR_S) != 0;
+    /* PC-relative operand reads assert program space on real hardware. */
+    is_program = is_program || cpu->operand_program_space;
     if (is_supervisor) {
         return is_program ? M68K_FC_SUPV_PROG : M68K_FC_SUPV_DATA;
     }
@@ -147,7 +149,11 @@ static inline void capture_access_fault(M68kCpu* cpu, u32 address, bool is_write
     u16 rw = (u16)(is_write ? 0u : AERR_MODE_READ);
 
     cpu->fault_address = address;
-    cpu->fault_ir = cpu->ir;
+    /* The frame IR and the undefined SSW bits reflect the CPU's internal
+     * bus at fault time. That is usually the opcode, but instructions can
+     * latch a different word (for example a prefetch overlapping a
+     * predecrement write) through fault_bus_word. */
+    cpu->fault_ir = cpu->fault_bus_word_valid ? cpu->fault_bus_word : cpu->ir;
     cpu->fault_ssw = (u16)((cpu->fault_ir & 0xFFE0u) | rw | fc);
     cpu->fault_program_access = is_program;
     cpu->fault_valid = true;
@@ -162,39 +168,6 @@ static inline void abort_faulted_instruction(M68kCpu* cpu) {
     if (cpu->fault_trap_active && cpu->group0_fault && cpu->exception_depth == 0) {
         longjmp(cpu->fault_trap, 1);
     }
-}
-
-static const int ea_cycles[12][2] = {
-    {0, 0},   {0, 0},  {4, 8},   {4, 8},  {6, 10},  {8, 12},
-    {10, 14}, {8, 12}, {12, 16}, {8, 12}, {10, 14}, {4, 8},
-};
-
-static int m68k_ea_cycles(int mode, int reg, M68kSize size) {
-    int idx;
-    if (mode <= 6) {
-        idx = mode;
-    } else {
-        switch (reg) {
-            case 0:
-                idx = 7;
-                break;
-            case 1:
-                idx = 8;
-                break;
-            case 2:
-                idx = 9;
-                break;
-            case 3:
-                idx = 10;
-                break;
-            case 4:
-                idx = 11;
-                break;
-            default:
-                return 0;
-        }
-    }
-    return ea_cycles[idx][size == SIZE_LONG ? 1 : 0];
 }
 
 static inline void apply_wait_bus(M68kCpu* cpu, u32 address, M68kSize size, bool is_write) {
@@ -439,8 +412,10 @@ static void set_fault_pc(M68kCpu* cpu, int mode, int reg, M68kSize size) {
                 offset = 6;
             } else if (reg == 0) {
                 offset = 4;
+            } else if (reg == 2 || reg == 3) {
+                offset = 2;
             } else {
-                return; /* PC-relative modes are not measured yet. */
+                return;
             }
             break;
         default:
@@ -523,7 +498,11 @@ static M68kEA m68k_calc_ea_ex(M68kCpu* cpu, int mode, int reg, M68kSize size, bo
                 case 2: {
                     s16 disp = (s16)fetch_extension(cpu);
                     ea.address = (cpu->pc - 2) + disp;
-                    if (fetch_value) ea.value = m68k_read_size(cpu, ea.address, size);
+                    if (fetch_value) {
+                        cpu->operand_program_space = true;
+                        ea.value = m68k_read_size(cpu, ea.address, size);
+                        cpu->operand_program_space = false;
+                    }
                 } break;
                 case 3: {
                     u16 ext = fetch_extension(cpu);
@@ -539,7 +518,11 @@ static M68kEA m68k_calc_ea_ex(M68kCpu* cpu, int mode, int reg, M68kSize size, bo
                     }
 
                     ea.address = pc_base + xn_val + disp8;
-                    if (fetch_value) ea.value = m68k_read_size(cpu, ea.address, size);
+                    if (fetch_value) {
+                        cpu->operand_program_space = true;
+                        ea.value = m68k_read_size(cpu, ea.address, size);
+                        cpu->operand_program_space = false;
+                    }
                 } break;
                 default:
                     break;
@@ -811,6 +794,8 @@ void m68k_exception(M68kCpu* cpu, int vector) {
     cpu->fault_program_access = false;
     cpu->fault_valid = false;
     cpu->fault_pc_valid = false;
+    cpu->fault_bus_word_valid = false;
+    cpu->operand_program_space = false;
 
     u32 vector_addr = m68k_read_32(cpu, cpu->vbr + (u32)vector * 4);
 
@@ -930,6 +915,9 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
     cpu->fault_trap_active = true;
 
     cpu->ppc = cpu->pc;
+    /* fault_bus_word_valid and operand_program_space are cleared on both
+     * their success paths and in m68k_exception, so only the fault PC
+     * latch needs a per-instruction reset. */
     cpu->fault_pc_valid = false;
     u16 opcode = m68k_fetch(cpu);
     if (cpu->group0_fault) {

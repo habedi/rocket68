@@ -23,6 +23,15 @@ This page lists current compatibility notes and scope limits based on the curren
 - `reset_callback` is tied to execution of the `RESET` instruction, not to `m68k_reset()`.
 - `illg_callback` fires before an illegal-instruction exception (vector 4); a nonzero return suppresses the exception. Line-A and line-F opcodes (vectors 10 and 11) do not invoke it.
 
+## Group-0 Exception Frames
+
+- Address-error and bus-error frames model 68000 microcode behavior measured against the SingleStepTests corpus.
+- The pushed PC follows per-addressing-mode offsets from the instruction start, not the number of extension words consumed.
+- Postincrement commits before the operand read for byte and word reads, but not for long reads; predecrement always commits on reads. On destination writes, predecrement commits for byte and word only, and postincrement commits only after a successful write.
+- MOVE with a predecrement destination pushes the next prefetch word in the frame IR slot, and a long write to a predecrement destination goes low word first.
+- The condition codes visible after a faulted MOVE.l write depend on the source kind and destination mode, matching corpus measurements.
+- PC-relative operand reads assert program space in the frame status word and the FC callback.
+
 ## Control Registers and Exception Base
 
 - `VBR`, `SFC`, and `DFC` fields exist and are accessible through `MOVEC`.

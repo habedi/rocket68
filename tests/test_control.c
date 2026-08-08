@@ -260,6 +260,71 @@ void test_address_error_frame_pc(void) {
     printf("Address error frame PC test passed!\n");
 }
 
+void test_move_write_fault(void) {
+    M68kCpu cpu;
+    u8 memory[8192];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    /* MOVE.w D0, (A1) with an odd destination. The pushed PC is the
+     * instruction address plus 4, and the pushed SR holds the updated
+     * condition codes. */
+    cpu.sr = 0x2700 | M68K_SR_C;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    cpu.d_regs[0].l = 0x8000; /* negative word: N set, C cleared */
+    cpu.a_regs[1].l = 0x501;
+    m68k_write_32(&cpu, 3 * 4, 0x600);
+    m68k_write_16(&cpu, 0x100, 0x3280); /* MOVE.w D0, (A1) */
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+    u32 frame = 0x1000 - 14;
+    u32 frame_pc = ((u32)memory[frame + 10] << 24) | ((u32)memory[frame + 11] << 16) |
+                   ((u32)memory[frame + 12] << 8) | memory[frame + 13];
+    assert(frame_pc == 0x104);
+    u16 frame_sr = (u16)((memory[frame + 8] << 8) | memory[frame + 9]);
+    assert((frame_sr & 0x1F) == M68K_SR_N);
+    assert((cpu.sr & 0x1F) == M68K_SR_N);
+
+    /* MOVE.l D0, (A1) with an odd destination leaves the condition codes
+     * unchanged on the fault path. */
+    m68k_init(&cpu, memory, sizeof(memory));
+    memset(memory, 0, sizeof(memory));
+    cpu.sr = 0x2700 | M68K_SR_C;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    cpu.d_regs[0].l = 0x80000000;
+    cpu.a_regs[1].l = 0x501;
+    m68k_write_32(&cpu, 3 * 4, 0x600);
+    m68k_write_16(&cpu, 0x100, 0x2280); /* MOVE.l D0, (A1) */
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+    assert((cpu.sr & 0x1F) == M68K_SR_C);
+
+    /* MOVE.w D0, -(A1): the frame IR holds the next prefetch word, not
+     * the opcode, and the decrement commits. */
+    m68k_init(&cpu, memory, sizeof(memory));
+    memset(memory, 0, sizeof(memory));
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    cpu.d_regs[0].l = 0x1234;
+    cpu.a_regs[1].l = 0x503;
+    m68k_write_32(&cpu, 3 * 4, 0x600);
+    m68k_write_16(&cpu, 0x100, 0x3300); /* MOVE.w D0, -(A1) */
+    m68k_write_16(&cpu, 0x102, 0xBEEF); /* next prefetch word */
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+    assert(cpu.a_regs[1].l == 0x501);
+    u16 frame_ir = (u16)((memory[frame + 6] << 8) | memory[frame + 7]);
+    assert(frame_ir == 0xBEEF);
+
+    printf("MOVE write fault test passed!\n");
+}
+
 void test_nop_bsr_rtr(void) {
     M68kCpu cpu;
     u8 memory[1024];

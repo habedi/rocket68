@@ -27,33 +27,123 @@ void m68k_exec_move(M68kCpu* cpu, u16 opcode) {
     int src_reg = opcode & 0x7;
 
     M68kEA src_ea = m68k_calc_ea(cpu, src_mode, src_reg, size);
-    M68kEA dest_ea = m68k_calc_ea_addr(cpu, dest_mode, dest_reg, size);
+    u32 pc_after_src = cpu->pc;
+
+    /* Destination (An)+ and -(An) commits interact with write faults:
+     * -(An) commits before the write for byte and word only, and (An)+
+     * commits only after a successful write, per corpus measurement. A
+     * faulted write longjmps out, so ordering encodes the rules. */
+    M68kEA dest_ea;
+    bool commit_after_write = false;
+    u32 commit_value = 0;
+    if (dest_mode == 3 || dest_mode == 4) {
+        u32 step = (size == SIZE_BYTE && dest_reg == 7) ? 2 : (u32)size;
+        cpu->cycles_remaining -= m68k_ea_cycles(dest_mode, dest_reg, size);
+        dest_ea = (M68kEA){0};
+        if (dest_mode == 3) {
+            dest_ea.address = cpu->a_regs[dest_reg].l;
+            commit_after_write = true;
+            commit_value = dest_ea.address + step;
+        } else {
+            dest_ea.address = cpu->a_regs[dest_reg].l - step;
+            if (size == SIZE_LONG) {
+                commit_after_write = true;
+                commit_value = dest_ea.address;
+            } else {
+                cpu->a_regs[dest_reg].l = dest_ea.address;
+            }
+        }
+    } else {
+        dest_ea = m68k_calc_ea_addr(cpu, dest_mode, dest_reg, size);
+    }
+
+    u16 full_flags = 0;
+    if (size == SIZE_BYTE && (s8)src_ea.value < 0)
+        full_flags |= M68K_SR_N;
+    else if (size == SIZE_WORD && (s16)src_ea.value < 0)
+        full_flags |= M68K_SR_N;
+    else if (size == SIZE_LONG && (s32)src_ea.value < 0)
+        full_flags |= M68K_SR_N;
+    if ((size == SIZE_BYTE && (u8)src_ea.value == 0) ||
+        (size == SIZE_WORD && (u16)src_ea.value == 0) ||
+        (size == SIZE_LONG && src_ea.value == 0)) {
+        full_flags |= M68K_SR_Z;
+    }
+
+    const u16 ccr_mask = M68K_SR_N | M68K_SR_Z | M68K_SR_V | M68K_SR_C;
 
     if (dest_ea.is_reg && !dest_ea.is_addr) {
         u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;
         u32 current = cpu->d_regs[dest_ea.reg_num].l;
         cpu->d_regs[dest_ea.reg_num].l = (current & ~mask) | (src_ea.value & mask);
+        cpu->sr = (cpu->sr & ~ccr_mask) | full_flags;
     } else if (dest_ea.is_reg && dest_ea.is_addr) {
         u32 val = src_ea.value;
         if (size == SIZE_WORD) val = (s32)(s16)val;
         cpu->a_regs[dest_ea.reg_num].l = val;
     } else {
+        /* A faulted destination write pushes the PC after the source
+         * extension words plus one prefetch advance. An (xxx).l
+         * destination with a register-direct source prefetches one more
+         * word before the write. */
+        bool src_reg_imm = (src_mode <= 1) || (src_mode == 7 && src_reg == 4);
+        cpu->fault_pc = pc_after_src + 2;
+        if (dest_mode == 7 && dest_reg == 1 && src_mode <= 1) {
+            cpu->fault_pc += 2;
+        }
+        cpu->fault_pc_valid = true;
+
+        /* The condition codes visible in a faulted long write depend on
+         * how far the microcode got, measured against the corpus. Word
+         * and byte writes always show the fully updated flags, so their
+         * flags are final before the write and need no second update. */
+        if (size == SIZE_LONG) {
+            u16 fault_flags = full_flags;
+            u16 old_flags = cpu->sr & ccr_mask;
+            bool abs_long_dest = (dest_mode == 7 && dest_reg == 1);
+            if (dest_mode == 2 || dest_mode == 3 || (abs_long_dest && !src_reg_imm)) {
+                if (src_reg_imm) {
+                    fault_flags = old_flags;
+                } else {
+                    fault_flags = 0;
+                    if (src_ea.value & 0x8000) fault_flags |= M68K_SR_N;
+                    if ((u16)src_ea.value == 0) fault_flags |= M68K_SR_Z;
+                }
+            } else if ((dest_mode == 5 || dest_mode == 6) && src_reg_imm) {
+                fault_flags = old_flags & (M68K_SR_V | M68K_SR_C);
+                if (src_ea.value & 0x80000000u) fault_flags |= M68K_SR_N;
+                if ((src_ea.value >> 16) == 0) fault_flags |= M68K_SR_Z;
+            }
+            cpu->sr = (cpu->sr & ~ccr_mask) | fault_flags;
+        } else {
+            cpu->sr = (cpu->sr & ~ccr_mask) | full_flags;
+        }
+
+        /* A predecrement destination write overlaps the next prefetch,
+         * so the frame IR holds the prefetched word, and a long write
+         * goes low word first, faulting on the higher address. */
+        if (dest_mode == 4) {
+            if (size == SIZE_LONG) {
+                m68k_write_16(cpu, dest_ea.address + 2, (u16)src_ea.value);
+                m68k_write_16(cpu, dest_ea.address, (u16)(src_ea.value >> 16));
+                cpu->a_regs[dest_reg].l = commit_value;
+                cpu->sr = (cpu->sr & ~ccr_mask) | full_flags;
+                return;
+            }
+            /* Only faulting writes need the latch, so skip the peek on
+             * the aligned fast path. */
+            if (dest_ea.address & 1) {
+                cpu->fault_bus_word = m68k_peek_word(cpu, pc_after_src);
+                cpu->fault_bus_word_valid = true;
+            }
+        }
         m68k_write_size(cpu, dest_ea.address, src_ea.value, size);
-    }
-
-    if (!(dest_ea.is_reg && dest_ea.is_addr)) {
-        cpu->sr &= ~(M68K_SR_N | M68K_SR_Z | M68K_SR_V | M68K_SR_C);
-        if (size == SIZE_BYTE && (s8)src_ea.value < 0)
-            cpu->sr |= M68K_SR_N;
-        else if (size == SIZE_WORD && (s16)src_ea.value < 0)
-            cpu->sr |= M68K_SR_N;
-        else if (size == SIZE_LONG && (s32)src_ea.value < 0)
-            cpu->sr |= M68K_SR_N;
-
-        if ((size == SIZE_BYTE && (u8)src_ea.value == 0) ||
-            (size == SIZE_WORD && (u16)src_ea.value == 0) ||
-            (size == SIZE_LONG && src_ea.value == 0)) {
-            cpu->sr |= M68K_SR_Z;
+        cpu->fault_bus_word_valid = false;
+        if (commit_after_write) {
+            cpu->a_regs[dest_reg].l = commit_value;
+        }
+        if (size == SIZE_LONG) {
+            cpu->sr = (cpu->sr & ~ccr_mask) | full_flags;
         }
     }
 }

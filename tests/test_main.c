@@ -78,6 +78,7 @@ int main(void) {
 
     test_movec();
     test_address_error_frame_pc();
+    test_move_write_fault();
     test_trapv();
     test_vbr_exception_base();
     test_rtd();

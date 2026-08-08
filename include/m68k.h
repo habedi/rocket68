@@ -164,6 +164,9 @@ typedef struct M68kCpu {
     bool fault_program_access; /**< Fault access type marker. */
     bool fault_valid;          /**< Fault information validity flag. */
     bool fault_pc_valid;       /**< Fault PC validity flag. */
+    u16 fault_bus_word;        /**< Internal bus word for frame IR/SSW when valid. */
+    bool fault_bus_word_valid; /**< Fault bus word validity flag. */
+    bool operand_program_space; /**< PC-relative operand access marker. */
     bool group0_fault;         /**< Group-0 fault latched for the current step. */
     bool fault_trap_active;    /**< Group-0 fault trap active for the current step. */
     jmp_buf fault_trap;        /**< Non-local escape target for group-0 fault aborts. */
