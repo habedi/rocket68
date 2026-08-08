@@ -180,6 +180,7 @@ void test_load_bin_boundaries(void) {
 void test_load_bin_large_file(void) {
     M68kCpu cpu;
     u8 memory[65536];
+    memset(memory, 0, sizeof(memory));
     m68k_init(&cpu, memory, sizeof(memory));
 
     /* A file larger than the loader's internal read buffer exercises size
@@ -210,6 +211,7 @@ void test_load_bin_large_file(void) {
 void test_load_srec_robustness(void) {
     M68kCpu cpu;
     u8 memory[65536];
+    memset(memory, 0, sizeof(memory));
     m68k_init(&cpu, memory, sizeof(memory));
     u32 old_pc = cpu.pc;
 
