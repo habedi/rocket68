@@ -135,6 +135,118 @@ void test_load_bin_size_reporting(void) {
     printf("Binary Loader size reporting test passed!\n");
 }
 
+void test_load_bin_boundaries(void) {
+    M68kCpu cpu;
+    u8 memory[256];
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    const char* filename = "test_bounds.bin";
+    FILE* f = fopen(filename, "wb");
+    if (!f) {
+        perror("Failed to create test binary file");
+        return;
+    }
+    u8 data[4] = {0x11, 0x22, 0x33, 0x44};
+    fwrite(data, 1, sizeof(data), f);
+    fclose(f);
+
+    /* An exact fit against the end of bound memory is not a truncation. */
+    u32 size = 0xDEADBEEF;
+    bool success = m68k_load_bin(&cpu, filename, 0xFC, &size);
+    assert(success);
+    assert(size == 4);
+    assert(memory[0xFC] == 0x11);
+    assert(memory[0xFF] == 0x44);
+
+    /* A start address already outside bound memory writes nothing. */
+    size = 0xDEADBEEF;
+    success = m68k_load_bin(&cpu, filename, 0x100, &size);
+    assert(success);
+    assert(size == 0);
+
+    /* Addresses are masked to the 24-bit bus, so the high byte is ignored. */
+    memset(memory, 0, sizeof(memory));
+    size = 0xDEADBEEF;
+    success = m68k_load_bin(&cpu, filename, 0x01000010, &size);
+    assert(success);
+    assert(size == 4);
+    assert(memory[0x10] == 0x11);
+    assert(memory[0x13] == 0x44);
+
+    remove(filename);
+    printf("Binary Loader boundary test passed!\n");
+}
+
+void test_load_bin_large_file(void) {
+    M68kCpu cpu;
+    u8 memory[65536];
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    /* A file larger than the loader's internal read buffer exercises size
+     * accumulation across multiple read chunks. */
+    enum { LARGE_SIZE = 5000 };
+    const char* filename = "test_large.bin";
+    FILE* f = fopen(filename, "wb");
+    if (!f) {
+        perror("Failed to create test binary file");
+        return;
+    }
+    for (int i = 0; i < LARGE_SIZE; i++) fputc(i & 0xFF, f);
+    fclose(f);
+
+    u32 size = 0xDEADBEEF;
+    bool success = m68k_load_bin(&cpu, filename, 0x100, &size);
+    remove(filename);
+    assert(success);
+    assert(size == LARGE_SIZE);
+    assert(memory[0x100] == 0x00);
+    assert(memory[0x100 + 1024] == (1024 & 0xFF));
+    assert(memory[0x100 + LARGE_SIZE - 1] == ((LARGE_SIZE - 1) & 0xFF));
+    assert(memory[0x100 + LARGE_SIZE] == 0x00);
+
+    printf("Binary Loader large-file test passed!\n");
+}
+
+void test_load_srec_robustness(void) {
+    M68kCpu cpu;
+    u8 memory[65536];
+    m68k_init(&cpu, memory, sizeof(memory));
+    u32 old_pc = cpu.pc;
+
+    const char* filename = "test_robust.srec";
+    FILE* f = fopen(filename, "w");
+    if (!f) {
+        perror("Failed to create test S-Record file");
+        return;
+    }
+    /* A count field larger than the line is reported and skipped. */
+    fprintf(f, "S1FF100012\n");
+    /* An unknown record type is reported and skipped. */
+    fprintf(f, "S40710001234567800\n");
+    /* A non-record line is ignored. */
+    fprintf(f, "not an s-record\n");
+    /* An S5 record-count record is ignored. */
+    fprintf(f, "S5030001FB\n");
+    /* Lowercase hex digits are accepted; one byte 0xAB at 0x20fe. */
+    fprintf(f, "S10420feab00\n");
+    /* No terminator record, so the PC stays untouched. */
+    fclose(f);
+
+    bool success = m68k_load_srec(&cpu, filename);
+    remove(filename);
+
+    assert(success);
+    assert(memory[0x20FE] == 0xAB);
+    /* The malformed and unknown records must not have written anything. */
+    assert(memory[0x1000] == 0x00);
+    assert(cpu.pc == old_pc);
+
+    /* An open failure returns false. */
+    assert(!m68k_load_srec(&cpu, "no_such_file.srec"));
+
+    printf("S-Record Loader robustness test passed!\n");
+}
+
 void test_disasm(void) {
     M68kCpu cpu;
     u8 memory[1024];
@@ -227,6 +339,9 @@ void run_loader_tests(void) {
     test_load_srec();
     test_load_bin();
     test_load_bin_size_reporting();
+    test_load_bin_boundaries();
+    test_load_bin_large_file();
+    test_load_srec_robustness();
     test_disasm();
     test_disasm_full();
     test_io();
