@@ -416,8 +416,44 @@ void m68k_write_size(M68kCpu* cpu, u32 address, u32 value, M68kSize size) {
         m68k_write_32(cpu, address, value);
 }
 
+/* PC value pushed in a group-0 frame when the operand access faults,
+ * measured per addressing mode against the SingleStepTests corpus. The
+ * offsets are from the instruction start and reflect 68000 prefetch
+ * behavior, not the number of extension words consumed. */
+static void set_fault_pc(M68kCpu* cpu, int mode, int reg, M68kSize size) {
+    u32 offset;
+    switch (mode) {
+        case 2:
+        case 3:
+        case 5:
+        case 6:
+            offset = 2;
+            break;
+        case 4:
+            /* Word accesses take an extra prefetch advance before the
+             * operand read; long accesses fault on the first word. */
+            offset = (size == SIZE_LONG) ? 2 : 4;
+            break;
+        case 7:
+            if (reg == 1) {
+                offset = 6;
+            } else if (reg == 0) {
+                offset = 4;
+            } else {
+                return; /* PC-relative modes are not measured yet. */
+            }
+            break;
+        default:
+            return;
+    }
+    cpu->fault_pc = cpu->ppc + offset;
+    cpu->fault_pc_valid = true;
+}
+
 static M68kEA m68k_calc_ea_ex(M68kCpu* cpu, int mode, int reg, M68kSize size, bool fetch_value) {
     M68kEA ea = {0};
+
+    set_fault_pc(cpu, mode, reg, size);
 
     switch (mode) {
         case 0:
@@ -438,15 +474,16 @@ static M68kEA m68k_calc_ea_ex(M68kCpu* cpu, int mode, int reg, M68kSize size, bo
             break;
         case 3:
             ea.address = cpu->a_regs[reg].l;
-            if (fetch_value) {
-                bool prev_fault = cpu->group0_fault;
+            /* Byte and word increments commit before the operand bus
+             * cycle and survive an address error; long increments do
+             * not, matching hardware measured through the corpus. A
+             * faulted read longjmps out, so ordering encodes the rule. */
+            if (fetch_value && size == SIZE_LONG) {
                 ea.value = m68k_read_size(cpu, ea.address, size);
-                // On a faulted read, postincrement side effects should not be committed.
-                if (cpu->group0_fault == prev_fault) {
-                    cpu->a_regs[reg].l += (size == SIZE_BYTE && reg == 7) ? 2 : size;
-                }
+                cpu->a_regs[reg].l += size;
             } else {
                 cpu->a_regs[reg].l += (size == SIZE_BYTE && reg == 7) ? 2 : size;
+                if (fetch_value) ea.value = m68k_read_size(cpu, ea.address, size);
             }
             break;
         case 4:
@@ -749,6 +786,9 @@ void m68k_exception(M68kCpu* cpu, int vector) {
     if (vector == 4 || vector == 8 || vector == 10 || vector == 11) {
         old_pc = cpu->ppc;
     }
+    if ((vector == 2 || vector == 3) && cpu->fault_pc_valid) {
+        old_pc = cpu->fault_pc;
+    }
 
     m68k_set_sr(cpu, (cpu->sr | M68K_SR_S) & ~0x8000);
 
@@ -770,6 +810,7 @@ void m68k_exception(M68kCpu* cpu, int vector) {
     }
     cpu->fault_program_access = false;
     cpu->fault_valid = false;
+    cpu->fault_pc_valid = false;
 
     u32 vector_addr = m68k_read_32(cpu, cpu->vbr + (u32)vector * 4);
 
@@ -889,6 +930,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
     cpu->fault_trap_active = true;
 
     cpu->ppc = cpu->pc;
+    cpu->fault_pc_valid = false;
     u16 opcode = m68k_fetch(cpu);
     if (cpu->group0_fault) {
         cpu->fault_trap_active = false;

@@ -77,6 +77,7 @@ int main(void) {
     test_logic_not();
 
     test_movec();
+    test_address_error_frame_pc();
     test_trapv();
     test_vbr_exception_base();
     test_rtd();

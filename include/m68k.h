@@ -158,10 +158,12 @@ typedef struct M68kCpu {
     bool in_address_error;     /**< Address error re-entry guard. */
     bool in_bus_error;         /**< Bus error re-entry guard. */
     u32 fault_address;         /**< Fault address latched for exception frames. */
+    u32 fault_pc;              /**< PC value pushed in group-0 frames when valid. */
     u16 fault_ir;              /**< Fault IR latched for exception frames. */
     u16 fault_ssw;             /**< Fault status word for exception frames. */
     bool fault_program_access; /**< Fault access type marker. */
     bool fault_valid;          /**< Fault information validity flag. */
+    bool fault_pc_valid;       /**< Fault PC validity flag. */
     bool group0_fault;         /**< Group-0 fault latched for the current step. */
     bool fault_trap_active;    /**< Group-0 fault trap active for the current step. */
     jmp_buf fault_trap;        /**< Non-local escape target for group-0 fault aborts. */

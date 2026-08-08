@@ -196,6 +196,70 @@ void test_vbr_exception_base(void) {
     printf("VBR exception base test passed!\n");
 }
 
+void test_address_error_frame_pc(void) {
+    M68kCpu cpu;
+    u8 memory[8192];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    /* TST.w (d16, A5) with an odd effective address. Hardware pushes the
+     * instruction address plus 2 in the address-error frame, per the
+     * SingleStepTests corpus. */
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    cpu.a_regs[5].l = 0x501;
+    m68k_write_32(&cpu, 3 * 4, 0x600); /* address error vector */
+    m68k_write_16(&cpu, 0x100, 0x4A6D); /* TST.w (d16, A5) */
+    m68k_write_16(&cpu, 0x102, 0x0010); /* d16 = 0x10, EA = 0x511 (odd) */
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+    assert(cpu.a_regs[7].l == 0x1000 - 14); /* 14-byte group 0 frame */
+    u32 frame_pc = ((u32)memory[0xFFC] << 24) | ((u32)memory[0xFFD] << 16) |
+                   ((u32)memory[0xFFE] << 8) | memory[0xFFF];
+    assert(frame_pc == 0x102);
+
+    /* TST.w (A5)+ with an odd address: the postincrement is committed
+     * before the fault, and the pushed PC is the instruction address
+     * plus 2. */
+    m68k_init(&cpu, memory, sizeof(memory));
+    memset(memory, 0, sizeof(memory));
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    cpu.a_regs[5].l = 0x501;
+    m68k_write_32(&cpu, 3 * 4, 0x600);
+    m68k_write_16(&cpu, 0x100, 0x4A5D); /* TST.w (A5)+ */
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+    assert(cpu.a_regs[5].l == 0x503);
+    frame_pc = ((u32)memory[0xFFC] << 24) | ((u32)memory[0xFFD] << 16) |
+               ((u32)memory[0xFFE] << 8) | memory[0xFFF];
+    assert(frame_pc == 0x102);
+
+    /* TST.w -(A5) with an odd address: the predecrement is committed and
+     * the pushed PC is the instruction address plus 4. */
+    m68k_init(&cpu, memory, sizeof(memory));
+    memset(memory, 0, sizeof(memory));
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    cpu.a_regs[5].l = 0x503;
+    m68k_write_32(&cpu, 3 * 4, 0x600);
+    m68k_write_16(&cpu, 0x100, 0x4A65); /* TST.w -(A5) */
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+    assert(cpu.a_regs[5].l == 0x501);
+    frame_pc = ((u32)memory[0xFFC] << 24) | ((u32)memory[0xFFD] << 16) |
+               ((u32)memory[0xFFE] << 8) | memory[0xFFF];
+    assert(frame_pc == 0x104);
+
+    printf("Address error frame PC test passed!\n");
+}
+
 void test_nop_bsr_rtr(void) {
     M68kCpu cpu;
     u8 memory[1024];
