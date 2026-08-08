@@ -118,7 +118,9 @@ bool m68k_load_srec(M68kCpu* cpu, const char* filename) {
     return true;
 }
 
-bool m68k_load_bin(M68kCpu* cpu, const char* filename, u32 address) {
+bool m68k_load_bin(M68kCpu* cpu, const char* filename, u32 address, u32* size_out) {
+    if (size_out) *size_out = 0;
+
     FILE* f = fopen(filename, "rb");
     if (!f) {
         perror("Failed to open file");
@@ -135,6 +137,7 @@ bool m68k_load_bin(M68kCpu* cpu, const char* filename, u32 address) {
                 fprintf(stderr, "Address %06X is outside bound memory\n",
                         current_addr & 0x00FFFFFFu);
                 fclose(f);
+                if (size_out) *size_out = current_addr - address;
                 return true;
             }
             current_addr++;
@@ -142,5 +145,6 @@ bool m68k_load_bin(M68kCpu* cpu, const char* filename, u32 address) {
     }
 
     fclose(f);
+    if (size_out) *size_out = current_addr - address;
     return true;
 }

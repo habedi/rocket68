@@ -248,9 +248,14 @@ bool load_program(M68kCpu* cpu) {
         return false; /* File open failed. */
     }
 
-    if (!m68k_load_bin(cpu, "overlay.bin", 0x00020000)) {
+    u32 overlay_size = 0;
+    if (!m68k_load_bin(cpu, "overlay.bin", 0x00020000, &overlay_size)) {
         return false; /* File open failed. */
     }
+
+    /* The next free address after the overlay, for example for a heap. */
+    u32 heap_start = 0x00020000 + overlay_size;
+    (void)heap_start;
 
     return true;
 }
@@ -258,6 +263,7 @@ bool load_program(M68kCpu* cpu) {
 
 Notes:
 
+- The final `size_out` argument of `m68k_load_bin` may be NULL when the loaded size is not needed.
 - For loader edge-case behavior (malformed records, checksum policy, entry-point handling), see [API Reference](api-reference.md) and [Compatibility Notes](compatibility.md).
 
 ## 9. Disassemble Memory for Debug Output

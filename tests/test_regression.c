@@ -1295,7 +1295,7 @@ void test_regression_loader_oob_is_harmless(void) {
     fwrite(data, 1, sizeof(data), f);
     fclose(f);
 
-    success = m68k_load_bin(&cpu, binname, 0xFC); /* runs past the 256-byte end */
+    success = m68k_load_bin(&cpu, binname, 0xFC, NULL); /* runs past the 256-byte end */
     remove(binname);
 
     assert(success);

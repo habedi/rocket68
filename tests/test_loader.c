@@ -67,16 +67,72 @@ void test_load_bin(void) {
     fwrite(data, 1, sizeof(data), f);
     fclose(f);
 
-    bool success = m68k_load_bin(&cpu, filename, 0x2000);
+    u32 size = 0xDEADBEEF;
+    bool success = m68k_load_bin(&cpu, filename, 0x2000, &size);
     assert(success);
+    assert(size == 4);
 
     assert(memory[0x2000] == 0xAA);
     assert(memory[0x2001] == 0xBB);
     assert(memory[0x2002] == 0xCC);
     assert(memory[0x2003] == 0xDD);
 
+    /* A NULL size pointer is allowed. */
+    success = m68k_load_bin(&cpu, filename, 0x3000, NULL);
+    assert(success);
+    assert(memory[0x3000] == 0xAA);
+    assert(memory[0x3003] == 0xDD);
+
     remove(filename);
     printf("Binary Loader test passed!\n");
+}
+
+void test_load_bin_size_reporting(void) {
+    M68kCpu cpu;
+    u8 memory[256];
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    /* An empty file loads successfully with a size of zero. */
+    const char* filename = "test_empty.bin";
+    FILE* f = fopen(filename, "wb");
+    if (!f) {
+        perror("Failed to create test binary file");
+        return;
+    }
+    fclose(f);
+
+    u32 size = 0xDEADBEEF;
+    bool success = m68k_load_bin(&cpu, filename, 0x10, &size);
+    remove(filename);
+    assert(success);
+    assert(size == 0);
+
+    /* An open failure returns false and reports a size of zero. */
+    size = 0xDEADBEEF;
+    success = m68k_load_bin(&cpu, "no_such_file.bin", 0x10, &size);
+    assert(!success);
+    assert(size == 0);
+
+    /* A load that runs past bound memory reports the bytes written. */
+    filename = "test_trunc.bin";
+    f = fopen(filename, "wb");
+    if (!f) {
+        perror("Failed to create test binary file");
+        return;
+    }
+    u8 data[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+    fwrite(data, 1, sizeof(data), f);
+    fclose(f);
+
+    size = 0xDEADBEEF;
+    success = m68k_load_bin(&cpu, filename, 0xFC, &size); /* runs past the 256-byte end */
+    remove(filename);
+    assert(success);
+    assert(size == 4);
+    assert(memory[0xFC] == 1);
+    assert(memory[0xFF] == 4);
+
+    printf("Binary Loader size reporting test passed!\n");
 }
 
 void test_disasm(void) {
@@ -170,6 +226,7 @@ void test_io(void) {
 void run_loader_tests(void) {
     test_load_srec();
     test_load_bin();
+    test_load_bin_size_reporting();
     test_disasm();
     test_disasm_full();
     test_io();

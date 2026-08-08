@@ -26,8 +26,12 @@ bool m68k_load_srec(M68kCpu* cpu, const char* filename);
  * @param cpu CPU instance with bound memory.
  * @param filename Path to a binary file.
  * @param address Start address in emulated memory.
+ * @param size_out Optional output for the number of bytes written into
+ *                 emulated memory; may be NULL. Set to 0 when the file
+ *                 cannot be opened. A value smaller than the file size
+ *                 indicates the load stopped at the end of bound memory.
  * @return false only if the input file cannot be opened; otherwise true.
  */
-bool m68k_load_bin(M68kCpu* cpu, const char* filename, u32 address);
+bool m68k_load_bin(M68kCpu* cpu, const char* filename, u32 address, u32* size_out);
 
 #endif

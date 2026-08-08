@@ -39,6 +39,7 @@ This page lists current compatibility notes and scope limits based on the curren
 ## Loader and Disassembler Notes
 
 - `m68k_load_srec` and `m68k_load_bin` return `false` only when file open fails.
+- `m68k_load_bin` reports the number of bytes written into emulated memory through its optional `size_out` argument; a load that runs past bound memory still returns `true`, and the reported size reveals the truncation.
 - `m68k_load_srec` reports malformed lines and continues parsing.
 - S-record checksum validity is not explicitly validated.
 - Loaders write directly into bound flat memory; they do not run emulated bus cycles, invoke host memory callbacks, or raise bus errors. When a record reaches an out-of-range address, the first out-of-range byte is reported to `stderr`, the rest of that record is skipped, and parsing continues with the next record.

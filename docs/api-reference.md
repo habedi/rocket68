@@ -245,11 +245,13 @@ Data bytes are written directly into bound flat memory; loading does not run emu
 When a record reaches an address outside bound memory, the first out-of-range byte is reported to `stderr`, the rest of that record is skipped, and parsing continues with the next record.
 Entry-point records (`S7/S8/S9`) set the program counter through `m68k_set_pc`, so the PC-changed callback fires.
 
-### `bool m68k_load_bin(M68kCpu* cpu, const char* filename, u32 address);`
+### `bool m68k_load_bin(M68kCpu* cpu, const char* filename, u32 address, u32* size_out);`
 
 Loads raw binary bytes into memory starting at `address`.
 Returns `false` only when the file cannot be opened.
 Bytes are written directly into bound flat memory; loading stops at the first out-of-range byte, which is reported to `stderr`.
+When `size_out` is not NULL, it receives the number of bytes written into emulated memory, or 0 when the file cannot be opened.
+A reported size smaller than the file size indicates the load stopped at the end of bound memory.
 
 ## Disassembler API (`disasm.h`)
 
