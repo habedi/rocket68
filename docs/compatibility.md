@@ -47,8 +47,9 @@ This page lists current compatibility notes and scope limits based on the curren
 ## Context Save/Restore Format
 
 - `m68k_get_context` / `m68k_set_context` copy raw `M68kCpu` struct bytes.
-- The blob format should be treated as build-dependent (compiler/ABI/version sensitive), not a stable cross-version interchange format.
-- `m68k_set_context` preserves destination instance memory binding and installed callbacks.
+- The raw blob format should be treated as build-dependent (compiler/ABI/version sensitive), not a stable cross-version interchange format.
+- `m68k_serialize` / `m68k_deserialize` provide the portable alternative: a versioned, tagged, big-endian format covering architectural state only.
+- Both restore paths preserve the destination instance memory binding and installed callbacks.
 
 ## Loader and Disassembler Notes
 

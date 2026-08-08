@@ -247,6 +247,19 @@ Restores context from `src`, while preserving destination-instance runtime bindi
 - internal fault trap storage
 - installed callbacks, including the host memory read/write callbacks
 
+### `size_t m68k_serialize(const M68kCpu* cpu, u8* buffer, size_t capacity);`
+
+Serializes architectural CPU state into a portable save state.
+Returns the number of bytes written, the required size when `buffer` is NULL, or 0 when the buffer is too small.
+The format is versioned, tagged, and big-endian, so blobs are stable across builds, compilers, and host architectures.
+Host bindings and transient fault latches are not serialized; serializing in the middle of exception processing is not supported.
+
+### `bool m68k_deserialize(M68kCpu* cpu, const u8* buffer, size_t length);`
+
+Restores architectural CPU state from a portable save state, keeping the destination's memory binding and callbacks.
+Returns `false` when the data is malformed, truncated, or has an unsupported version.
+Fields with unknown tags are skipped, so states written by newer library versions restore their known fields.
+
 ## Loader API (`loader.h`)
 
 ### `bool m68k_load_srec(M68kCpu* cpu, const char* filename);`
