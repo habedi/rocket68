@@ -877,6 +877,17 @@ static bool check_interrupts(M68kCpu* cpu) {
  * size: SIZE_BYTE, SIZE_WORD, SIZE_LONG
  * ea_mode: addressing mode of the <ea> operand (0=Dn, 1=An, 2+=memory)
  */
+/* Immediate ALU (ADDI, SUBI, ANDI, ORI, EORI) base cost by size and
+ * destination kind; EA cycles for memory destinations add separately. */
+static int imm_alu_cycles(u16 opcode) {
+    bool is_long = ((opcode >> 6) & 0x3) == 2;
+    bool reg_dest = (opcode & 0x38) == 0;
+    if (reg_dest) {
+        return is_long ? 16 : 8;
+    }
+    return is_long ? 20 : 12;
+}
+
 static int alu_base_cycles(int dir, M68kSize size, int ea_mode, int ea_reg) {
     if (dir == 0) {
         /* <ea> to Dn: B/W = 4, L = 8 if ea is Dn/An/#imm, else 6 */
@@ -885,7 +896,11 @@ static int alu_base_cycles(int dir, M68kSize size, int ea_mode, int ea_reg) {
         }
         return 4;
     } else {
-        /* Dn to <ea> (memory): B/W = 8, L = 12.  EA cycles added separately. */
+        /* Dn to <ea>: register destinations time like the register
+         * direction; memory is B/W = 8, L = 12 plus EA cycles. */
+        if (ea_mode == 0) {
+            return (size == SIZE_LONG) ? 8 : 4;
+        }
         return (size == SIZE_LONG) ? 12 : 8;
     }
 }
@@ -951,58 +966,69 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
         if (top4 == 0x00) {
             m68k_exec_ori(cpu, opcode);
-            cycles = 8;
+            /* The CCR/SR forms take 20 cycles. */
+            cycles = ((opcode & 0xFFBF) == 0x003C) ? 20 : imm_alu_cycles(opcode);
             goto done;
         }
 
         if (top4 == 0x02) {
             m68k_exec_andi(cpu, opcode);
-            cycles = 8;
+            cycles = ((opcode & 0xFFBF) == 0x023C) ? 20 : imm_alu_cycles(opcode);
             goto done;
         }
 
         if (top4 == 0x04) {
             m68k_exec_subi(cpu, opcode);
-            cycles = 8;
+            cycles = imm_alu_cycles(opcode);
             goto done;
         }
 
         if (top4 == 0x06) {
             m68k_exec_addi(cpu, opcode);
-            cycles = 8;
+            cycles = imm_alu_cycles(opcode);
             goto done;
         }
 
         if (top4 == 0x0A) {
             m68k_exec_eori(cpu, opcode);
-            cycles = 8;
+            cycles = ((opcode & 0xFFBF) == 0x0A3C) ? 20 : imm_alu_cycles(opcode);
             goto done;
         }
 
         if (top4 == 0x0C) {
             m68k_exec_cmpi(cpu, opcode);
-            cycles = 8;
+            if (((opcode >> 6) & 0x3) == 2) {
+                cycles = ((opcode & 0x38) == 0) ? 14 : 12;
+            } else {
+                cycles = 8;
+            }
             goto done;
         }
 
         if (top4 == 0x08) {
             int subop = (opcode >> 6) & 0x3;
+            /* Register destinations charge 2 extra cycles when the bit
+             * number (modulo 32) is 16 or higher; the bit number is in
+             * the immediate word, still unfetched at this point. */
+            bool breg = (opcode & 0x38) == 0;
+            int bhi = breg ? (int)((m68k_peek_word(cpu, cpu->pc) & 31) >= 16) : 0;
             switch (subop) {
                 case 0:
                     m68k_exec_btst(cpu, opcode);
-                    cycles = 8;
+                    /* BTST #, Dn is 10; the memory forms are 8 plus EA. */
+                    cycles = breg ? 10 : 8;
                     goto done;
                 case 1:
                     m68k_exec_bchg(cpu, opcode);
-                    cycles = 8;
+                    cycles = breg ? (10 + 2 * bhi) : 12;
                     goto done;
                 case 2:
                     m68k_exec_bclr(cpu, opcode);
-                    cycles = 10;
+                    cycles = breg ? (12 + 2 * bhi) : 12;
                     goto done;
                 case 3:
                     m68k_exec_bset(cpu, opcode);
-                    cycles = 8;
+                    cycles = breg ? (10 + 2 * bhi) : 12;
                     goto done;
             }
         }
@@ -1017,22 +1043,30 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             }
 
             int subop = (opcode >> 6) & 0x3;
+            /* Register-destination bit ops charge 2 extra cycles when
+             * the bit number (modulo 32) is 16 or higher. Read the bit
+             * source before the handler can modify it. */
+            int bit_hi = (int)((cpu->d_regs[(opcode >> 9) & 0x7].l & 31) >= 16);
+            bool reg_dest = (opcode & 0x38) == 0;
+            bool imm_dest = (opcode & 0x3F) == 0x3C;
             switch (subop) {
                 case 0:
                     m68k_exec_btst(cpu, opcode);
-                    cycles = 6;
+                    /* BTST Dn, Dn is 6, BTST Dn, #data is 10, and the
+                     * memory forms are 4 plus EA. */
+                    cycles = reg_dest ? 6 : (imm_dest ? 6 : 4);
                     goto done;
                 case 1:
                     m68k_exec_bchg(cpu, opcode);
-                    cycles = 8;
+                    cycles = reg_dest ? (6 + 2 * bit_hi) : 8;
                     goto done;
                 case 2:
                     m68k_exec_bclr(cpu, opcode);
-                    cycles = 8;
+                    cycles = reg_dest ? (8 + 2 * bit_hi) : 8;
                     goto done;
                 case 3:
                     m68k_exec_bset(cpu, opcode);
-                    cycles = 8;
+                    cycles = reg_dest ? (6 + 2 * bit_hi) : 8;
                     goto done;
             }
         }
@@ -1130,7 +1164,8 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
         if ((opcode & 0xFFC0) == 0x40C0) {
             m68k_exec_move_sr(cpu, opcode);
-            cycles = 6;
+            /* MOVE from SR: 6 to a register, 8 plus EA to memory. */
+            cycles = ((opcode & 0x38) == 0) ? 6 : 8;
             goto done;
         }
 
@@ -1190,13 +1225,14 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
         if ((opcode & 0xFFC0) == 0x4AC0) {
             m68k_exec_tas(cpu, opcode);
-            cycles = 4;
+            /* TAS: 4 on a register, 10 plus EA on memory. */
+            cycles = ((opcode & 0x38) == 0) ? 4 : 10;
             goto done;
         }
 
         if ((opcode & 0xFFC0) == 0x4800) {
             m68k_exec_nbcd(cpu, opcode);
-            cycles = 8;
+            cycles = ((opcode & 0x38) == 0) ? 6 : 8;
             goto done;
         }
 
@@ -1299,7 +1335,9 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             } else if (aq_mode == 0) {
                 cycles = 4; /* Dn byte/word: 4 */
             } else {
-                cycles = 8; /* memory: 8 + EA (EA already charged) */
+                /* Memory: 8 plus EA; the long surcharge lives in the EA
+                 * cost, but read-modify-write adds 4 more for long. */
+                cycles = (aq_size == 2) ? 12 : 8;
             }
         }
         goto done;
@@ -1322,11 +1360,11 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         int mode = (opcode >> 3) & 0x7;
         if (opmode == 3 || opmode == 7) {
             m68k_exec_div(cpu, opcode);
-            cycles = (opmode == 7) ? 158 : 140; /* DIVS=158, DIVU=140 */
+            cycles = 0; /* data-dependent, charged in the handler */
             goto done;
         } else if (opmode == 4 && (mode == 0 || mode == 1)) {
             m68k_exec_sbcd(cpu, opcode);
-            cycles = 6;
+            cycles = (mode == 1) ? 18 : 6;
             goto done;
         } else {
             m68k_exec_or(cpu, opcode);
@@ -1350,7 +1388,8 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         if ((opmode >= 4 && opmode <= 6) && (mode == 0 || mode == 1)) {
             m68k_exec_subx(cpu, opcode);
             M68kSize sxsz = (opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG;
-            cycles = (sxsz == SIZE_LONG) ? 8 : 4;
+            cycles = (mode == 1) ? ((sxsz == SIZE_LONG) ? 30 : 18)
+                                 : ((sxsz == SIZE_LONG) ? 8 : 4);
             goto done;
         }
         m68k_exec_sub(cpu, opcode);
@@ -1363,7 +1402,13 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
                                                : (opmode == 5) ? SIZE_WORD
                                                                : SIZE_LONG);
             if (opmode == 3 || opmode == 7) {
-                cycles = (opmode == 7) ? 6 : 8;
+                /* SUBA: word = 8; long = 8 for register or immediate
+                 * sources and 6 for memory sources. */
+                if (opmode == 7) {
+                    cycles = (mode <= 1 || (mode == 7 && (opcode & 0x7) == 4)) ? 8 : 6;
+                } else {
+                    cycles = 8;
+                }
             } else {
                 cycles = alu_base_cycles(sub_dir, sub_sz, mode, opcode & 0x7);
             }
@@ -1388,6 +1433,8 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             if (opmode == 3 || opmode == 7) {
                 /* CMPA: always 6 */
                 cycles = 6;
+            } else if (is_cmpm) {
+                cycles = (opmode == 6) ? 20 : 12;
             } else {
                 M68kSize cmp_sz = (opmode == 0) ? SIZE_BYTE : (opmode == 1) ? SIZE_WORD : SIZE_LONG;
                 /* CMP is <ea> to Dn (read only, no writeback) */
@@ -1402,11 +1449,11 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         int mode = (opcode >> 3) & 0x7;
         if (opmode == 3 || opmode == 7) {
             m68k_exec_mul(cpu, opcode);
-            cycles = 70;
+            cycles = 0; /* data-dependent, charged in the handler */
             goto done;
         } else if (opmode == 4 && (mode == 0 || mode == 1)) {
             m68k_exec_abcd(cpu, opcode);
-            cycles = 6;
+            cycles = (mode == 1) ? 18 : 6;
             goto done;
         } else if ((opmode == 5 && ((opcode >> 3) & 0x1F) == 0x08) ||
                    (opmode == 5 && ((opcode >> 3) & 0x1F) == 0x09) ||
@@ -1436,7 +1483,8 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         if ((opmode >= 4 && opmode <= 6) && (mode == 0 || mode == 1)) {
             m68k_exec_addx(cpu, opcode);
             M68kSize axsz = (opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG;
-            cycles = (axsz == SIZE_LONG) ? 8 : 4;
+            cycles = (mode == 1) ? ((axsz == SIZE_LONG) ? 30 : 18)
+                                 : ((axsz == SIZE_LONG) ? 8 : 4);
             goto done;
         }
         m68k_exec_add(cpu, opcode);
@@ -1449,8 +1497,13 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
                                                : (opmode == 5) ? SIZE_WORD
                                                                : SIZE_LONG);
             if (opmode == 3 || opmode == 7) {
-                /* ADDA: word=8, long=6 */
-                cycles = (opmode == 7) ? 6 : 8;
+                /* ADDA: word = 8; long = 8 for register or immediate
+                 * sources and 6 for memory sources. */
+                if (opmode == 7) {
+                    cycles = (mode <= 1 || (mode == 7 && (opcode & 0x7) == 4)) ? 8 : 6;
+                } else {
+                    cycles = 8;
+                }
             } else {
                 cycles = alu_base_cycles(add_dir, add_sz, mode, opcode & 0x7);
             }
@@ -1459,11 +1512,12 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
     }
 
     if ((opcode & 0xF000) == 0xE000) {
-        m68k_exec_shift(cpu, opcode);
         if ((opcode & 0x00C0) == 0x00C0) {
             cycles = 8; /* memory shift: 8 + EA (EA already charged) */
         } else {
-            /* register shift: 6 + 2n where n = shift count */
+            /* Register shift: 6 + 2n where n is the shift count. The
+             * count register is read before execution, since the shift
+             * may target the same register. */
             int sh_count;
             bool sh_ir = ((opcode >> 5) & 0x1) != 0;
             if (sh_ir) {
@@ -1475,6 +1529,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             int sh_size = (opcode >> 6) & 0x3;
             cycles = (sh_size == 2 ? 8 : 6) + 2 * sh_count;
         }
+        m68k_exec_shift(cpu, opcode);
         goto done;
     }
 

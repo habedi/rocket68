@@ -35,6 +35,8 @@ This page lists current compatibility notes and scope limits based on the curren
 - MOVE from SR reads its memory destination before writing, so an odd destination faults as a read.
 - UNLK reads the frame pointer before moving the stack pointer, so a faulted UNLK leaves both registers unchanged.
 - With `ROCKET68_JSON_STRICT=1` the JSON corpus passes 127/127 files.
+- With `ROCKET68_JSON_CYCLES=1` the JSON corpus passes 127/127 files; instruction timing is data dependent where the hardware is, including shift counts, multiply operand bits, and the division microcode walk.
+- With both flags combined, exception-path cycle counts are not yet fully modeled.
 
 ## Control Registers and Exception Base
 

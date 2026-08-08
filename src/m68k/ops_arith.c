@@ -382,6 +382,18 @@ void m68k_exec_mul(M68kCpu* cpu, u16 opcode) {
         result = op1 * op2;
     }
 
+    /* 68000 multiply timing is data dependent: 2 * (17 + n) + 4, where n
+     * counts one bits in the operand for MULU, and bit transitions for
+     * MULS. */
+    {
+        u16 d = is_signed ? (u16)((op2 << 1) ^ op2) : (u16)op2;
+        int m = 17;
+        for (; d; d >>= 1) {
+            if (d & 1) m++;
+        }
+        cpu->cycles_remaining -= 2 * m + 4;
+    }
+
     cpu->d_regs[reg_idx].l = result;
 
     update_flags_logic(cpu, result, SIZE_LONG);
@@ -412,6 +424,27 @@ void m68k_exec_div(M68kCpu* cpu, u16 opcode) {
         int64_t s_quot = s_dividend / s_divisor;
         int64_t s_rem = s_dividend % s_divisor;
 
+        /* DIVS timing per 68000 microcode, measured by the corpus. */
+        {
+            s32 sd = (s32)dividend;
+            s16 sv = (s16)divisor_raw;
+            int m = (sd < 0) ? 7 : 6;
+            u32 adividend = (sd < 0) ? (u32)(-(int64_t)sd) : (u32)sd;
+            u32 advisor = (sv < 0) ? (u32)(-(s32)sv) : (u32)sv;
+            if ((adividend >> 16) >= advisor) {
+                cpu->cycles_remaining -= (m + 2) * 2;
+            } else {
+                m += 55;
+                if (sv >= 0) m += (sd < 0) ? 1 : -1;
+                u32 aquot = adividend / advisor;
+                for (int i = 0; i < 15; i++) {
+                    if ((s16)aquot >= 0) m++;
+                    aquot <<= 1;
+                }
+                cpu->cycles_remaining -= 2 * m;
+            }
+        }
+
         if (s_quot < -32768 || s_quot > 32767) {
             cpu->sr &= ~(M68K_SR_Z | M68K_SR_C | M68K_SR_N | M68K_SR_V);
             cpu->sr |= M68K_SR_V | M68K_SR_N;
@@ -428,6 +461,31 @@ void m68k_exec_div(M68kCpu* cpu, u16 opcode) {
     } else {
         u32 quotient = dividend / divisor_raw;
         u32 remainder = dividend % divisor_raw;
+
+        /* DIVU timing per 68000 microcode: 10 on overflow, otherwise a
+         * per-quotient-bit walk of the restoring division. */
+        if ((dividend >> 16) >= divisor_raw) {
+            cpu->cycles_remaining -= 10;
+        } else {
+            int m = 38;
+            u32 d = dividend;
+            u32 hdivisor = divisor_raw << 16;
+            for (int i = 0; i < 15; i++) {
+                if ((s32)d < 0) {
+                    d <<= 1;
+                    d -= hdivisor;
+                } else {
+                    d <<= 1;
+                    if (d >= hdivisor) {
+                        d -= hdivisor;
+                        m += 1;
+                    } else {
+                        m += 2;
+                    }
+                }
+            }
+            cpu->cycles_remaining -= 2 * m;
+        }
 
         if (quotient > 0xFFFF) {
             cpu->sr &= ~(M68K_SR_Z | M68K_SR_C | M68K_SR_N | M68K_SR_V);
