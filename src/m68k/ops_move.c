@@ -186,8 +186,16 @@ void m68k_exec_link(M68kCpu* cpu, u16 opcode) {
 void m68k_exec_unlk(M68kCpu* cpu, u16 opcode) {
     int reg = opcode & 0x7;
 
-    cpu->a_regs[7].l = cpu->a_regs[reg].l;
-    cpu->a_regs[reg].l = m68k_pop_32(cpu);
+    /* The frame-pointer read happens before the stack pointer moves, so
+     * a fault on an odd frame pointer leaves SP and An untouched and the
+     * exception frame lands on the original stack. */
+    u32 frame_sp = cpu->a_regs[reg].l;
+    /* A faulted frame-pointer read pushes the instruction address plus 4. */
+    cpu->fault_pc = cpu->pc + 2;
+    cpu->fault_pc_valid = true;
+    u32 value = m68k_read_32(cpu, frame_sp);
+    cpu->a_regs[7].l = frame_sp + 4;
+    cpu->a_regs[reg].l = value;
 }
 
 void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
@@ -209,7 +217,9 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
         return;
     }
 
-    if (mode == 4 && !dir_mem_to_reg) {
+    if ((mode == 4 && !dir_mem_to_reg) || mode == 3) {
+        /* The postincrement writeback commits only after the transfer
+         * loop, so a faulted first read leaves the register unchanged. */
         addr = cpu->a_regs[reg].l;
     } else {
         ea = m68k_calc_ea_addr_nocost(cpu, mode, reg, size);
@@ -223,7 +233,16 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
     cpu->cycles_remaining -=
         m68k_movem_ea_cycles(mode, reg, dir_mem_to_reg) + reg_count * (size_long ? 8 : 4);
 
+    /* A faulted transfer pushes the PC after the consumed words plus one
+     * prefetch advance, for both directions. */
+    cpu->fault_pc = cpu->pc + 2;
+    cpu->fault_pc_valid = true;
+
     if (dir_mem_to_reg) {
+        /* PC-relative transfers read from program space. */
+        if (mode == 7 && (reg == 2 || reg == 3)) {
+            cpu->operand_program_space = true;
+        }
         for (int i = 0; i < 16; i++) {
             if (mask & (1 << i)) {
                 u32 val = m68k_read_size(cpu, addr, size);
@@ -238,6 +257,7 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
                 addr += step;
             }
         }
+        cpu->operand_program_space = false;
         if (mode == 3) cpu->a_regs[reg].l = addr;
     } else {
         if (mode == 4) {
@@ -255,8 +275,13 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
                     } else {
                         val = (reg_idx < 8) ? cpu->d_regs[reg_idx].l : cpu->a_regs[reg_idx - 8].l;
                     }
-                    if (!size_long) val &= 0xFFFF;
-                    m68k_write_size(cpu, addr, val, size);
+                    if (size_long) {
+                        /* Predecrement long writes go low word first. */
+                        m68k_write_16(cpu, addr + 2, (u16)val);
+                        m68k_write_16(cpu, addr, (u16)(val >> 16));
+                    } else {
+                        m68k_write_size(cpu, addr, val & 0xFFFF, size);
+                    }
                 }
             }
             cpu->a_regs[reg].l = addr;
@@ -329,6 +354,9 @@ void m68k_exec_move_sr(M68kCpu* cpu, u16 opcode) {
         if (ea.is_reg && !ea.is_addr) {
             cpu->d_regs[ea.reg_num].l = (cpu->d_regs[ea.reg_num].l & 0xFFFF0000) | cpu->sr;
         } else {
+            /* MOVE from SR reads the destination before writing it, so
+             * an odd destination faults as a read. */
+            (void)m68k_read_size(cpu, ea.address, SIZE_WORD);
             m68k_write_size(cpu, ea.address, cpu->sr, SIZE_WORD);
         }
     }

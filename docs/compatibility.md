@@ -30,7 +30,11 @@ This page lists current compatibility notes and scope limits based on the curren
 - Postincrement commits before the operand read for byte and word reads, but not for long reads; predecrement always commits on reads. On destination writes, predecrement commits for byte and word only, and postincrement commits only after a successful write.
 - MOVE with a predecrement destination pushes the next prefetch word in the frame IR slot, and a long write to a predecrement destination goes low word first.
 - The condition codes visible after a faulted MOVE.l write depend on the source kind and destination mode, matching corpus measurements.
-- PC-relative operand reads assert program space in the frame status word and the FC callback.
+- PC-relative operand reads assert program space in the frame status word and the FC callback, including MOVEM transfers.
+- Control-flow transfers to an odd address fault on the target prefetch as a program-space read; most push the instruction address plus 2, JSR pushes the PC after EA resolution without pushing a return address, BSR pushes the return address and frames the odd target itself, and DBcc suppresses the counter writeback.
+- MOVE from SR reads its memory destination before writing, so an odd destination faults as a read.
+- UNLK reads the frame pointer before moving the stack pointer, so a faulted UNLK leaves both registers unchanged.
+- With `ROCKET68_JSON_STRICT=1` the JSON corpus passes 127/127 files.
 
 ## Control Registers and Exception Base
 

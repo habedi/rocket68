@@ -375,6 +375,81 @@ void test_rmw_fault_commits(void) {
     printf("RMW fault commit test passed!\n");
 }
 
+void test_odd_target_fault(void) {
+    M68kCpu cpu;
+    u8 memory[8192];
+
+    /* JMP (A1) to an odd target: the fault address is the target, the
+     * pushed PC is the instruction address plus 2, and the access is a
+     * program-space read (SSW FC = 6 in supervisor mode). */
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    cpu.a_regs[1].l = 0x501;
+    m68k_write_32(&cpu, 3 * 4, 0x600);
+    m68k_write_16(&cpu, 0x100, 0x4ED1); /* JMP (A1) */
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+    u32 frame = 0x1000 - 14;
+    u32 frame_fa = ((u32)memory[frame + 2] << 24) | ((u32)memory[frame + 3] << 16) |
+                   ((u32)memory[frame + 4] << 8) | memory[frame + 5];
+    u32 frame_pc = ((u32)memory[frame + 10] << 24) | ((u32)memory[frame + 11] << 16) |
+                   ((u32)memory[frame + 12] << 8) | memory[frame + 13];
+    u16 frame_ssw = (u16)((memory[frame] << 8) | memory[frame + 1]);
+    assert(frame_fa == 0x501);
+    assert(frame_pc == 0x102);
+    assert((frame_ssw & 0x1F) == 0x16); /* read, supervisor program */
+
+    /* JSR (A1) to an odd target does not push the return address. */
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    cpu.a_regs[1].l = 0x501;
+    m68k_write_32(&cpu, 3 * 4, 0x600);
+    m68k_write_16(&cpu, 0x100, 0x4E91); /* JSR (A1) */
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+    assert(cpu.a_regs[7].l == 0x1000 - 14); /* only the fault frame */
+
+    /* DBF D0, <odd> suppresses the counter writeback on the fault. */
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    cpu.d_regs[0].l = 5;
+    m68k_write_32(&cpu, 3 * 4, 0x600);
+    m68k_write_16(&cpu, 0x100, 0x51C8); /* DBF D0, ... */
+    m68k_write_16(&cpu, 0x102, 0x000B); /* target 0x10D, odd */
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+    assert(cpu.d_regs[0].l == 5);
+
+    /* UNLK A1 with an odd frame pointer leaves SP and A1 untouched. */
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    cpu.a_regs[1].l = 0x501;
+    m68k_write_32(&cpu, 3 * 4, 0x600);
+    m68k_write_16(&cpu, 0x100, 0x4E59); /* UNLK A1 */
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+    assert(cpu.a_regs[1].l == 0x501);
+    assert(cpu.a_regs[7].l == 0x1000 - 14);
+
+    printf("Odd target fault test passed!\n");
+}
+
 void test_nop_bsr_rtr(void) {
     M68kCpu cpu;
     u8 memory[1024];

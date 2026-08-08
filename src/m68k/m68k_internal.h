@@ -100,6 +100,7 @@ u16 m68k_pop_16(M68kCpu * cpu);
 bool m68k_check_condition(M68kCpu* cpu, int condition);
 
 void m68k_exception(M68kCpu* cpu, int vector);
+void m68k_raise_odd_target_fault(M68kCpu* cpu, u32 target, u32 fault_pc);
 
 void update_flags_logic(M68kCpu* cpu, u32 result, M68kSize size);
 void update_flags_add(M68kCpu* cpu, u32 src, u32 dest, u32 result, M68kSize size);

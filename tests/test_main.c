@@ -80,6 +80,7 @@ int main(void) {
     test_address_error_frame_pc();
     test_move_write_fault();
     test_rmw_fault_commits();
+    test_odd_target_fault();
     test_trapv();
     test_vbr_exception_base();
     test_rtd();

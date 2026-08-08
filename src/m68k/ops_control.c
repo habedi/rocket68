@@ -59,11 +59,16 @@ void m68k_exec_bcc(M68kCpu* cpu, u16 opcode) {
 
     if (cond == 1) {
         /* BSR */
+        u32 target = is_word ? (cpu->pc - 2) + disp : cpu->pc + disp;
         m68k_push_32(cpu, cpu->pc);
-        if (is_word)
-            m68k_set_pc(cpu, (cpu->pc - 2) + disp);
-        else
-            m68k_set_pc(cpu, cpu->pc + disp);
+        /* BSR pushes the return address before the target prefetch
+         * faults, and the pushed frame PC is the odd target itself. */
+        if (target & 1) {
+            m68k_raise_odd_target_fault(cpu, target, target);
+            cpu->cycles_remaining -= 18;
+            return;
+        }
+        m68k_set_pc(cpu, target);
         cpu->cycles_remaining -= 18;
     } else if (m68k_check_condition(cpu, cond)) {
         /* Bcc taken */
@@ -90,12 +95,21 @@ void m68k_exec_dbcc(M68kCpu* cpu, u16 opcode) {
 
     u16 val = cpu->d_regs[reg].l & 0xFFFF;
     val--;
-    cpu->d_regs[reg].l = (cpu->d_regs[reg].l & 0xFFFF0000) | val;
 
     if (val != 0xFFFF) {
+        u32 target = (cpu->pc - 2) + displacement;
+        /* A faulted loop branch suppresses the counter writeback and
+         * pushes the instruction address plus 4. */
+        if (target & 1) {
+            cpu->cycles_remaining -= 10;
+            m68k_raise_odd_target_fault(cpu, target, cpu->pc);
+            return;
+        }
+        cpu->d_regs[reg].l = (cpu->d_regs[reg].l & 0xFFFF0000) | val;
         cpu->cycles_remaining -= 10;  // Loop branched
-        m68k_set_pc(cpu, (cpu->pc - 2) + displacement);
+        m68k_set_pc(cpu, target);
     } else {
+        cpu->d_regs[reg].l = (cpu->d_regs[reg].l & 0xFFFF0000) | val;
         cpu->cycles_remaining -= 14;  // Loop expired
     }
 }
@@ -127,6 +141,13 @@ void m68k_exec_jmp(M68kCpu* cpu, u16 opcode) {
     M68kEA ea = m68k_calc_ea_ctl(cpu, mode, reg, true);
 
     if (is_jsr) {
+        /* JSR faults on the odd target before pushing the return
+         * address, and the pushed frame PC is the PC after EA
+         * resolution. */
+        if (ea.address & 1) {
+            m68k_raise_odd_target_fault(cpu, ea.address, cpu->pc);
+            return;
+        }
         m68k_push_32(cpu, cpu->pc);
     }
 

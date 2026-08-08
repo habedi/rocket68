@@ -160,6 +160,17 @@ static inline void capture_access_fault(M68kCpu* cpu, u32 address, bool is_write
     cpu->group0_fault = true;
 }
 
+void m68k_raise_odd_target_fault(M68kCpu* cpu, u32 target, u32 fault_pc) {
+    /* The fault address is the raw target, the access is a program-space
+     * read, and the frame IR holds the opcode. */
+    capture_access_fault(cpu, target, false, true);
+    cpu->fault_pc = fault_pc;
+    cpu->fault_pc_valid = true;
+    cpu->in_address_error = true;
+    m68k_exception(cpu, 3);
+    cpu->in_address_error = false;
+}
+
 static inline void abort_faulted_instruction(M68kCpu* cpu) {
     /* Only faults raised during instruction execution abort the instruction.
      * A fault inside exception processing must not unwind the outer
@@ -1480,9 +1491,11 @@ done:
     cpu->fault_trap_active = false;
 
     if ((cpu->pc & 1) && !cpu->in_address_error) {
-        cpu->in_address_error = true;
-        m68k_exception(cpu, 3);
-        cpu->in_address_error = false;
+        /* A control-flow transfer to an odd address faults on the target
+         * prefetch. Most instructions push the instruction address plus
+         * 2; JSR and BSR raise the fault themselves with their own
+         * pushed-PC values before this check runs. */
+        m68k_raise_odd_target_fault(cpu, cpu->pc, cpu->ppc + 2);
     }
 
     if (check_exceptions && trace_active && !cpu->stopped) {

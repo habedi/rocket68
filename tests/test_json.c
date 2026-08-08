@@ -229,8 +229,9 @@ static bool run_test(M68kCpu* cpu, Test_Rec* test, FILE* logf) {
                 test->name, test->initial.sr, cpu->sr, test->final.sr);
     }
 
-    // MAME `final.pc` is also the next prefetch base
-    uint32_t expected_final_pc = test->final.pc - 4;
+    // MAME `final.pc` is also the next prefetch base, except for a
+    // stopped CPU, whose prefetch queue was never refilled.
+    uint32_t expected_final_pc = cpu->stopped ? test->final.pc : test->final.pc - 4;
     const bool skip_pc_verification = (!strict_exception_checks && cpu->stopped);
     if (!skip_pc_verification && cpu->pc != expected_final_pc) {
         ok = false;
