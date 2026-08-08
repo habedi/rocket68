@@ -239,6 +239,24 @@ void m68k_exec_subq(M68kCpu* cpu, u16 opcode) {
     update_flags_sub(cpu, src, dest, result, size);
 }
 
+/* Reads a -(An) operand for ADDX and SUBX per 68000 microcode measured
+ * against the corpus: long operands read low word first and commit the
+ * decrement only after the full read, while byte and word operands
+ * commit before the read. A faulted ADDX or SUBX pushes the instruction
+ * address plus 4. */
+static u32 addx_read_predec(M68kCpu* cpu, int reg, M68kSize size) {
+    if (size == SIZE_LONG) {
+        u32 base = cpu->a_regs[reg].l - 4;
+        u32 lo = m68k_read_16(cpu, base + 2);
+        u32 hi = m68k_read_16(cpu, base);
+        cpu->a_regs[reg].l = base;
+        return (hi << 16) | lo;
+    }
+    u32 step = (size == SIZE_BYTE) ? ((reg == 7) ? 2u : 1u) : 2u;
+    cpu->a_regs[reg].l -= step;
+    return m68k_read_size(cpu, cpu->a_regs[reg].l, size);
+}
+
 void m68k_exec_addx(M68kCpu* cpu, u16 opcode) {
     int rx = (opcode >> 9) & 0x7;
     int size_bits = (opcode >> 6) & 0x3;
@@ -258,15 +276,10 @@ void m68k_exec_addx(M68kCpu* cpu, u16 opcode) {
     u32 src, dest;
 
     if (rm) {
-        int step = (size == SIZE_BYTE) ? 1 : (size == SIZE_WORD) ? 2 : 4;
-
-        cpu->a_regs[ry].l -= step;
-        if (size == SIZE_BYTE && ry == 7) cpu->a_regs[ry].l--;
-        src = m68k_read_size(cpu, cpu->a_regs[ry].l, size);
-
-        cpu->a_regs[rx].l -= step;
-        if (size == SIZE_BYTE && rx == 7) cpu->a_regs[rx].l--;
-        dest = m68k_read_size(cpu, cpu->a_regs[rx].l, size);
+        cpu->fault_pc = cpu->pc + 2;
+        cpu->fault_pc_valid = true;
+        src = addx_read_predec(cpu, ry, size);
+        dest = addx_read_predec(cpu, rx, size);
     } else {
         src = cpu->d_regs[ry].l;
         dest = cpu->d_regs[rx].l;
@@ -314,15 +327,10 @@ void m68k_exec_subx(M68kCpu* cpu, u16 opcode) {
     u32 src, dest;
 
     if (rm) {
-        int step = (size == SIZE_BYTE) ? 1 : (size == SIZE_WORD) ? 2 : 4;
-
-        cpu->a_regs[ry].l -= step;
-        if (size == SIZE_BYTE && ry == 7) cpu->a_regs[ry].l--;
-        src = m68k_read_size(cpu, cpu->a_regs[ry].l, size);
-
-        cpu->a_regs[rx].l -= step;
-        if (size == SIZE_BYTE && rx == 7) cpu->a_regs[rx].l--;
-        dest = m68k_read_size(cpu, cpu->a_regs[rx].l, size);
+        cpu->fault_pc = cpu->pc + 2;
+        cpu->fault_pc_valid = true;
+        src = addx_read_predec(cpu, ry, size);
+        dest = addx_read_predec(cpu, rx, size);
     } else {
         src = cpu->d_regs[ry].l;
         dest = cpu->d_regs[rx].l;
@@ -462,9 +470,23 @@ void m68k_exec_cmp(M68kCpu* cpu, u16 opcode) {
 
         int step = (size == SIZE_BYTE) ? 1 : (size == SIZE_WORD) ? 2 : 4;
 
+        /* A faulted CMPM pushes the instruction address plus 4. The
+         * source increment commits one word at a time before each read,
+         * so a faulted long source read leaves the register advanced by
+         * 2; the destination commits only after its read. */
+        cpu->fault_pc = cpu->pc + 2;
+        cpu->fault_pc_valid = true;
+
         u32 src_addr = cpu->a_regs[reg].l;
-        u32 src_val = m68k_read_size(cpu, src_addr, size);
-        cpu->a_regs[reg].l += (reg == 7 && size == SIZE_BYTE) ? 2 : step;
+        u32 src_val;
+        if (size == SIZE_LONG) {
+            cpu->a_regs[reg].l += 2;
+            src_val = m68k_read_size(cpu, src_addr, size);
+            cpu->a_regs[reg].l += 2;
+        } else {
+            cpu->a_regs[reg].l += (reg == 7 && size == SIZE_BYTE) ? 2 : step;
+            src_val = m68k_read_size(cpu, src_addr, size);
+        }
 
         u32 dest_addr = cpu->a_regs[reg_idx].l;
         u32 dest_val = m68k_read_size(cpu, dest_addr, size);

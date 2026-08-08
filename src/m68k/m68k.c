@@ -391,8 +391,9 @@ void m68k_write_size(M68kCpu* cpu, u32 address, u32 value, M68kSize size) {
 
 /* PC value pushed in a group-0 frame when the operand access faults,
  * measured per addressing mode against the SingleStepTests corpus. The
- * offsets are from the instruction start and reflect 68000 prefetch
- * behavior, not the number of extension words consumed. */
+ * offsets are relative to the prefetch position when EA resolution
+ * starts, so second operands (for example after immediate words) shift
+ * accordingly. */
 static void set_fault_pc(M68kCpu* cpu, int mode, int reg, M68kSize size) {
     u32 offset;
     switch (mode) {
@@ -400,20 +401,20 @@ static void set_fault_pc(M68kCpu* cpu, int mode, int reg, M68kSize size) {
         case 3:
         case 5:
         case 6:
-            offset = 2;
+            offset = 0;
             break;
         case 4:
             /* Word accesses take an extra prefetch advance before the
              * operand read; long accesses fault on the first word. */
-            offset = (size == SIZE_LONG) ? 2 : 4;
+            offset = (size == SIZE_LONG) ? 0 : 2;
             break;
         case 7:
             if (reg == 1) {
-                offset = 6;
-            } else if (reg == 0) {
                 offset = 4;
-            } else if (reg == 2 || reg == 3) {
+            } else if (reg == 0) {
                 offset = 2;
+            } else if (reg == 2 || reg == 3) {
+                offset = 0;
             } else {
                 return;
             }
@@ -421,7 +422,7 @@ static void set_fault_pc(M68kCpu* cpu, int mode, int reg, M68kSize size) {
         default:
             return;
     }
-    cpu->fault_pc = cpu->ppc + offset;
+    cpu->fault_pc = cpu->pc + offset;
     cpu->fault_pc_valid = true;
 }
 

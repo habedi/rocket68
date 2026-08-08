@@ -325,6 +325,56 @@ void test_move_write_fault(void) {
     printf("MOVE write fault test passed!\n");
 }
 
+void test_rmw_fault_commits(void) {
+    M68kCpu cpu;
+    u8 memory[8192];
+
+    /* ADDX.l -(A1), -(A2) with an odd source: the long read goes low
+     * word first, the decrement does not commit, and the pushed PC is
+     * the instruction address plus 4. */
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    cpu.a_regs[1].l = 0x505;
+    cpu.a_regs[2].l = 0x600;
+    m68k_write_32(&cpu, 3 * 4, 0x700);
+    m68k_write_16(&cpu, 0x100, 0xD589); /* ADDX.l -(A1), -(A2) */
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x700);
+    assert(cpu.a_regs[1].l == 0x505);
+    assert(cpu.a_regs[2].l == 0x600);
+    u32 frame = 0x1000 - 14;
+    u32 frame_pc = ((u32)memory[frame + 10] << 24) | ((u32)memory[frame + 11] << 16) |
+                   ((u32)memory[frame + 12] << 8) | memory[frame + 13];
+    assert(frame_pc == 0x104);
+    /* The low word is read first, so the fault address is A1 - 2. */
+    u32 frame_fa = ((u32)memory[frame + 2] << 24) | ((u32)memory[frame + 3] << 16) |
+                   ((u32)memory[frame + 4] << 8) | memory[frame + 5];
+    assert(frame_fa == 0x503);
+
+    /* CMPM.l (A1)+, (A2)+ with an odd source commits half the
+     * increment before the fault. */
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    cpu.a_regs[1].l = 0x501;
+    cpu.a_regs[2].l = 0x600;
+    m68k_write_32(&cpu, 3 * 4, 0x700);
+    m68k_write_16(&cpu, 0x100, 0xB589); /* CMPM.l (A1)+, (A2)+ */
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x700);
+    assert(cpu.a_regs[1].l == 0x503);
+    assert(cpu.a_regs[2].l == 0x600);
+
+    printf("RMW fault commit test passed!\n");
+}
+
 void test_nop_bsr_rtr(void) {
     M68kCpu cpu;
     u8 memory[1024];

@@ -67,6 +67,7 @@ void test_logic_not(void);
 void test_movec(void);
 void test_address_error_frame_pc(void);
 void test_move_write_fault(void);
+void test_rmw_fault_commits(void);
 void test_trapv(void);
 void test_vbr_exception_base(void);
 void test_rtd(void);
