@@ -278,7 +278,12 @@ void m68k_exec_addx(M68kCpu* cpu, u16 opcode) {
     if (rm) {
         cpu->fault_pc = cpu->pc + 2;
         cpu->fault_pc_valid = true;
+        /* The costs are spent in stages, so a faulted source read has
+         * consumed 6 cycles and a faulted destination read 10 or 14; the
+         * dispatch charge covers the rest on success. */
+        cpu->cycles_remaining -= 6;
         src = addx_read_predec(cpu, ry, size);
+        cpu->cycles_remaining -= (size == SIZE_LONG) ? 8 : 4;
         dest = addx_read_predec(cpu, rx, size);
     } else {
         src = cpu->d_regs[ry].l;
@@ -329,7 +334,12 @@ void m68k_exec_subx(M68kCpu* cpu, u16 opcode) {
     if (rm) {
         cpu->fault_pc = cpu->pc + 2;
         cpu->fault_pc_valid = true;
+        /* The costs are spent in stages, so a faulted source read has
+         * consumed 6 cycles and a faulted destination read 10 or 14; the
+         * dispatch charge covers the rest on success. */
+        cpu->cycles_remaining -= 6;
         src = addx_read_predec(cpu, ry, size);
+        cpu->cycles_remaining -= (size == SIZE_LONG) ? 8 : 4;
         dest = addx_read_predec(cpu, rx, size);
     } else {
         src = cpu->d_regs[ry].l;
@@ -534,6 +544,8 @@ void m68k_exec_cmp(M68kCpu* cpu, u16 opcode) {
          * 2; the destination commits only after its read. */
         cpu->fault_pc = cpu->pc + 2;
         cpu->fault_pc_valid = true;
+        /* The lead-in cost is spent before the first read. */
+        cpu->cycles_remaining -= 4;
 
         u32 src_addr = cpu->a_regs[reg].l;
         u32 src_val;
@@ -546,6 +558,7 @@ void m68k_exec_cmp(M68kCpu* cpu, u16 opcode) {
             src_val = m68k_read_size(cpu, src_addr, size);
         }
 
+        cpu->cycles_remaining -= (size == SIZE_LONG) ? 8 : 4;
         u32 dest_addr = cpu->a_regs[reg_idx].l;
         u32 dest_val = m68k_read_size(cpu, dest_addr, size);
         cpu->a_regs[reg_idx].l += (reg_idx == 7 && size == SIZE_BYTE) ? 2 : step;
@@ -607,6 +620,9 @@ void m68k_exec_cmpi(M68kCpu* cpu, u16 opcode) {
         src = val;
     }
 
+    /* The immediate fetch cost is spent before EA resolution, so it
+     * survives a faulted operand access. */
+    cpu->cycles_remaining -= (((opcode >> 6) & 0x3) == 2) ? 8 : 4;
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
     u32 dest = ea.value;
 
@@ -848,6 +864,9 @@ void m68k_exec_addi(M68kCpu* cpu, u16 opcode) {
 
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
+    /* The immediate fetch cost is spent before EA resolution, so it
+     * survives a faulted operand access. */
+    cpu->cycles_remaining -= (((opcode >> 6) & 0x3) == 2) ? 8 : 4;
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
     u32 dest = ea.value;
     u32 result = dest + imm;
@@ -890,6 +909,9 @@ void m68k_exec_subi(M68kCpu* cpu, u16 opcode) {
 
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
+    /* The immediate fetch cost is spent before EA resolution, so it
+     * survives a faulted operand access. */
+    cpu->cycles_remaining -= (((opcode >> 6) & 0x3) == 2) ? 8 : 4;
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
     u32 dest = ea.value;
     u32 result = dest - imm;

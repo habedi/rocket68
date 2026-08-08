@@ -162,7 +162,9 @@ static inline void capture_access_fault(M68kCpu* cpu, u32 address, bool is_write
 
 void m68k_raise_odd_target_fault(M68kCpu* cpu, u32 target, u32 fault_pc) {
     /* The fault address is the raw target, the access is a program-space
-     * read, and the frame IR holds the opcode. */
+     * read, and the frame IR holds the opcode. Exception processing
+     * costs 50 cycles on top of the instruction's own timing. */
+    cpu->cycles_remaining -= 50;
     capture_access_fault(cpu, target, false, true);
     cpu->fault_pc = fault_pc;
     cpu->fault_pc_valid = true;
@@ -560,8 +562,15 @@ static M68kEA m68k_calc_ea_ex(M68kCpu* cpu, int mode, int reg, M68kSize size, bo
 }
 
 M68kEA m68k_calc_ea(M68kCpu* cpu, int mode, int reg, M68kSize size) {
-    cpu->cycles_remaining -= m68k_ea_cycles(mode, reg, size);
-    return m68k_calc_ea_ex(cpu, mode, reg, size, true);
+    /* A long operand faults on its first word, so only the word share
+     * of the EA cost is spent before the read; the remainder is charged
+     * after the read succeeds. */
+    int full = m68k_ea_cycles(mode, reg, size);
+    int pre = (size == SIZE_LONG) ? m68k_ea_cycles(mode, reg, SIZE_WORD) : full;
+    cpu->cycles_remaining -= pre;
+    M68kEA ea = m68k_calc_ea_ex(cpu, mode, reg, size, true);
+    cpu->cycles_remaining -= full - pre;
+    return ea;
 }
 
 M68kEA m68k_calc_ea_addr(M68kCpu* cpu, int mode, int reg, M68kSize size) {
@@ -883,9 +892,9 @@ static int imm_alu_cycles(u16 opcode) {
     bool is_long = ((opcode >> 6) & 0x3) == 2;
     bool reg_dest = (opcode & 0x38) == 0;
     if (reg_dest) {
-        return is_long ? 16 : 8;
+        return is_long ? 8 : 4;
     }
-    return is_long ? 20 : 12;
+    return is_long ? 12 : 8;
 }
 
 static int alu_base_cycles(int dir, M68kSize size, int ea_mode, int ea_reg) {
@@ -936,7 +945,9 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
     if (setjmp(cpu->fault_trap) != 0) {
         cpu->fault_trap_active = false;
-        cpu->cycles_remaining -= 50;
+        /* Group-0 exception processing costs 50 cycles, plus the 4-cycle
+         * base of the aborted instruction, measured by the corpus. */
+        cpu->cycles_remaining -= 54;
         return;
     }
     cpu->fault_trap_active = true;
@@ -949,7 +960,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
     u16 opcode = m68k_fetch(cpu);
     if (cpu->group0_fault) {
         cpu->fault_trap_active = false;
-        cpu->cycles_remaining -= 50;
+        cpu->cycles_remaining -= 54;
         return;
     }
     cpu->ir = opcode;
@@ -998,9 +1009,9 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         if (top4 == 0x0C) {
             m68k_exec_cmpi(cpu, opcode);
             if (((opcode >> 6) & 0x3) == 2) {
-                cycles = ((opcode & 0x38) == 0) ? 14 : 12;
+                cycles = ((opcode & 0x38) == 0) ? 6 : 4;
             } else {
-                cycles = 8;
+                cycles = 4;
             }
             goto done;
         }
@@ -1080,7 +1091,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
              * for MOVE to -(An), saving 2 cycles vs the generic EA
              * cost charged inside m68k_calc_ea_addr. */
             int dest_mode = (opcode >> 6) & 0x7;
-            cycles = (dest_mode == 4) ? 2 : 4;
+            cycles = (dest_mode == 4) ? (((opcode >> 12) & 0x3) == 2 ? 2 : 0) : 4;
             goto done;
         }
     }
@@ -1152,7 +1163,9 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
         if ((opcode & 0xFFC0) == 0x4E80) {
             m68k_exec_jmp(cpu, opcode);
-            cycles = 8; /* JSR push cost; control-flow EA timing adds the rest */
+            /* JSR push cost; control-flow EA timing adds the rest. A
+             * faulted odd target skips the push and its cost. */
+            cycles = (cpu->exception_thrown == 3) ? 0 : 8;
             goto done;
         }
 
@@ -1219,7 +1232,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
         if ((opcode & 0xFFF8) == 0x4E58) {
             m68k_exec_unlk(cpu, opcode);
-            cycles = 12;
+            cycles = 8;
             goto done;
         }
 
@@ -1388,7 +1401,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         if ((opmode >= 4 && opmode <= 6) && (mode == 0 || mode == 1)) {
             m68k_exec_subx(cpu, opcode);
             M68kSize sxsz = (opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG;
-            cycles = (mode == 1) ? ((sxsz == SIZE_LONG) ? 30 : 18)
+            cycles = (mode == 1) ? ((sxsz == SIZE_LONG) ? 16 : 8)
                                  : ((sxsz == SIZE_LONG) ? 8 : 4);
             goto done;
         }
@@ -1434,7 +1447,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
                 /* CMPA: always 6 */
                 cycles = 6;
             } else if (is_cmpm) {
-                cycles = (opmode == 6) ? 20 : 12;
+                cycles = (opmode == 6) ? 8 : 4;
             } else {
                 M68kSize cmp_sz = (opmode == 0) ? SIZE_BYTE : (opmode == 1) ? SIZE_WORD : SIZE_LONG;
                 /* CMP is <ea> to Dn (read only, no writeback) */
@@ -1483,7 +1496,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         if ((opmode >= 4 && opmode <= 6) && (mode == 0 || mode == 1)) {
             m68k_exec_addx(cpu, opcode);
             M68kSize axsz = (opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG;
-            cycles = (mode == 1) ? ((axsz == SIZE_LONG) ? 30 : 18)
+            cycles = (mode == 1) ? ((axsz == SIZE_LONG) ? 16 : 8)
                                  : ((axsz == SIZE_LONG) ? 8 : 4);
             goto done;
         }
@@ -1544,6 +1557,25 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
 done:
     cpu->fault_trap_active = false;
+
+    /* Group-2 exceptions raised during execution replace the normal
+     * instruction cost with the exception processing cost, measured by
+     * the corpus. TRAP and illegal opcodes charge at their dispatch
+     * sites instead. */
+    switch (cpu->exception_thrown) {
+        case 5: /* zero divide */
+            cycles = 38;
+            break;
+        case 6: /* CHK, charged in the handler */
+            cycles = 0;
+            break;
+        case 7: /* TRAPV */
+        case 8: /* privilege violation */
+            cycles = 34;
+            break;
+        default:
+            break;
+    }
 
     if ((cpu->pc & 1) && !cpu->in_address_error) {
         /* A control-flow transfer to an odd address faults on the target

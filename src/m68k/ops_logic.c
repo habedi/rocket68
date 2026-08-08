@@ -483,6 +483,9 @@ void m68k_exec_andi(M68kCpu* cpu, u16 opcode) {
 
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
+    /* The immediate fetch cost is spent before EA resolution, so it
+     * survives a faulted operand access. */
+    cpu->cycles_remaining -= (((opcode >> 6) & 0x3) == 2) ? 8 : 4;
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
     u32 result = ea.value & imm;
 
@@ -541,6 +544,9 @@ void m68k_exec_ori(M68kCpu* cpu, u16 opcode) {
 
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
+    /* The immediate fetch cost is spent before EA resolution, so it
+     * survives a faulted operand access. */
+    cpu->cycles_remaining -= (((opcode >> 6) & 0x3) == 2) ? 8 : 4;
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
     u32 result = ea.value | imm;
 
@@ -599,6 +605,9 @@ void m68k_exec_eori(M68kCpu* cpu, u16 opcode) {
 
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
+    /* The immediate fetch cost is spent before EA resolution, so it
+     * survives a faulted operand access. */
+    cpu->cycles_remaining -= (((opcode >> 6) & 0x3) == 2) ? 8 : 4;
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
     u32 result = ea.value ^ imm;
 

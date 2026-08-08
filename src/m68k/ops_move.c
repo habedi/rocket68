@@ -119,6 +119,22 @@ void m68k_exec_move(M68kCpu* cpu, u16 opcode) {
             cpu->sr = (cpu->sr & ~ccr_mask) | full_flags;
         }
 
+        /* A faulted long write has only spent the word share of the EA
+         * cost, so the difference is refunded across the write. */
+        int fault_refund = (size == SIZE_LONG) ? ((dest_mode == 4) ? 2 : 4) : 0;
+        /* An (xxx).l destination with a memory source interleaves the
+         * write before the second absolute word is fetched, so that
+         * word's cost is not yet spent when the write faults. */
+        if (dest_mode == 7 && dest_reg == 1 && !src_reg_imm) {
+            fault_refund += 4;
+        }
+        cpu->cycles_remaining += fault_refund;
+        if (dest_mode == 4 && size != SIZE_LONG) {
+            /* The predecrement internal cost is spent before the write;
+             * the dispatch charge drops to zero to compensate. */
+            cpu->cycles_remaining -= 2;
+        }
+
         /* A predecrement destination write overlaps the next prefetch,
          * so the frame IR holds the prefetched word, and a long write
          * goes low word first, faulting on the higher address. */
@@ -126,6 +142,7 @@ void m68k_exec_move(M68kCpu* cpu, u16 opcode) {
             if (size == SIZE_LONG) {
                 m68k_write_16(cpu, dest_ea.address + 2, (u16)src_ea.value);
                 m68k_write_16(cpu, dest_ea.address, (u16)(src_ea.value >> 16));
+                cpu->cycles_remaining -= fault_refund;
                 cpu->a_regs[dest_reg].l = commit_value;
                 cpu->sr = (cpu->sr & ~ccr_mask) | full_flags;
                 return;
@@ -138,6 +155,7 @@ void m68k_exec_move(M68kCpu* cpu, u16 opcode) {
             }
         }
         m68k_write_size(cpu, dest_ea.address, src_ea.value, size);
+        cpu->cycles_remaining -= fault_refund;
         cpu->fault_bus_word_valid = false;
         if (commit_after_write) {
             cpu->a_regs[dest_reg].l = commit_value;
@@ -190,9 +208,11 @@ void m68k_exec_unlk(M68kCpu* cpu, u16 opcode) {
      * a fault on an odd frame pointer leaves SP and An untouched and the
      * exception frame lands on the original stack. */
     u32 frame_sp = cpu->a_regs[reg].l;
-    /* A faulted frame-pointer read pushes the instruction address plus 4. */
+    /* A faulted frame-pointer read pushes the instruction address plus 4,
+     * and the pre-read internal cost is already spent. */
     cpu->fault_pc = cpu->pc + 2;
     cpu->fault_pc_valid = true;
+    cpu->cycles_remaining -= 4;
     u32 value = m68k_read_32(cpu, frame_sp);
     cpu->a_regs[7].l = frame_sp + 4;
     cpu->a_regs[reg].l = value;
@@ -230,8 +250,11 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
     for (int i = 0; i < 16; i++) {
         if (mask & (1 << i)) reg_count++;
     }
-    cpu->cycles_remaining -=
-        m68k_movem_ea_cycles(mode, reg, dir_mem_to_reg) + reg_count * (size_long ? 8 : 4);
+    (void)reg_count;
+    /* The memory-to-register form's trailing extra read is spent after
+     * the transfers, so its 4 cycles are charged at the end. */
+    cpu->cycles_remaining -= m68k_movem_ea_cycles(mode, reg, dir_mem_to_reg);
+    if (dir_mem_to_reg) cpu->cycles_remaining += 4;
 
     /* A faulted transfer pushes the PC after the consumed words plus one
      * prefetch advance, for both directions. */
@@ -246,6 +269,7 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
         for (int i = 0; i < 16; i++) {
             if (mask & (1 << i)) {
                 u32 val = m68k_read_size(cpu, addr, size);
+                cpu->cycles_remaining -= size_long ? 8 : 4;
                 if (!size_long) val = (s32)(s16)val;
 
                 if (i < 8) {
@@ -258,6 +282,7 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
             }
         }
         cpu->operand_program_space = false;
+        cpu->cycles_remaining -= 4;
         if (mode == 3) cpu->a_regs[reg].l = addr;
     } else {
         if (mode == 4) {
@@ -282,6 +307,7 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
                     } else {
                         m68k_write_size(cpu, addr, val & 0xFFFF, size);
                     }
+                    cpu->cycles_remaining -= size_long ? 8 : 4;
                 }
             }
             cpu->a_regs[reg].l = addr;
@@ -291,6 +317,7 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
                     u32 val = (i < 8) ? cpu->d_regs[i].l : cpu->a_regs[i - 8].l;
                     if (!size_long) val &= 0xFFFF;
                     m68k_write_size(cpu, addr, val, size);
+                    cpu->cycles_remaining -= size_long ? 8 : 4;
                     addr += step;
                 }
             }

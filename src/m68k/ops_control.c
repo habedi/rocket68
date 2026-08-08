@@ -196,6 +196,13 @@ void m68k_exec_chk(M68kCpu* cpu, u16 opcode) {
         return;
     }
 
+    /* The greater-than-bound path costs 38 cycles. The negative path
+     * costs 40, except that the microcode re-checks the raw N flag of
+     * bound minus value without overflow correction and takes the
+     * 38-cycle path when it is set. The dispatch charge is suppressed. */
+    u16 rdiff = (u16)((u16)bound - (u16)src);
+    int trap_cost = (src > bound) ? 38 : ((rdiff & 0x8000) ? 38 : 40);
+    cpu->cycles_remaining -= trap_cost;
     m68k_exception(cpu, 6);
 }
 

@@ -34,9 +34,9 @@ This page lists current compatibility notes and scope limits based on the curren
 - Control-flow transfers to an odd address fault on the target prefetch as a program-space read; most push the instruction address plus 2, JSR pushes the PC after EA resolution without pushing a return address, BSR pushes the return address and frames the odd target itself, and DBcc suppresses the counter writeback.
 - MOVE from SR reads its memory destination before writing, so an odd destination faults as a read.
 - UNLK reads the frame pointer before moving the stack pointer, so a faulted UNLK leaves both registers unchanged.
-- With `ROCKET68_JSON_STRICT=1` the JSON corpus passes 127/127 files.
-- With `ROCKET68_JSON_CYCLES=1` the JSON corpus passes 127/127 files; instruction timing is data dependent where the hardware is, including shift counts, multiply operand bits, and the division microcode walk.
-- With both flags combined, exception-path cycle counts are not yet fully modeled.
+- The JSON corpus passes 127/127 files in every mode, including `ROCKET68_JSON_STRICT=1` and `ROCKET68_JSON_CYCLES=1` combined.
+- Instruction timing is data dependent where the hardware is, including shift counts, multiply operand bits, the division microcode walk, and the CHK trap paths.
+- Exception timing models the microcode stages, so a faulted instruction has spent exactly the cycles the hardware had spent at the fault point.
 
 ## Control Registers and Exception Base
 
