@@ -44,6 +44,7 @@ void m68k_reset(M68kCpu* cpu) {
     cpu->exception_depth = 0;
     cpu->ppc = 0;
     cpu->ir = 0;
+    cpu->vbr = 0; /* Reset clears the vector base on 68010-class parts. */
 
     cpu->a_regs[7].l = m68k_read_32(cpu, 0x00000000);
     cpu->pc = m68k_read_32(cpu, 0x00000004);
@@ -733,6 +734,12 @@ void m68k_set_sr(M68kCpu* cpu, u16 new_sr) {
 }
 
 void m68k_exception(M68kCpu* cpu, int vector) {
+    /* The illegal opcode callback may claim the instruction: a nonzero
+     * return suppresses the exception and execution continues after the
+     * opcode. Line-A and line-F take their own vectors and bypass this. */
+    if (vector == 4 && cpu->illg_cb && cpu->illg_cb(cpu, cpu->ir) != 0) {
+        return;
+    }
     if (cpu->exception_thrown == 0) {
         cpu->exception_thrown = vector;
     }
@@ -764,7 +771,7 @@ void m68k_exception(M68kCpu* cpu, int vector) {
     cpu->fault_program_access = false;
     cpu->fault_valid = false;
 
-    u32 vector_addr = m68k_read_32(cpu, vector * 4);
+    u32 vector_addr = m68k_read_32(cpu, cpu->vbr + (u32)vector * 4);
 
     m68k_set_pc(cpu, vector_addr);
     cpu->exception_depth--;
@@ -788,6 +795,12 @@ static bool check_interrupts(M68kCpu* cpu) {
 
     if (take) {
         int vector;
+
+        /* The acknowledge bus cycle drives FC = 7 on real hardware, for
+         * vectored and autovectored responses alike. */
+        if (cpu->fc_cb) {
+            cpu->fc_cb(cpu, M68K_FC_INT_ACK);
+        }
 
         if (cpu->int_ack) {
             int ack = cpu->int_ack(cpu, cpu->irq_level);

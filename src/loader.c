@@ -58,6 +58,17 @@ bool m68k_load_srec(M68kCpu* cpu, const char* filename) {
             continue;
         }
 
+        /* The count byte, address, data, and checksum must sum to 0xFF
+         * modulo 256 (the checksum is the ones' complement of the rest). */
+        unsigned int sum = 0;
+        for (int i = 0; i <= count; i++) {
+            sum += parse_byte(&line[2 + i * 2]);
+        }
+        if ((sum & 0xFF) != 0xFF) {
+            fprintf(stderr, "Line %d: Checksum mismatch\n", line_num);
+            continue;
+        }
+
         u32 addr = 0;
         int addr_len = 0;
         int data_offset = 4;

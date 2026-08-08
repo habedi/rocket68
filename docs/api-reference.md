@@ -202,7 +202,10 @@ Called by `TAS`; non-zero return allows write-back, zero blocks write-back.
 ### `void m68k_set_illg_callback(M68kCpu* cpu, M68kIllgCallback callback);`
 
 Registers an illegal-opcode callback pointer.
-Current core decode path does not invoke this callback yet.
+The callback fires before the illegal-instruction exception (vector 4) is taken, and receives the offending opcode.
+A nonzero return claims the instruction: the exception is suppressed and execution continues after the opcode.
+A zero return lets the exception proceed.
+Line-A and line-F opcodes take vectors 10 and 11 without invoking this callback.
 
 ### Host Memory Callbacks
 
@@ -240,7 +243,7 @@ Restores context from `src`, while preserving destination-instance runtime bindi
 
 Loads Motorola S-record data into memory.
 Returns `false` only when the file cannot be opened.
-Malformed records are reported to `stderr` and skipped.
+Malformed records, including records with checksum mismatches, are reported to `stderr` and skipped.
 Data bytes are written directly into bound flat memory; loading does not run emulated bus cycles, invoke host memory callbacks, or raise bus errors.
 When a record reaches an address outside bound memory, the first out-of-range byte is reported to `stderr`, the rest of that record is skipped, and parsing continues with the next record.
 Entry-point records (`S7/S8/S9`) set the program counter through `m68k_set_pc`, so the PC-changed callback fires.

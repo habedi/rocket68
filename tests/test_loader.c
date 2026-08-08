@@ -24,11 +24,8 @@ void test_load_srec(void) {
     // S0 Header
     fprintf(f, "S00600004844521B\n");
     // S1 Data: Addr 0x1000, Data 12 34 56 78 (4 bytes). Count = 2 (Addr) + 4 (Data) + 1 (Check) = 7
-    // Checksum: FF - (03 (count? no) + 10 + 00 + 12 + 34 + 56 + 78) & FF ...
-    // Let's just write valid data and ignore checksum in our simple loader for now, but format
-    // correctly. Count field is bytes remaining. 0x1000 -> 12 34 56 78 Count = 3 (Addr 2 + Check 1)
-    // + 4 = 7. S1 07 10 00 12 34 56 78 ??
-    fprintf(f, "S10710001234567800\n");
+    // Checksum: 0xFF - ((07 + 10 + 00 + 12 + 34 + 56 + 78) & 0xFF) = 0xD4
+    fprintf(f, "S107100012345678D4\n");
     // S9 Termination: Entry 0x1000
     // Count = 2 (Addr) + 1 (Check) = 3
     fprintf(f, "S9031000EC\n");
@@ -223,14 +220,16 @@ void test_load_srec_robustness(void) {
     }
     /* A count field larger than the line is reported and skipped. */
     fprintf(f, "S1FF100012\n");
-    /* An unknown record type is reported and skipped. */
-    fprintf(f, "S40710001234567800\n");
+    /* An unknown record type is reported and skipped. The checksum is
+     * valid so the unknown-type path is the one exercised. */
+    fprintf(f, "S407100012345678D4\n");
     /* A non-record line is ignored. */
     fprintf(f, "not an s-record\n");
     /* An S5 record-count record is ignored. */
     fprintf(f, "S5030001FB\n");
-    /* Lowercase hex digits are accepted; one byte 0xAB at 0x20fe. */
-    fprintf(f, "S10420feab00\n");
+    /* Lowercase hex digits are accepted; one byte 0xAB at 0x20fe.
+     * Checksum: 0xFF - ((04 + 20 + FE + AB) & 0xFF) = 0x32. */
+    fprintf(f, "S10420feab32\n");
     /* No terminator record, so the PC stays untouched. */
     fclose(f);
 
@@ -247,6 +246,36 @@ void test_load_srec_robustness(void) {
     assert(!m68k_load_srec(&cpu, "no_such_file.srec"));
 
     printf("S-Record Loader robustness test passed!\n");
+}
+
+void test_load_srec_checksum(void) {
+    M68kCpu cpu;
+    u8 memory[65536];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    const char* filename = "test_checksum.srec";
+    FILE* f = fopen(filename, "w");
+    if (!f) {
+        perror("Failed to create test S-Record file");
+        return;
+    }
+    /* Valid record: one byte 0xAB at 0x0080. Sum 04+00+80+AB = 0x2F, so
+     * the checksum is 0xFF - 0x2F = 0xD0. */
+    fprintf(f, "S1040080ABD0\n");
+    /* Corrupted checksum: the correct value for this record is 0xC0.
+     * The record must be reported and skipped. */
+    fprintf(f, "S1040090ABCF\n");
+    fclose(f);
+
+    bool success = m68k_load_srec(&cpu, filename);
+    remove(filename);
+
+    assert(success);
+    assert(memory[0x80] == 0xAB);
+    assert(memory[0x90] == 0x00);
+
+    printf("S-Record checksum test passed!\n");
 }
 
 void test_disasm(void) {
@@ -344,6 +373,7 @@ void run_loader_tests(void) {
     test_load_bin_boundaries();
     test_load_bin_large_file();
     test_load_srec_robustness();
+    test_load_srec_checksum();
     test_disasm();
     test_disasm_full();
     test_io();

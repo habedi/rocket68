@@ -429,6 +429,38 @@ void test_fc(void) {
     printf("Function Code (FC) Callback test passed!\n");
 }
 
+static bool mock_saw_int_ack_fc = false;
+static void mock_fc_iack_cb(M68kCpu* cpu, unsigned int fc) {
+    (void)cpu;
+    if (fc == M68K_FC_INT_ACK) mock_saw_int_ack_fc = true;
+}
+
+void test_fc_int_ack(void) {
+    M68kCpu cpu;
+    u8 memory[4096];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    m68k_set_fc_callback(&cpu, mock_fc_iack_cb);
+
+    cpu.pc = 0x100;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    cpu.sr = 0x0000;
+
+    /* Autovectored level 4 interrupt (vector 28). The acknowledge cycle
+     * must emit the FC callback with M68K_FC_INT_ACK. */
+    mock_saw_int_ack_fc = false;
+    m68k_write_32(&cpu, 28 * 4, 0x500);
+    m68k_write_16(&cpu, 0x100, 0x4E71);
+    m68k_set_irq(&cpu, 4);
+    m68k_step_ex(&cpu, true);
+    assert(cpu.pc == 0x500);
+    assert(mock_saw_int_ack_fc);
+
+    m68k_set_fc_callback(&cpu, NULL);
+    printf("FC interrupt acknowledge test passed!\n");
+}
+
 static u32 mock_instr_pc = 0;
 static u32 mock_pc_changed = 0;
 static bool mock_reset_called = false;
@@ -505,6 +537,58 @@ static M68kCpu* timeslice_test_cpu = NULL;
 static void timeslice_hook(M68kCpu* cpu, u32 pc) {
     (void)pc;
     m68k_end_timeslice(timeslice_test_cpu);
+}
+
+static int mock_illg_opcode = -1;
+static int mock_illg_result = 0;
+
+static int handle_illg(M68kCpu* cpu, int opcode) {
+    (void)cpu;
+    mock_illg_opcode = opcode;
+    return mock_illg_result;
+}
+
+void test_illg_callback(void) {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    m68k_set_illg_callback(&cpu, handle_illg);
+
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x400;
+    m68k_write_32(&cpu, 0x10, 0x300); /* illegal instruction vector (4) */
+
+    /* A nonzero return suppresses the exception; execution continues. */
+    mock_illg_opcode = -1;
+    mock_illg_result = 1;
+    m68k_write_16(&cpu, 0x100, 0x4AFC); /* ILLEGAL */
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(mock_illg_opcode == 0x4AFC);
+    assert(cpu.pc == 0x102);
+    assert(cpu.a_regs[7].l == 0x400); /* no frame pushed */
+
+    /* A zero return lets the illegal-instruction exception proceed. */
+    mock_illg_opcode = -1;
+    mock_illg_result = 0;
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(mock_illg_opcode == 0x4AFC);
+    assert(cpu.pc == 0x300);
+    assert(cpu.a_regs[7].l == 0x400 - 6);
+
+    /* Line-A opcodes take vector 10 and do not hit the callback. */
+    mock_illg_opcode = -1;
+    cpu.a_regs[7].l = 0x400;
+    m68k_write_32(&cpu, 0x28, 0x320); /* line 1010 vector (10) */
+    m68k_write_16(&cpu, 0x104, 0xA000);
+    cpu.pc = 0x104;
+    m68k_step(&cpu);
+    assert(mock_illg_opcode == -1);
+    assert(cpu.pc == 0x320);
+
+    printf("Illegal opcode callback test passed!\n");
 }
 
 void test_timeslice(void) {

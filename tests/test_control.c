@@ -164,6 +164,38 @@ void test_exceptions(void) {
     printf("Exception test passed!\n");
 }
 
+void test_vbr_exception_base(void) {
+    M68kCpu cpu;
+    u8 memory[8192];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    cpu.sr = 0x2700; /* supervisor, so MOVEC is allowed */
+
+    /* Relocate the vector table to 0x800 with MOVEC D0, VBR. */
+    cpu.d_regs[0].l = 0x800;
+    m68k_write_16(&cpu, 0x200, 0x4E7B);
+    m68k_write_16(&cpu, 0x202, 0x0801);
+    cpu.pc = 0x200;
+    m68k_step(&cpu);
+    assert(cpu.vbr == 0x800);
+
+    /* TRAP #0 (vector 32) must fetch its handler from VBR + 0x80. */
+    m68k_write_32(&cpu, 0x080, 0x400); /* old table: wrong handler */
+    m68k_write_32(&cpu, 0x880, 0x600); /* relocated table: right handler */
+    m68k_write_16(&cpu, 0x204, 0x4E40);
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+
+    /* After m68k_reset the base must return to zero. */
+    m68k_reset(&cpu);
+    assert(cpu.vbr == 0);
+
+    printf("VBR exception base test passed!\n");
+}
+
 void test_nop_bsr_rtr(void) {
     M68kCpu cpu;
     u8 memory[1024];
@@ -198,7 +230,7 @@ void test_nop_bsr_rtr(void) {
 
 void test_movec(void) {
     M68kCpu cpu;
-    u8 memory[1024];
+    u8 memory[4096];
     memset(memory, 0, sizeof(memory));
     m68k_init(&cpu, memory, sizeof(memory));
 
@@ -236,7 +268,8 @@ void test_movec(void) {
     cpu.sr = 0;
     m68k_write_16(&cpu, 16, 0x4E7A);
     m68k_write_16(&cpu, 18, 0x1801);
-    m68k_write_32(&cpu, 0x20, 0x100);  // Privilege violation vector (8)
+    // Privilege violation vector (8) is fetched relative to VBR (0x800 here).
+    m68k_write_32(&cpu, 0x820, 0x100);
     cpu.a_regs[7].l = 0x400;
     m68k_step(&cpu);
     assert(cpu.pc == 0x100);

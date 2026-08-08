@@ -35,7 +35,9 @@ int main(void) {
     test_interrupts();
     test_int_ack();
     test_fc();
+    test_fc_int_ack();
     test_hooks();
+    test_illg_callback();
     test_timeslice();
     test_serialization();
 
@@ -76,6 +78,7 @@ int main(void) {
 
     test_movec();
     test_trapv();
+    test_vbr_exception_base();
     test_rtd();
     test_bkpt();
     test_move_sr();

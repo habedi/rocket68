@@ -16,7 +16,8 @@
  * @param filename Path to an S-record file.
  * @return false only if the input file cannot be opened; otherwise true.
  *
- * Parsing errors in individual records are reported to stderr and skipped.
+ * Parsing errors and checksum mismatches in individual records are
+ * reported to stderr, and the affected records are skipped.
  */
 bool m68k_load_srec(M68kCpu* cpu, const char* filename);
 

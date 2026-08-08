@@ -17,17 +17,16 @@ This page lists current compatibility notes and scope limits based on the curren
 ## Callback Behavior Notes
 
 - `fc_callback` is emitted for memory reads/writes and instruction fetches.
-- `M68K_FC_INT_ACK` is defined, but the current interrupt acknowledge path does not emit FC callback events with this code.
+- The interrupt acknowledge path emits the FC callback with `M68K_FC_INT_ACK` before the vector is resolved, for vectored and autovectored responses alike.
 - `pc_changed_callback` is triggered when PC is changed through `m68k_set_pc`.
 - Direct PC writes (for example in `m68k_reset` and `m68k_fetch`) do not call `pc_changed_callback`.
 - `reset_callback` is tied to execution of the `RESET` instruction, not to `m68k_reset()`.
-- `illg_callback` can be installed, but the current decode/exception path does not call it.
+- `illg_callback` fires before an illegal-instruction exception (vector 4); a nonzero return suppresses the exception. Line-A and line-F opcodes (vectors 10 and 11) do not invoke it.
 
 ## Control Registers and Exception Base
 
 - `VBR`, `SFC`, and `DFC` fields exist and are accessible through `MOVEC`.
-- Exception vector fetch currently uses `vector * 4` from base address zero.
-- `VBR` is not currently applied as an exception vector base in `m68k_exception`.
+- Exception vector fetch uses `VBR + vector * 4`; `m68k_reset` clears `VBR` to zero, matching 68010-class reset behavior, so the base is zero unless a program moves it.
 - `SFC`/`DFC` values are stored but not used to drive bus access behavior.
 
 ## Context Save/Restore Format
@@ -41,7 +40,7 @@ This page lists current compatibility notes and scope limits based on the curren
 - `m68k_load_srec` and `m68k_load_bin` return `false` only when file open fails.
 - `m68k_load_bin` reports the number of bytes written into emulated memory through its optional `size_out` argument; a load that runs past bound memory still returns `true`, and the reported size reveals the truncation.
 - `m68k_load_srec` reports malformed lines and continues parsing.
-- S-record checksum validity is not explicitly validated.
+- S-record checksums are validated; a record whose checksum does not match is reported to `stderr` and skipped, and parsing continues with the next record.
 - Loaders write directly into bound flat memory; they do not run emulated bus cycles, invoke host memory callbacks, or raise bus errors. When a record reaches an out-of-range address, the first out-of-range byte is reported to `stderr`, the rest of that record is skipped, and parsing continues with the next record.
 - S-record entry records (`S7/S8/S9`) set the program counter through `m68k_set_pc`.
 - `m68k_disasm` returns instruction bytes consumed; unsupported decode cases may still produce `???` output text.
