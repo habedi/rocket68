@@ -1325,7 +1325,8 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             m68k_exec_eor(cpu, opcode);
             {
                 M68kSize eor_sz = (opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG;
-                cycles = alu_base_cycles(1, eor_sz, mode, opcode & 0x7); /* EOR is always Dn to <ea> */
+                cycles =
+                    alu_base_cycles(1, eor_sz, mode, opcode & 0x7); /* EOR is always Dn to <ea> */
             }
         } else {
             m68k_exec_cmp(cpu, opcode);

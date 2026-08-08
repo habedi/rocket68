@@ -98,8 +98,8 @@ static int disasm_ea(M68kCpu* cpu, u32 base_pc, int mode, int reg, int size, cha
             int idx_reg = (ext >> 12) & 0x7;
             bool is_a_reg = (ext >> 15) & 1;
             bool is_long = (ext >> 11) & 1;
-            snprintf(buf, DISASM_EA_SIZE, "%d(A%d,%c%d.%c)", disp, reg, is_a_reg ? 'A' : 'D', idx_reg,
-                    is_long ? 'L' : 'W');
+            snprintf(buf, DISASM_EA_SIZE, "%d(A%d,%c%d.%c)", disp, reg, is_a_reg ? 'A' : 'D',
+                     idx_reg, is_long ? 'L' : 'W');
             bytes = 2;
             break;
         }
@@ -130,8 +130,8 @@ static int disasm_ea(M68kCpu* cpu, u32 base_pc, int mode, int reg, int size, cha
                     int idx_reg = (ext >> 12) & 0x7;
                     bool is_a_reg = (ext >> 15) & 1;
                     bool is_long = (ext >> 11) & 1;
-                    snprintf(buf, DISASM_EA_SIZE, "%d(PC,%c%d.%c)", disp, is_a_reg ? 'A' : 'D', idx_reg,
-                            is_long ? 'L' : 'W');
+                    snprintf(buf, DISASM_EA_SIZE, "%d(PC,%c%d.%c)", disp, is_a_reg ? 'A' : 'D',
+                             idx_reg, is_long ? 'L' : 'W');
                     bytes = 2;
                     break;
                 }
@@ -818,7 +818,8 @@ int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size) {
             int count_reg = (opcode >> 9) & 7;
             bool imm_count = ((opcode >> 5) & 1) == 0;
 
-            snprintf(op, DISASM_OP_SIZE, "%s%c%s", reg_ops[type], dir ? 'L' : 'R', size_str(size_code));
+            snprintf(op, DISASM_OP_SIZE, "%s%c%s", reg_ops[type], dir ? 'L' : 'R',
+                     size_str(size_code));
             if (imm_count) {
                 int count = count_reg == 0 ? 8 : count_reg;
                 snprintf(args, DISASM_ARGS_SIZE, "#%d, D%d", count, opcode & 7);
