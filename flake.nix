@@ -33,10 +33,11 @@
 
               # Development Utilities
               pre-commit
+              uv
 
               # Documentation
               doxygen
-              (python3.withPackages (ps: with ps; [ mkdocs uv ]))
+              (python3.withPackages (ps: with ps; [ mkdocs mkdocs-material mkdocstrings-python ]))
             ];
           };
         }
