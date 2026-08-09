@@ -278,6 +278,53 @@ void test_load_srec_checksum(void) {
     printf("S-Record checksum test passed!\n");
 }
 
+void test_load_ihex(void) {
+    M68kCpu cpu;
+    u8 memory[65536];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    const char* filename = "test.hex";
+    FILE* f = fopen(filename, "w");
+    if (!f) {
+        perror("Failed to create test Intel HEX file");
+        return;
+    }
+    /* Four data bytes at 0x0100: 12 34 56 78.
+     * Checksum: two's complement of (04+01+00+00+12+34+56+78). */
+    fprintf(f, ":0401000012345678E7\n");
+    /* Extended linear address 0x0000 (upper 16 bits), checksum F8. */
+    fprintf(f, ":020000040000FA\n");
+    /* Two bytes at 0x2000 via the base: AB CD.
+     * Checksum: -(02+20+00+00+AB+CD) = 66. */
+    fprintf(f, ":02200000ABCD66\n");
+    /* A corrupted checksum is reported and the record skipped. */
+    fprintf(f, ":02300000ABCD00\n");
+    /* Start linear address 0x00001000 sets PC. Checksum EB. */
+    fprintf(f, ":0400000500001000E7\n");
+    /* End of file. */
+    fprintf(f, ":00000001FF\n");
+    fclose(f);
+
+    bool success = m68k_load_ihex(&cpu, filename);
+    remove(filename);
+
+    assert(success);
+    assert(memory[0x100] == 0x12);
+    assert(memory[0x101] == 0x34);
+    assert(memory[0x102] == 0x56);
+    assert(memory[0x103] == 0x78);
+    assert(memory[0x2000] == 0xAB);
+    assert(memory[0x2001] == 0xCD);
+    assert(memory[0x3000] == 0x00);
+    assert(cpu.pc == 0x1000);
+
+    /* An open failure returns false. */
+    assert(!m68k_load_ihex(&cpu, "no_such_file.hex"));
+
+    printf("Intel HEX Loader test passed!\n");
+}
+
 void test_disasm(void) {
     M68kCpu cpu;
     u8 memory[1024];
@@ -355,6 +402,72 @@ void test_disasm_full(void) {
     assert(strstr(buf, "CHK"));
 }
 
+void test_disasm_supervisor_ops(void) {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    char buf[64];
+
+    /* MOVEC D0, VBR */
+    m68k_write_16(&cpu, 0, 0x4E7B);
+    m68k_write_16(&cpu, 2, 0x0801);
+    int len = m68k_disasm(&cpu, 0, buf, sizeof(buf));
+    assert(len == 4);
+    assert(strstr(buf, "MOVEC"));
+    assert(strstr(buf, "D0"));
+    assert(strstr(buf, "VBR"));
+
+    /* MOVEC SFC, A2 */
+    m68k_write_16(&cpu, 0, 0x4E7A);
+    m68k_write_16(&cpu, 2, 0xA000);
+    m68k_disasm(&cpu, 0, buf, sizeof(buf));
+    assert(strstr(buf, "MOVEC"));
+    assert(strstr(buf, "SFC"));
+    assert(strstr(buf, "A2"));
+
+    /* RTD #8 */
+    m68k_write_16(&cpu, 0, 0x4E74);
+    m68k_write_16(&cpu, 2, 0x0008);
+    len = m68k_disasm(&cpu, 0, buf, sizeof(buf));
+    assert(len == 4);
+    assert(strstr(buf, "RTD"));
+    assert(strstr(buf, "#8"));
+
+    /* BKPT #3 */
+    m68k_write_16(&cpu, 0, 0x484B);
+    len = m68k_disasm(&cpu, 0, buf, sizeof(buf));
+    assert(len == 2);
+    assert(strstr(buf, "BKPT"));
+    assert(strstr(buf, "#3"));
+
+    /* MOVES.w (A1), D4 */
+    m68k_write_16(&cpu, 0, 0x0E51);
+    m68k_write_16(&cpu, 2, 0x4000);
+    len = m68k_disasm(&cpu, 0, buf, sizeof(buf));
+    assert(len == 4);
+    assert(strstr(buf, "MOVES.W"));
+    assert(strstr(buf, "(A1)"));
+    assert(strstr(buf, "D4"));
+
+    /* MOVES.l A5, (A2)+ */
+    m68k_write_16(&cpu, 0, 0x0E9A);
+    m68k_write_16(&cpu, 2, 0xD800);
+    m68k_disasm(&cpu, 0, buf, sizeof(buf));
+    assert(strstr(buf, "MOVES.L"));
+    assert(strstr(buf, "A5"));
+    assert(strstr(buf, "(A2)+"));
+
+    /* MOVE from CCR */
+    m68k_write_16(&cpu, 0, 0x42C0);
+    m68k_disasm(&cpu, 0, buf, sizeof(buf));
+    assert(strstr(buf, "MOVE"));
+    assert(strstr(buf, "CCR"));
+    assert(strstr(buf, "D0"));
+
+    printf("Disasm supervisor ops test passed!\n");
+}
+
 void test_io(void) {
     M68kCpu cpu;
     u8 memory[1024];
@@ -374,7 +487,9 @@ void run_loader_tests(void) {
     test_load_bin_large_file();
     test_load_srec_robustness();
     test_load_srec_checksum();
+    test_load_ihex();
     test_disasm();
     test_disasm_full();
+    test_disasm_supervisor_ops();
     test_io();
 }

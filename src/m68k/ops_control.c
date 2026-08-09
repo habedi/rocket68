@@ -172,6 +172,25 @@ void m68k_exec_rte(M68kCpu* cpu, u16 opcode) {
         return;
     }
 
+    /* The 68010 validates the frame format word before committing; a
+     * nonzero format nibble raises a format error with the frame kept
+     * intact. */
+    if (cpu->model >= M68K_MODEL_68010) {
+        u32 sp = cpu->a_regs[7].l;
+        u16 fmt = m68k_read_16(cpu, sp + 6);
+        if ((fmt & 0xF000) != 0) {
+            cpu->pc -= 2;
+            m68k_exception(cpu, 14);
+            return;
+        }
+        u16 new_sr = m68k_read_16(cpu, sp);
+        u32 new_pc = m68k_read_32(cpu, sp + 2);
+        cpu->a_regs[7].l = sp + 8;
+        m68k_set_sr(cpu, new_sr);
+        m68k_set_pc(cpu, new_pc);
+        return;
+    }
+
     u16 new_sr = m68k_pop_16(cpu);
     u32 new_pc = m68k_pop_32(cpu);
     m68k_set_sr(cpu, new_sr);
@@ -266,6 +285,13 @@ void m68k_exec_movec(M68kCpu* cpu, u16 opcode) {
 
     bool to_ctrl = (opcode & 1) != 0;
 
+    /* An undefined control register raises an illegal instruction
+     * exception on real hardware. */
+    if (ctrl_reg != 0x000 && ctrl_reg != 0x001 && ctrl_reg != 0x800 && ctrl_reg != 0x801) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
     if (to_ctrl) {
         switch (ctrl_reg) {
             case 0x000:
@@ -277,10 +303,8 @@ void m68k_exec_movec(M68kCpu* cpu, u16 opcode) {
             case 0x800:
                 cpu->usp = *gpr;
                 break;
-            case 0x801:
-                cpu->vbr = *gpr;
-                break;
             default:
+                cpu->vbr = *gpr;
                 break;
         }
     } else {
@@ -294,11 +318,8 @@ void m68k_exec_movec(M68kCpu* cpu, u16 opcode) {
             case 0x800:
                 *gpr = cpu->usp;
                 break;
-            case 0x801:
-                *gpr = cpu->vbr;
-                break;
             default:
-                *gpr = 0;
+                *gpr = cpu->vbr;
                 break;
         }
     }

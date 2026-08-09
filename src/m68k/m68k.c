@@ -164,6 +164,13 @@ static inline void capture_access_fault(M68kCpu* cpu, u32 address, bool is_write
     cpu->group0_fault = true;
 }
 
+void m68k_raise_illegal_ea(M68kCpu* cpu) {
+    m68k_exception(cpu, 4);
+    if (cpu->fault_trap_active && cpu->exception_depth == 0) {
+        longjmp(cpu->fault_trap, 1);
+    }
+}
+
 void m68k_raise_odd_target_fault(M68kCpu* cpu, u32 target, u32 fault_pc) {
     /* The fault address is the raw target, the access is a program-space
      * read, and the frame IR holds the opcode. Exception processing
@@ -543,6 +550,10 @@ static M68kEA m68k_calc_ea_ex(M68kCpu* cpu, int mode, int reg, M68kSize size, bo
                     }
                 } break;
                 default:
+                    /* Mode 7 with register 5-7 is never a valid
+                     * encoding; real hardware takes the illegal
+                     * instruction exception. */
+                    m68k_raise_illegal_ea(cpu);
                     break;
             }
             break;
@@ -813,6 +824,10 @@ void m68k_exception(M68kCpu* cpu, int vector) {
         m68k_push_32(cpu, fault_address);
         m68k_push_16(cpu, ssw);
     } else {
+        /* The 68010 pushes a format 0 frame with a format/vector word. */
+        if (cpu->model >= M68K_MODEL_68010) {
+            m68k_push_16(cpu, (u16)(vector * 4));
+        }
         m68k_push_32(cpu, old_pc);
         m68k_push_16(cpu, old_sr);
     }
@@ -950,8 +965,9 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
     if (setjmp(cpu->fault_trap) != 0) {
         cpu->fault_trap_active = false;
         /* Group-0 exception processing costs 50 cycles, plus the 4-cycle
-         * base of the aborted instruction, measured by the corpus. */
-        cpu->cycles_remaining -= 54;
+         * base of the aborted instruction, measured by the corpus. An
+         * abort for an illegal encoding charges the illegal cost. */
+        cpu->cycles_remaining -= cpu->group0_fault ? 54 : 34;
         return;
     }
     cpu->fault_trap_active = true;
@@ -973,13 +989,24 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
     if ((opcode & 0xF000) == 0x0000) {
         int top4 = (opcode >> 8) & 0xF;
 
-        if (top4 == 0x0E) {
-        /* A later-family instruction is illegal on the 68000. */
-        if (cpu->model < M68K_MODEL_68010) {
+        /* Immediate ALU encodings with size code 3 belong to later
+         * family members and are illegal here. */
+        if (((opcode >> 6) & 0x3) == 3 &&
+            (top4 == 0x0 || top4 == 0x2 || top4 == 0x4 || top4 == 0x6 || top4 == 0xA ||
+             top4 == 0xC)) {
             m68k_exception(cpu, 4);
             cycles = 34;
             goto done;
         }
+
+        if (top4 == 0x0E) {
+            /* A later-family instruction is illegal on the 68000, and
+             * size code 3 is invalid on any model. */
+            if (cpu->model < M68K_MODEL_68010 || ((opcode >> 6) & 0x3) == 3) {
+                m68k_exception(cpu, 4);
+                cycles = 34;
+                goto done;
+            }
             m68k_exec_moves(cpu, opcode);
             cycles = 4;
             goto done;
@@ -1304,6 +1331,18 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
                                                             : SIZE_BYTE;
                 cycles =
                     (un_mode == 0) ? (un_sz == SIZE_LONG ? 6 : 4) : (un_sz == SIZE_LONG ? 12 : 8);
+            }
+            goto done;
+        }
+
+        if ((opcode & 0xFFC0) == 0x42C0) {
+            /* MOVE from CCR exists on the 68010 only. */
+            if (cpu->model < M68K_MODEL_68010) {
+                m68k_exception(cpu, 4);
+                cycles = 34;
+            } else {
+                m68k_exec_move_sr(cpu, opcode);
+                cycles = ((opcode & 0x38) == 0) ? 4 : 8;
             }
             goto done;
         }

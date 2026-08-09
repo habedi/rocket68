@@ -26,6 +26,13 @@ void m68k_exec_move(M68kCpu* cpu, u16 opcode) {
     int src_mode = (opcode >> 3) & 0x7;
     int src_reg = opcode & 0x7;
 
+    /* PC-relative, immediate, and reserved destinations are invalid
+     * encodings and trap before any state changes. */
+    if (dest_mode == 7 && dest_reg > 1) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
     M68kEA src_ea = m68k_calc_ea(cpu, src_mode, src_reg, size);
     u32 pc_after_src = cpu->pc;
 
@@ -374,6 +381,12 @@ void m68k_exec_move_sr(M68kCpu* cpu, u16 opcode) {
     }
 
     if ((opcode & 0xFFC0) == 0x40C0) {
+        /* MOVE from SR is privileged on the 68010. */
+        if (cpu->model >= M68K_MODEL_68010 && !(cpu->sr & M68K_SR_S)) {
+            cpu->pc -= 2;
+            m68k_exception(cpu, 8);
+            return;
+        }
         int mode = (opcode >> 3) & 0x7;
         int reg = opcode & 0x7;
         M68kEA ea = m68k_calc_ea_addr(cpu, mode, reg, SIZE_WORD);
@@ -385,6 +398,21 @@ void m68k_exec_move_sr(M68kCpu* cpu, u16 opcode) {
              * an odd destination faults as a read. */
             (void)m68k_read_size(cpu, ea.address, SIZE_WORD);
             m68k_write_size(cpu, ea.address, cpu->sr, SIZE_WORD);
+        }
+        return;
+    }
+
+    if ((opcode & 0xFFC0) == 0x42C0) {
+        /* MOVE from CCR exists on the 68010 only. */
+        int mode = (opcode >> 3) & 0x7;
+        int reg = opcode & 0x7;
+        M68kEA ea = m68k_calc_ea_addr(cpu, mode, reg, SIZE_WORD);
+        u16 ccr = cpu->sr & 0x00FF;
+        if (ea.is_reg && !ea.is_addr) {
+            cpu->d_regs[ea.reg_num].l = (cpu->d_regs[ea.reg_num].l & 0xFFFF0000) | ccr;
+        } else {
+            (void)m68k_read_size(cpu, ea.address, SIZE_WORD);
+            m68k_write_size(cpu, ea.address, ccr, SIZE_WORD);
         }
     }
 }

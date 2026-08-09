@@ -361,6 +361,25 @@ int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size) {
             }
         }
 
+        else if ((opcode & 0xFF00) == 0x0E00 && ((opcode >> 6) & 3) != 3) {
+            int size_code = (opcode >> 6) & 3;
+            int size = (size_code == 0) ? SIZE_BYTE : (size_code == 1 ? SIZE_WORD : SIZE_LONG);
+            snprintf(op, DISASM_OP_SIZE, "MOVES%s", size_str(size_code));
+            u16 mv_ext = peek_word(cpu, pc + 2);
+            len += 2;
+            char gpr[4];
+            snprintf(gpr, sizeof(gpr), "%c%d", (mv_ext & 0x8000) ? 'A' : 'D',
+                     (mv_ext >> 12) & 7);
+            char ea_buf[DISASM_EA_SIZE];
+            int ea_bytes = disasm_ea(cpu, pc + 4, (opcode >> 3) & 7, opcode & 7, size, ea_buf);
+            if (mv_ext & 0x0800) {
+                snprintf(args, DISASM_ARGS_SIZE, "%s, %s", gpr, ea_buf);
+            } else {
+                snprintf(args, DISASM_ARGS_SIZE, "%s, %s", ea_buf, gpr);
+            }
+            len += ea_bytes;
+        }
+
         else if (opcode == 0x003C) {
             snprintf(op, DISASM_OP_SIZE, "ORI");
             snprintf(args, DISASM_ARGS_SIZE, "#$%02X, CCR", peek_word(cpu, pc + 2) & 0xFF);
@@ -434,6 +453,31 @@ int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size) {
             snprintf(op, DISASM_OP_SIZE, "TRAPV");
         } else if (opcode == 0x4E77) {
             snprintf(op, DISASM_OP_SIZE, "RTR");
+        } else if (opcode == 0x4E74) {
+            snprintf(op, DISASM_OP_SIZE, "RTD");
+            s16 rtd_disp = (s16)peek_word(cpu, pc + 2);
+            len += 2;
+            snprintf(args, DISASM_ARGS_SIZE, "#%d", rtd_disp);
+        } else if (opcode == 0x4E7A || opcode == 0x4E7B) {
+            snprintf(op, DISASM_OP_SIZE, "MOVEC");
+            u16 mc_ext = peek_word(cpu, pc + 2);
+            len += 2;
+            char gpr[4];
+            snprintf(gpr, sizeof(gpr), "%c%d", (mc_ext & 0x8000) ? 'A' : 'D',
+                     (mc_ext >> 12) & 7);
+            const char* ctrl;
+            switch (mc_ext & 0xFFF) {
+                case 0x000: ctrl = "SFC"; break;
+                case 0x001: ctrl = "DFC"; break;
+                case 0x800: ctrl = "USP"; break;
+                case 0x801: ctrl = "VBR"; break;
+                default: ctrl = "???"; break;
+            }
+            if (opcode & 1) {
+                snprintf(args, DISASM_ARGS_SIZE, "%s, %s", gpr, ctrl);
+            } else {
+                snprintf(args, DISASM_ARGS_SIZE, "%s, %s", ctrl, gpr);
+            }
         }
 
         else if ((opcode & 0xFFF0) == 0x4E40) {
@@ -441,10 +485,6 @@ int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size) {
             snprintf(args, DISASM_ARGS_SIZE, "#%d", opcode & 0xF);
         }
 
-        else if ((opcode & 0xFFF8) == 0x4E48) {
-            snprintf(op, DISASM_OP_SIZE, "BKPT");
-            snprintf(args, DISASM_ARGS_SIZE, "#%d", opcode & 7);
-        }
 
         else if ((opcode & 0xFFF8) == 0x4E50) {
             snprintf(op, DISASM_OP_SIZE, "LINK");
@@ -525,6 +565,11 @@ int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size) {
             len += ea_bytes;
         }
 
+        else if ((opcode & 0xFFF8) == 0x4848) {
+            snprintf(op, DISASM_OP_SIZE, "BKPT");
+            snprintf(args, DISASM_ARGS_SIZE, "#%d", opcode & 7);
+        }
+
         else if ((opcode & 0xFFC0) == 0x4840) {
             int mode = (opcode >> 3) & 7;
             if (mode == 0) {
@@ -593,6 +638,14 @@ int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size) {
             char ea_buf[DISASM_EA_SIZE];
             int ea_bytes = disasm_ea(cpu, pc + 2, (opcode >> 3) & 7, opcode & 7, size, ea_buf);
             snprintf(args, DISASM_ARGS_SIZE, "%s", ea_buf);
+            len += ea_bytes;
+        }
+
+        else if ((opcode & 0xFFC0) == 0x42C0) {
+            snprintf(op, DISASM_OP_SIZE, "MOVE");
+            char ea_buf[DISASM_EA_SIZE];
+            int ea_bytes = disasm_ea(cpu, pc + 2, (opcode >> 3) & 7, opcode & 7, SIZE_WORD, ea_buf);
+            snprintf(args, DISASM_ARGS_SIZE, "CCR, %s", ea_buf);
             len += ea_bytes;
         }
 

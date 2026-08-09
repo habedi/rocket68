@@ -279,6 +279,13 @@ Bytes are written directly into bound flat memory; loading stops at the first ou
 When `size_out` is not NULL, it receives the number of bytes written into emulated memory, or 0 when the file cannot be opened.
 A reported size smaller than the file size indicates the load stopped at the end of bound memory.
 
+### `bool m68k_load_ihex(M68kCpu* cpu, const char* filename);`
+
+Loads Intel HEX data into memory.
+Returns `false` only when the file cannot be opened.
+Data records honor the extended segment and extended linear base records, and start address records set the program counter through `m68k_set_pc`.
+Malformed records, including records with checksum mismatches, are reported to `stderr` and skipped.
+
 ## Disassembler API (`disasm.h`)
 
 ### `int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size);`

@@ -80,6 +80,9 @@ int main(void) {
     test_movec();
     test_address_error_frame_pc();
     test_model_gating();
+    test_68010_frames();
+    test_68010_sr_ccr();
+    test_decode_strictness();
     test_move_write_fault();
     test_rmw_fault_commits();
     test_odd_target_fault();

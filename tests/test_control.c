@@ -491,6 +491,165 @@ void test_model_gating(void) {
     printf("Model gating test passed!\n");
 }
 
+void test_68010_frames(void) {
+    M68kCpu cpu;
+    u8 memory[8192];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    m68k_set_model(&cpu, M68K_MODEL_68010);
+
+    /* TRAP #0 on the 68010 pushes an 8-byte format 0 frame: SR, PC, and
+     * the format/vector word (vector offset 0x80). */
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    m68k_write_32(&cpu, 32 * 4, 0x600);
+    m68k_write_16(&cpu, 0x100, 0x4E40); /* TRAP #0 */
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+    assert(cpu.a_regs[7].l == 0x1000 - 8);
+    u16 fmt = (u16)((memory[0xFFE] << 8) | memory[0xFFF]);
+    assert(fmt == 0x0080);
+
+    /* RTE pops the full frame and returns. */
+    m68k_write_16(&cpu, 0x600, 0x4E73);
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x102);
+    assert(cpu.a_regs[7].l == 0x1000);
+
+    /* RTE with a nonzero format nibble takes the format error vector. */
+    cpu.a_regs[7].l = 0x1000 - 8;
+    m68k_write_16(&cpu, 0xFF8, 0x2700);
+    m68k_write_32(&cpu, 0xFFA, 0x200);
+    m68k_write_16(&cpu, 0xFFE, 0x8080); /* format 8 */
+    m68k_write_32(&cpu, 14 * 4, 0x700); /* format error vector */
+    m68k_write_16(&cpu, 0x300, 0x4E73);
+    cpu.pc = 0x300;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x700);
+
+    printf("68010 frame test passed!\n");
+}
+
+void test_68010_sr_ccr(void) {
+    M68kCpu cpu;
+    u8 memory[8192];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    m68k_set_model(&cpu, M68K_MODEL_68010);
+
+    /* MOVE from SR is privileged on the 68010. */
+    cpu.sr = 0x0700; /* user mode */
+    cpu.a_regs[7].l = 0x2000;
+    cpu.usp = 0x2000;
+    cpu.ssp = 0x1000;
+    m68k_write_32(&cpu, 8 * 4, 0x600); /* privilege violation vector */
+    m68k_write_16(&cpu, 0x100, 0x40C0); /* MOVE SR, D0 */
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+
+    /* MOVE from CCR works on the 68010, in user mode too. */
+    m68k_init(&cpu, memory, sizeof(memory));
+    m68k_set_model(&cpu, M68K_MODEL_68010);
+    cpu.sr = 0x0015; /* user mode, X Z C set */
+    cpu.a_regs[7].l = 0x2000;
+    cpu.usp = 0x2000;
+    cpu.d_regs[0].l = 0xFFFFFFFF;
+    m68k_write_16(&cpu, 0x100, 0x42C0); /* MOVE CCR, D0 */
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x102);
+    assert(cpu.d_regs[0].l == 0xFFFF0015);
+
+    /* MOVE from CCR is illegal on the 68000. */
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    m68k_write_32(&cpu, 4 * 4, 0x700);
+    m68k_write_16(&cpu, 0x100, 0x42C0);
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x700);
+
+    /* MOVE from SR stays unprivileged on the 68000. */
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.sr = 0x0015;
+    cpu.a_regs[7].l = 0x2000;
+    cpu.usp = 0x2000;
+    m68k_write_16(&cpu, 0x100, 0x40C0);
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x102);
+    assert((cpu.d_regs[0].l & 0xFFFF) == 0x0015);
+
+    printf("68010 SR/CCR test passed!\n");
+}
+
+void test_decode_strictness(void) {
+    M68kCpu cpu;
+    u8 memory[4096];
+
+    /* ORI.b with EA mode 7, register 5 is not a valid encoding and takes
+     * the illegal instruction vector. */
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    m68k_write_32(&cpu, 4 * 4, 0x600);
+    m68k_write_16(&cpu, 0x100, 0x003D); /* ORI.b #, <invalid> */
+    m68k_write_16(&cpu, 0x102, 0x0001);
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+
+    /* MOVE.w D0, <mode 7, register 2> is an invalid destination. */
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    m68k_write_32(&cpu, 4 * 4, 0x600);
+    m68k_write_16(&cpu, 0x100, 0x35C0); /* MOVE.w D0, (d16,PC) dest */
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+    assert(cpu.d_regs[0].l == 0);
+
+    /* MOVEC with an unknown control register is illegal on the 68010. */
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    m68k_set_model(&cpu, M68K_MODEL_68010);
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    m68k_write_32(&cpu, 4 * 4, 0x600);
+    m68k_write_16(&cpu, 0x100, 0x4E7B); /* MOVEC D0, <invalid> */
+    m68k_write_16(&cpu, 0x102, 0x0002);
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+
+    /* MOVES with size code 3 is an invalid encoding. */
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    m68k_set_model(&cpu, M68K_MODEL_68010);
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+    m68k_write_32(&cpu, 4 * 4, 0x600);
+    m68k_write_16(&cpu, 0x100, 0x0EC0);
+    m68k_write_16(&cpu, 0x102, 0x0000);
+    cpu.pc = 0x100;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x600);
+
+    printf("Decode strictness test passed!\n");
+}
+
 void test_nop_bsr_rtr(void) {
     M68kCpu cpu;
     u8 memory[1024];

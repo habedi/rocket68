@@ -6,7 +6,8 @@ This page lists current compatibility notes and scope limits based on the curren
 
 - `m68k_set_model` selects the CPU profile per instance; the default is `M68K_MODEL_68000`.
 - On the 68000 profile the later-family instructions (`MOVEC`, `MOVES`, `RTD`, and `BKPT`) raise illegal-instruction exceptions, matching real hardware.
-- On the 68010 profile those instructions execute. The 68010 profile is functional, not cycle accurate, and does not yet model 68010 frame formats or loop mode.
+- On the 68010 profile those instructions execute, group 1 and 2 exception frames carry a format 0 format/vector word, RTE validates the format word and raises a format error (vector 14) on a nonzero format, MOVE from SR is privileged, and MOVE from CCR is available.
+- The 68010 profile is functional, not cycle accurate. Group 0 exceptions still push the 68000 frame, and loop mode is not modeled.
 
 ## Address Space and Memory Model
 
@@ -57,9 +58,11 @@ This page lists current compatibility notes and scope limits based on the curren
 - `m68k_load_bin` reports the number of bytes written into emulated memory through its optional `size_out` argument; a load that runs past bound memory still returns `true`, and the reported size reveals the truncation.
 - `m68k_load_srec` reports malformed lines and continues parsing.
 - S-record checksums are validated; a record whose checksum does not match is reported to `stderr` and skipped, and parsing continues with the next record.
+- `m68k_load_ihex` loads Intel HEX files with the same skip-and-report policy; extended segment and linear base records are honored, and start address records set the PC.
 - Loaders write directly into bound flat memory; they do not run emulated bus cycles, invoke host memory callbacks, or raise bus errors. When a record reaches an out-of-range address, the first out-of-range byte is reported to `stderr`, the rest of that record is skipped, and parsing continues with the next record.
 - S-record entry records (`S7/S8/S9`) set the program counter through `m68k_set_pc`.
-- `m68k_disasm` returns instruction bytes consumed; unsupported decode cases may still produce `???` output text.
+- `m68k_disasm` covers every instruction the executor implements, including MOVES, MOVEC, RTD, BKPT, and MOVE from CCR; `???` output marks encodings that are not valid instructions.
+- The executor and the disassembler agree on the full opcode space: every encoding the executor accepts disassembles to a mnemonic, and structurally invalid encodings (invalid EA fields, invalid MOVE destinations, unknown MOVEC control registers, later-family size codes) raise illegal-instruction exceptions as real hardware does.
 
 ## JSON Compatibility Harness
 
