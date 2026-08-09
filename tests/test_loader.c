@@ -24,11 +24,8 @@ void test_load_srec(void) {
     // S0 Header
     fprintf(f, "S00600004844521B\n");
     // S1 Data: Addr 0x1000, Data 12 34 56 78 (4 bytes). Count = 2 (Addr) + 4 (Data) + 1 (Check) = 7
-    // Checksum: FF - (03 (count? no) + 10 + 00 + 12 + 34 + 56 + 78) & FF ...
-    // Let's just write valid data and ignore checksum in our simple loader for now, but format
-    // correctly. Count field is bytes remaining. 0x1000 -> 12 34 56 78 Count = 3 (Addr 2 + Check 1)
-    // + 4 = 7. S1 07 10 00 12 34 56 78 ??
-    fprintf(f, "S10710001234567800\n");
+    // Checksum: 0xFF - ((07 + 10 + 00 + 12 + 34 + 56 + 78) & 0xFF) = 0xD4
+    fprintf(f, "S107100012345678D4\n");
     // S9 Termination: Entry 0x1000
     // Count = 2 (Addr) + 1 (Check) = 3
     fprintf(f, "S9031000EC\n");
@@ -67,16 +64,265 @@ void test_load_bin(void) {
     fwrite(data, 1, sizeof(data), f);
     fclose(f);
 
-    bool success = m68k_load_bin(&cpu, filename, 0x2000);
+    u32 size = 0xDEADBEEF;
+    bool success = m68k_load_bin(&cpu, filename, 0x2000, &size);
     assert(success);
+    assert(size == 4);
 
     assert(memory[0x2000] == 0xAA);
     assert(memory[0x2001] == 0xBB);
     assert(memory[0x2002] == 0xCC);
     assert(memory[0x2003] == 0xDD);
 
+    /* A NULL size pointer is allowed. */
+    success = m68k_load_bin(&cpu, filename, 0x3000, NULL);
+    assert(success);
+    assert(memory[0x3000] == 0xAA);
+    assert(memory[0x3003] == 0xDD);
+
     remove(filename);
     printf("Binary Loader test passed!\n");
+}
+
+void test_load_bin_size_reporting(void) {
+    M68kCpu cpu;
+    u8 memory[256];
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    /* An empty file loads successfully with a size of zero. */
+    const char* filename = "test_empty.bin";
+    FILE* f = fopen(filename, "wb");
+    if (!f) {
+        perror("Failed to create test binary file");
+        return;
+    }
+    fclose(f);
+
+    u32 size = 0xDEADBEEF;
+    bool success = m68k_load_bin(&cpu, filename, 0x10, &size);
+    remove(filename);
+    assert(success);
+    assert(size == 0);
+
+    /* An open failure returns false and reports a size of zero. */
+    size = 0xDEADBEEF;
+    success = m68k_load_bin(&cpu, "no_such_file.bin", 0x10, &size);
+    assert(!success);
+    assert(size == 0);
+
+    /* A load that runs past bound memory reports the bytes written. */
+    filename = "test_trunc.bin";
+    f = fopen(filename, "wb");
+    if (!f) {
+        perror("Failed to create test binary file");
+        return;
+    }
+    u8 data[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+    fwrite(data, 1, sizeof(data), f);
+    fclose(f);
+
+    size = 0xDEADBEEF;
+    success = m68k_load_bin(&cpu, filename, 0xFC, &size); /* runs past the 256-byte end */
+    remove(filename);
+    assert(success);
+    assert(size == 4);
+    assert(memory[0xFC] == 1);
+    assert(memory[0xFF] == 4);
+
+    printf("Binary Loader size reporting test passed!\n");
+}
+
+void test_load_bin_boundaries(void) {
+    M68kCpu cpu;
+    u8 memory[256];
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    const char* filename = "test_bounds.bin";
+    FILE* f = fopen(filename, "wb");
+    if (!f) {
+        perror("Failed to create test binary file");
+        return;
+    }
+    u8 data[4] = {0x11, 0x22, 0x33, 0x44};
+    fwrite(data, 1, sizeof(data), f);
+    fclose(f);
+
+    /* An exact fit against the end of bound memory is not a truncation. */
+    u32 size = 0xDEADBEEF;
+    bool success = m68k_load_bin(&cpu, filename, 0xFC, &size);
+    assert(success);
+    assert(size == 4);
+    assert(memory[0xFC] == 0x11);
+    assert(memory[0xFF] == 0x44);
+
+    /* A start address already outside bound memory writes nothing. */
+    size = 0xDEADBEEF;
+    success = m68k_load_bin(&cpu, filename, 0x100, &size);
+    assert(success);
+    assert(size == 0);
+
+    /* Addresses are masked to the 24-bit bus, so the high byte is ignored. */
+    memset(memory, 0, sizeof(memory));
+    size = 0xDEADBEEF;
+    success = m68k_load_bin(&cpu, filename, 0x01000010, &size);
+    assert(success);
+    assert(size == 4);
+    assert(memory[0x10] == 0x11);
+    assert(memory[0x13] == 0x44);
+
+    remove(filename);
+    printf("Binary Loader boundary test passed!\n");
+}
+
+void test_load_bin_large_file(void) {
+    M68kCpu cpu;
+    u8 memory[65536];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    /* A file larger than the loader's internal read buffer exercises size
+     * accumulation across multiple read chunks. */
+    enum { LARGE_SIZE = 5000 };
+    const char* filename = "test_large.bin";
+    FILE* f = fopen(filename, "wb");
+    if (!f) {
+        perror("Failed to create test binary file");
+        return;
+    }
+    for (int i = 0; i < LARGE_SIZE; i++) fputc(i & 0xFF, f);
+    fclose(f);
+
+    u32 size = 0xDEADBEEF;
+    bool success = m68k_load_bin(&cpu, filename, 0x100, &size);
+    remove(filename);
+    assert(success);
+    assert(size == LARGE_SIZE);
+    assert(memory[0x100] == 0x00);
+    assert(memory[0x100 + 1024] == (1024 & 0xFF));
+    assert(memory[0x100 + LARGE_SIZE - 1] == ((LARGE_SIZE - 1) & 0xFF));
+    assert(memory[0x100 + LARGE_SIZE] == 0x00);
+
+    printf("Binary Loader large-file test passed!\n");
+}
+
+void test_load_srec_robustness(void) {
+    M68kCpu cpu;
+    u8 memory[65536];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    u32 old_pc = cpu.pc;
+
+    const char* filename = "test_robust.srec";
+    FILE* f = fopen(filename, "w");
+    if (!f) {
+        perror("Failed to create test S-Record file");
+        return;
+    }
+    /* A count field larger than the line is reported and skipped. */
+    fprintf(f, "S1FF100012\n");
+    /* An unknown record type is reported and skipped. The checksum is
+     * valid so the unknown-type path is the one exercised. */
+    fprintf(f, "S407100012345678D4\n");
+    /* A non-record line is ignored. */
+    fprintf(f, "not an s-record\n");
+    /* An S5 record-count record is ignored. */
+    fprintf(f, "S5030001FB\n");
+    /* Lowercase hex digits are accepted; one byte 0xAB at 0x20fe.
+     * Checksum: 0xFF - ((04 + 20 + FE + AB) & 0xFF) = 0x32. */
+    fprintf(f, "S10420feab32\n");
+    /* No terminator record, so the PC stays untouched. */
+    fclose(f);
+
+    bool success = m68k_load_srec(&cpu, filename);
+    remove(filename);
+
+    assert(success);
+    assert(memory[0x20FE] == 0xAB);
+    /* The malformed and unknown records must not have written anything. */
+    assert(memory[0x1000] == 0x00);
+    assert(cpu.pc == old_pc);
+
+    /* An open failure returns false. */
+    assert(!m68k_load_srec(&cpu, "no_such_file.srec"));
+
+    printf("S-Record Loader robustness test passed!\n");
+}
+
+void test_load_srec_checksum(void) {
+    M68kCpu cpu;
+    u8 memory[65536];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    const char* filename = "test_checksum.srec";
+    FILE* f = fopen(filename, "w");
+    if (!f) {
+        perror("Failed to create test S-Record file");
+        return;
+    }
+    /* Valid record: one byte 0xAB at 0x0080. Sum 04+00+80+AB = 0x2F, so
+     * the checksum is 0xFF - 0x2F = 0xD0. */
+    fprintf(f, "S1040080ABD0\n");
+    /* Corrupted checksum: the correct value for this record is 0xC0.
+     * The record must be reported and skipped. */
+    fprintf(f, "S1040090ABCF\n");
+    fclose(f);
+
+    bool success = m68k_load_srec(&cpu, filename);
+    remove(filename);
+
+    assert(success);
+    assert(memory[0x80] == 0xAB);
+    assert(memory[0x90] == 0x00);
+
+    printf("S-Record checksum test passed!\n");
+}
+
+void test_load_ihex(void) {
+    M68kCpu cpu;
+    u8 memory[65536];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    const char* filename = "test.hex";
+    FILE* f = fopen(filename, "w");
+    if (!f) {
+        perror("Failed to create test Intel HEX file");
+        return;
+    }
+    /* Four data bytes at 0x0100: 12 34 56 78.
+     * Checksum: two's complement of (04+01+00+00+12+34+56+78). */
+    fprintf(f, ":0401000012345678E7\n");
+    /* Extended linear address 0x0000 (upper 16 bits), checksum F8. */
+    fprintf(f, ":020000040000FA\n");
+    /* Two bytes at 0x2000 via the base: AB CD.
+     * Checksum: -(02+20+00+00+AB+CD) = 66. */
+    fprintf(f, ":02200000ABCD66\n");
+    /* A corrupted checksum is reported and the record skipped. */
+    fprintf(f, ":02300000ABCD00\n");
+    /* Start linear address 0x00001000 sets PC. Checksum EB. */
+    fprintf(f, ":0400000500001000E7\n");
+    /* End of file. */
+    fprintf(f, ":00000001FF\n");
+    fclose(f);
+
+    bool success = m68k_load_ihex(&cpu, filename);
+    remove(filename);
+
+    assert(success);
+    assert(memory[0x100] == 0x12);
+    assert(memory[0x101] == 0x34);
+    assert(memory[0x102] == 0x56);
+    assert(memory[0x103] == 0x78);
+    assert(memory[0x2000] == 0xAB);
+    assert(memory[0x2001] == 0xCD);
+    assert(memory[0x3000] == 0x00);
+    assert(cpu.pc == 0x1000);
+
+    /* An open failure returns false. */
+    assert(!m68k_load_ihex(&cpu, "no_such_file.hex"));
+
+    printf("Intel HEX Loader test passed!\n");
 }
 
 void test_disasm(void) {
@@ -156,6 +402,72 @@ void test_disasm_full(void) {
     assert(strstr(buf, "CHK"));
 }
 
+void test_disasm_supervisor_ops(void) {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    char buf[64];
+
+    /* MOVEC D0, VBR */
+    m68k_write_16(&cpu, 0, 0x4E7B);
+    m68k_write_16(&cpu, 2, 0x0801);
+    int len = m68k_disasm(&cpu, 0, buf, sizeof(buf));
+    assert(len == 4);
+    assert(strstr(buf, "MOVEC"));
+    assert(strstr(buf, "D0"));
+    assert(strstr(buf, "VBR"));
+
+    /* MOVEC SFC, A2 */
+    m68k_write_16(&cpu, 0, 0x4E7A);
+    m68k_write_16(&cpu, 2, 0xA000);
+    m68k_disasm(&cpu, 0, buf, sizeof(buf));
+    assert(strstr(buf, "MOVEC"));
+    assert(strstr(buf, "SFC"));
+    assert(strstr(buf, "A2"));
+
+    /* RTD #8 */
+    m68k_write_16(&cpu, 0, 0x4E74);
+    m68k_write_16(&cpu, 2, 0x0008);
+    len = m68k_disasm(&cpu, 0, buf, sizeof(buf));
+    assert(len == 4);
+    assert(strstr(buf, "RTD"));
+    assert(strstr(buf, "#8"));
+
+    /* BKPT #3 */
+    m68k_write_16(&cpu, 0, 0x484B);
+    len = m68k_disasm(&cpu, 0, buf, sizeof(buf));
+    assert(len == 2);
+    assert(strstr(buf, "BKPT"));
+    assert(strstr(buf, "#3"));
+
+    /* MOVES.w (A1), D4 */
+    m68k_write_16(&cpu, 0, 0x0E51);
+    m68k_write_16(&cpu, 2, 0x4000);
+    len = m68k_disasm(&cpu, 0, buf, sizeof(buf));
+    assert(len == 4);
+    assert(strstr(buf, "MOVES.W"));
+    assert(strstr(buf, "(A1)"));
+    assert(strstr(buf, "D4"));
+
+    /* MOVES.l A5, (A2)+ */
+    m68k_write_16(&cpu, 0, 0x0E9A);
+    m68k_write_16(&cpu, 2, 0xD800);
+    m68k_disasm(&cpu, 0, buf, sizeof(buf));
+    assert(strstr(buf, "MOVES.L"));
+    assert(strstr(buf, "A5"));
+    assert(strstr(buf, "(A2)+"));
+
+    /* MOVE from CCR */
+    m68k_write_16(&cpu, 0, 0x42C0);
+    m68k_disasm(&cpu, 0, buf, sizeof(buf));
+    assert(strstr(buf, "MOVE"));
+    assert(strstr(buf, "CCR"));
+    assert(strstr(buf, "D0"));
+
+    printf("Disasm supervisor ops test passed!\n");
+}
+
 void test_io(void) {
     M68kCpu cpu;
     u8 memory[1024];
@@ -170,7 +482,14 @@ void test_io(void) {
 void run_loader_tests(void) {
     test_load_srec();
     test_load_bin();
+    test_load_bin_size_reporting();
+    test_load_bin_boundaries();
+    test_load_bin_large_file();
+    test_load_srec_robustness();
+    test_load_srec_checksum();
+    test_load_ihex();
     test_disasm();
     test_disasm_full();
+    test_disasm_supervisor_ops();
     test_io();
 }

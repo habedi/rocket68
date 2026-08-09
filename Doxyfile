@@ -34,3 +34,6 @@ LATEX_OUTPUT       = latex
 #---------------------------------------------------------------------------
 QUIET              = YES
 WARNINGS           = NO
+
+# Do not require Graphviz; newer doxygen versions may otherwise expect dot.
+HAVE_DOT           = NO

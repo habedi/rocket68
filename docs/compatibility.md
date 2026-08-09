@@ -4,9 +4,10 @@ This page lists current compatibility notes and scope limits based on the curren
 
 ## CPU Model Scope
 
-- The core exposes one execution profile through `M68kCpu`.
-- There is no public API to select CPU model variants (for example 68010/68020 mode switches).
-- Some later-family instructions exist (`MOVEC`, `MOVES`, `RTD`, `BKPT`), but model behavior is not fully parameterized.
+- `m68k_set_model` selects the CPU profile per instance; the default is `M68K_MODEL_68000`.
+- On the 68000 profile the later-family instructions (`MOVEC`, `MOVES`, `RTD`, and `BKPT`) raise illegal-instruction exceptions, matching real hardware.
+- On the 68010 profile those instructions execute, group 1 and 2 exception frames carry a format 0 format/vector word, RTE validates the format word and raises a format error (vector 14) on a nonzero format, MOVE from SR is privileged, and MOVE from CCR is available.
+- The 68010 profile is functional, not cycle accurate. Group 0 exceptions still push the 68000 frame, and loop mode is not modeled.
 
 ## Address Space and Memory Model
 
@@ -17,33 +18,51 @@ This page lists current compatibility notes and scope limits based on the curren
 ## Callback Behavior Notes
 
 - `fc_callback` is emitted for memory reads/writes and instruction fetches.
-- `M68K_FC_INT_ACK` is defined, but the current interrupt acknowledge path does not emit FC callback events with this code.
+- The interrupt acknowledge path emits the FC callback with `M68K_FC_INT_ACK` before the vector is resolved, for vectored and autovectored responses alike.
 - `pc_changed_callback` is triggered when PC is changed through `m68k_set_pc`.
-- Direct PC writes (for example in `m68k_reset` and `m68k_fetch`) do not call `pc_changed_callback`.
+- Direct PC writes (for example, in `m68k_reset` and `m68k_fetch`) do not call `pc_changed_callback`.
 - `reset_callback` is tied to execution of the `RESET` instruction, not to `m68k_reset()`.
-- `illg_callback` can be installed, but the current decode/exception path does not call it.
+- `illg_callback` fires before an illegal-instruction exception (vector 4); a nonzero return suppresses the exception. Line-A and line-F opcodes (vectors 10 and 11) do not invoke it.
+
+## Group-0 Exception Frames
+
+- Address-error and bus-error frames model 68000 microcode behavior measured against the SingleStepTests corpus.
+- The pushed PC follows per-addressing-mode offsets from the instruction start, not the number of extension words consumed.
+- Postincrement commits before the operand read for byte and word reads, but not for long reads; predecrement always commits on reads. On destination writes, predecrement commits for byte and word only, and postincrement commits only after a successful write.
+- MOVE with a predecrement destination pushes the next prefetch word in the frame IR slot, and a long write to a predecrement destination goes low word first.
+- The condition codes visible after a faulted MOVE.l write depend on the source kind and destination mode, matching corpus measurements.
+- PC-relative operand reads assert program space in the frame status word and the FC callback, including MOVEM transfers.
+- Control-flow transfers to an odd address fault on the target prefetch as a program-space read; most push the instruction address plus 2, JSR pushes the PC after EA resolution without pushing a return address, BSR pushes the return address and frames the odd target itself, and DBcc suppresses the counter writeback.
+- MOVE from SR reads its memory destination before writing, so an odd destination faults as a read.
+- UNLK reads the frame pointer before moving the stack pointer, so a faulted UNLK leaves both registers unchanged.
+- The JSON corpus passes 127/127 files in every mode, including `ROCKET68_JSON_STRICT=1` and `ROCKET68_JSON_CYCLES=1` combined.
+- Instruction timing is data dependent where the hardware is, including shift counts, multiply operand bits, the division microcode walk, and the CHK trap paths.
+- Exception timing models the microcode stages, so a faulted instruction has spent exactly the cycles the hardware had spent at the fault point.
 
 ## Control Registers and Exception Base
 
 - `VBR`, `SFC`, and `DFC` fields exist and are accessible through `MOVEC`.
-- Exception vector fetch currently uses `vector * 4` from base address zero.
-- `VBR` is not currently applied as an exception vector base in `m68k_exception`.
+- Exception vector fetch uses `VBR + vector * 4`; `m68k_reset` clears `VBR` to zero, matching 68010-class reset behavior, so the base is zero unless a program moves it.
 - `SFC`/`DFC` values are stored but not used to drive bus access behavior.
 
 ## Context Save/Restore Format
 
 - `m68k_get_context` / `m68k_set_context` copy raw `M68kCpu` struct bytes.
-- The blob format should be treated as build-dependent (compiler/ABI/version sensitive), not a stable cross-version interchange format.
-- `m68k_set_context` preserves destination instance memory binding and installed callbacks.
+- The raw blob format should be treated as build-dependent (compiler/ABI/version sensitive), not a stable cross-version interchange format.
+- `m68k_serialize` / `m68k_deserialize` provide the portable alternative: a versioned, tagged, big-endian format covering architectural state only.
+- Both restore paths preserve the destination instance memory binding and installed callbacks.
 
 ## Loader and Disassembler Notes
 
 - `m68k_load_srec` and `m68k_load_bin` return `false` only when file open fails.
+- `m68k_load_bin` reports the number of bytes written into emulated memory through its optional `size_out` argument; a load that runs past bound memory still returns `true`, and the reported size reveals the truncation.
 - `m68k_load_srec` reports malformed lines and continues parsing.
-- S-record checksum validity is not explicitly validated.
+- S-record checksums are validated; a record whose checksum does not match is reported to `stderr` and skipped, and parsing continues with the next record.
+- `m68k_load_ihex` loads Intel HEX files with the same skip-and-report policy; extended segment and linear base records are honored, and start address records set the PC.
 - Loaders write directly into bound flat memory; they do not run emulated bus cycles, invoke host memory callbacks, or raise bus errors. When a record reaches an out-of-range address, the first out-of-range byte is reported to `stderr`, the rest of that record is skipped, and parsing continues with the next record.
 - S-record entry records (`S7/S8/S9`) set the program counter through `m68k_set_pc`.
-- `m68k_disasm` returns instruction bytes consumed; unsupported decode cases may still produce `???` output text.
+- `m68k_disasm` covers every instruction the executor implements, including MOVES, MOVEC, RTD, BKPT, and MOVE from CCR; `???` output marks encodings that are not valid instructions.
+- The executor and the disassembler agree on the full opcode space: every encoding the executor accepts disassembles to a mnemonic, and structurally invalid encodings (invalid EA fields, invalid MOVE destinations, unknown MOVEC control registers, later-family size codes) raise illegal-instruction exceptions as real hardware does.
 
 ## JSON Compatibility Harness
 

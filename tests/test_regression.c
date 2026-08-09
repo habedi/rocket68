@@ -1271,9 +1271,9 @@ void test_regression_loader_oob_is_harmless(void) {
     const char* filename = "test_oob.srec";
     FILE* f = fopen(filename, "w");
     assert(f != NULL);
-    fprintf(f, "S1040080AB00\n");   /* one byte 0xAB at 0x80 (in range) */
-    fprintf(f, "S10502001234FF\n"); /* two bytes at 0x200 (out of range) */
-    fprintf(f, "S903001000\n");     /* entry point 0x10 */
+    fprintf(f, "S1040080ABD0\n");   /* one byte 0xAB at 0x80 (in range) */
+    fprintf(f, "S10502001234B2\n"); /* two bytes at 0x200 (out of range) */
+    fprintf(f, "S9030010EC\n");     /* entry point 0x10 */
     fclose(f);
 
     bool success = m68k_load_srec(&cpu, filename);
@@ -1295,7 +1295,7 @@ void test_regression_loader_oob_is_harmless(void) {
     fwrite(data, 1, sizeof(data), f);
     fclose(f);
 
-    success = m68k_load_bin(&cpu, binname, 0xFC); /* runs past the 256-byte end */
+    success = m68k_load_bin(&cpu, binname, 0xFC, NULL); /* runs past the 256-byte end */
     remove(binname);
 
     assert(success);

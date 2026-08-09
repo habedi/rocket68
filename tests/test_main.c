@@ -35,7 +35,10 @@ int main(void) {
     test_interrupts();
     test_int_ack();
     test_fc();
+    test_fc_int_ack();
     test_hooks();
+    test_illg_callback();
+    test_save_state();
     test_timeslice();
     test_serialization();
 
@@ -75,7 +78,16 @@ int main(void) {
     test_logic_not();
 
     test_movec();
+    test_address_error_frame_pc();
+    test_model_gating();
+    test_68010_frames();
+    test_68010_sr_ccr();
+    test_decode_strictness();
+    test_move_write_fault();
+    test_rmw_fault_commits();
+    test_odd_target_fault();
     test_trapv();
+    test_vbr_exception_base();
     test_rtd();
     test_bkpt();
     test_move_sr();
@@ -118,6 +130,9 @@ int main(void) {
     test_regression_nmi_is_edge_triggered();
     test_regression_irq_autoclear_without_ack_callback();
     test_regression_movem_cycles();
+
+    test_disasm_buffer_bounds();
+    test_disasm_truncates_small_buffers();
 
     extern void run_loader_tests();
     run_loader_tests();

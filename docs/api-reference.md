@@ -99,6 +99,16 @@ Sets PC and triggers `pc_changed` callback if installed.
 
 Returns PC.
 
+### `void m68k_set_model(M68kCpu* cpu, M68kModel model);`
+
+Selects the CPU model profile for this instance.
+The default after `m68k_init` is `M68K_MODEL_68000`, where the later-family instructions `MOVEC`, `MOVES`, `RTD`, and `BKPT` raise illegal-instruction exceptions.
+`M68K_MODEL_68010` enables those instructions.
+
+### `M68kModel m68k_get_model(M68kCpu* cpu);`
+
+Returns the selected CPU model profile.
+
 ### `void m68k_set_sr(M68kCpu* cpu, u16 new_sr);`
 
 Sets SR with masking (`0xA71F`) and performs USP/SSP swap when supervisor state changes.
@@ -202,7 +212,10 @@ Called by `TAS`; non-zero return allows write-back, zero blocks write-back.
 ### `void m68k_set_illg_callback(M68kCpu* cpu, M68kIllgCallback callback);`
 
 Registers an illegal-opcode callback pointer.
-Current core decode path does not invoke this callback yet.
+The callback fires before the illegal-instruction exception (vector 4) is taken, and receives the offending opcode.
+A nonzero return claims the instruction: the exception is suppressed and execution continues after the opcode.
+A zero return lets the exception proceed.
+Line-A and line-F opcodes take vectors 10 and 11 without invoking this callback.
 
 ### Host Memory Callbacks
 
@@ -234,22 +247,44 @@ Restores context from `src`, while preserving destination-instance runtime bindi
 - internal fault trap storage
 - installed callbacks, including the host memory read/write callbacks
 
+### `size_t m68k_serialize(const M68kCpu* cpu, u8* buffer, size_t capacity);`
+
+Serializes architectural CPU state into a portable save state.
+Returns the number of bytes written, the required size when `buffer` is NULL, or 0 when the buffer is too small.
+The format is versioned, tagged, and big-endian, so blobs are stable across builds, compilers, and host architectures.
+Host bindings and transient fault latches are not serialized; serializing in the middle of exception processing is not supported.
+
+### `bool m68k_deserialize(M68kCpu* cpu, const u8* buffer, size_t length);`
+
+Restores architectural CPU state from a portable save state, keeping the destination's memory binding and callbacks.
+Returns `false` when the data is malformed, truncated, or has an unsupported version.
+Fields with unknown tags are skipped, so states written by newer library versions restore their known fields.
+
 ## Loader API (`loader.h`)
 
 ### `bool m68k_load_srec(M68kCpu* cpu, const char* filename);`
 
 Loads Motorola S-record data into memory.
 Returns `false` only when the file cannot be opened.
-Malformed records are reported to `stderr` and skipped.
+Malformed records, including records with checksum mismatches, are reported to `stderr` and skipped.
 Data bytes are written directly into bound flat memory; loading does not run emulated bus cycles, invoke host memory callbacks, or raise bus errors.
 When a record reaches an address outside bound memory, the first out-of-range byte is reported to `stderr`, the rest of that record is skipped, and parsing continues with the next record.
 Entry-point records (`S7/S8/S9`) set the program counter through `m68k_set_pc`, so the PC-changed callback fires.
 
-### `bool m68k_load_bin(M68kCpu* cpu, const char* filename, u32 address);`
+### `bool m68k_load_bin(M68kCpu* cpu, const char* filename, u32 address, u32* size_out);`
 
 Loads raw binary bytes into memory starting at `address`.
 Returns `false` only when the file cannot be opened.
 Bytes are written directly into bound flat memory; loading stops at the first out-of-range byte, which is reported to `stderr`.
+When `size_out` is not NULL, it receives the number of bytes written into emulated memory, or 0 when the file cannot be opened.
+A reported size smaller than the file size indicates the load stopped at the end of bound memory.
+
+### `bool m68k_load_ihex(M68kCpu* cpu, const char* filename);`
+
+Loads Intel HEX data into memory.
+Returns `false` only when the file cannot be opened.
+Data records honor the extended segment and extended linear base records, and start address records set the program counter through `m68k_set_pc`.
+Malformed records, including records with checksum mismatches, are reported to `stderr` and skipped.
 
 ## Disassembler API (`disasm.h`)
 

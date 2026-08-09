@@ -239,6 +239,24 @@ void m68k_exec_subq(M68kCpu* cpu, u16 opcode) {
     update_flags_sub(cpu, src, dest, result, size);
 }
 
+/* Reads a -(An) operand for ADDX and SUBX per 68000 microcode measured
+ * against the corpus: long operands read low word first and commit the
+ * decrement only after the full read, while byte and word operands
+ * commit before the read. A faulted ADDX or SUBX pushes the instruction
+ * address plus 4. */
+static u32 addx_read_predec(M68kCpu* cpu, int reg, M68kSize size) {
+    if (size == SIZE_LONG) {
+        u32 base = cpu->a_regs[reg].l - 4;
+        u32 lo = m68k_read_16(cpu, base + 2);
+        u32 hi = m68k_read_16(cpu, base);
+        cpu->a_regs[reg].l = base;
+        return (hi << 16) | lo;
+    }
+    u32 step = (size == SIZE_BYTE) ? ((reg == 7) ? 2u : 1u) : 2u;
+    cpu->a_regs[reg].l -= step;
+    return m68k_read_size(cpu, cpu->a_regs[reg].l, size);
+}
+
 void m68k_exec_addx(M68kCpu* cpu, u16 opcode) {
     int rx = (opcode >> 9) & 0x7;
     int size_bits = (opcode >> 6) & 0x3;
@@ -258,15 +276,15 @@ void m68k_exec_addx(M68kCpu* cpu, u16 opcode) {
     u32 src, dest;
 
     if (rm) {
-        int step = (size == SIZE_BYTE) ? 1 : (size == SIZE_WORD) ? 2 : 4;
-
-        cpu->a_regs[ry].l -= step;
-        if (size == SIZE_BYTE && ry == 7) cpu->a_regs[ry].l--;
-        src = m68k_read_size(cpu, cpu->a_regs[ry].l, size);
-
-        cpu->a_regs[rx].l -= step;
-        if (size == SIZE_BYTE && rx == 7) cpu->a_regs[rx].l--;
-        dest = m68k_read_size(cpu, cpu->a_regs[rx].l, size);
+        cpu->fault_pc = cpu->pc + 2;
+        cpu->fault_pc_valid = true;
+        /* The costs are spent in stages, so a faulted source read has
+         * consumed 6 cycles and a faulted destination read 10 or 14; the
+         * dispatch charge covers the rest on success. */
+        cpu->cycles_remaining -= 6;
+        src = addx_read_predec(cpu, ry, size);
+        cpu->cycles_remaining -= (size == SIZE_LONG) ? 8 : 4;
+        dest = addx_read_predec(cpu, rx, size);
     } else {
         src = cpu->d_regs[ry].l;
         dest = cpu->d_regs[rx].l;
@@ -314,15 +332,15 @@ void m68k_exec_subx(M68kCpu* cpu, u16 opcode) {
     u32 src, dest;
 
     if (rm) {
-        int step = (size == SIZE_BYTE) ? 1 : (size == SIZE_WORD) ? 2 : 4;
-
-        cpu->a_regs[ry].l -= step;
-        if (size == SIZE_BYTE && ry == 7) cpu->a_regs[ry].l--;
-        src = m68k_read_size(cpu, cpu->a_regs[ry].l, size);
-
-        cpu->a_regs[rx].l -= step;
-        if (size == SIZE_BYTE && rx == 7) cpu->a_regs[rx].l--;
-        dest = m68k_read_size(cpu, cpu->a_regs[rx].l, size);
+        cpu->fault_pc = cpu->pc + 2;
+        cpu->fault_pc_valid = true;
+        /* The costs are spent in stages, so a faulted source read has
+         * consumed 6 cycles and a faulted destination read 10 or 14; the
+         * dispatch charge covers the rest on success. */
+        cpu->cycles_remaining -= 6;
+        src = addx_read_predec(cpu, ry, size);
+        cpu->cycles_remaining -= (size == SIZE_LONG) ? 8 : 4;
+        dest = addx_read_predec(cpu, rx, size);
     } else {
         src = cpu->d_regs[ry].l;
         dest = cpu->d_regs[rx].l;
@@ -374,6 +392,18 @@ void m68k_exec_mul(M68kCpu* cpu, u16 opcode) {
         result = op1 * op2;
     }
 
+    /* 68000 multiply timing is data dependent: 2 * (17 + n) + 4, where n
+     * counts one bits in the operand for MULU, and bit transitions for
+     * MULS. */
+    {
+        u16 d = is_signed ? (u16)((op2 << 1) ^ op2) : (u16)op2;
+        int m = 17;
+        for (; d; d >>= 1) {
+            if (d & 1) m++;
+        }
+        cpu->cycles_remaining -= 2 * m + 4;
+    }
+
     cpu->d_regs[reg_idx].l = result;
 
     update_flags_logic(cpu, result, SIZE_LONG);
@@ -404,6 +434,27 @@ void m68k_exec_div(M68kCpu* cpu, u16 opcode) {
         int64_t s_quot = s_dividend / s_divisor;
         int64_t s_rem = s_dividend % s_divisor;
 
+        /* DIVS timing per 68000 microcode, measured by the corpus. */
+        {
+            s32 sd = (s32)dividend;
+            s16 sv = (s16)divisor_raw;
+            int m = (sd < 0) ? 7 : 6;
+            u32 adividend = (sd < 0) ? (u32)(-(int64_t)sd) : (u32)sd;
+            u32 advisor = (sv < 0) ? (u32)(-(s32)sv) : (u32)sv;
+            if ((adividend >> 16) >= advisor) {
+                cpu->cycles_remaining -= (m + 2) * 2;
+            } else {
+                m += 55;
+                if (sv >= 0) m += (sd < 0) ? 1 : -1;
+                u32 aquot = adividend / advisor;
+                for (int i = 0; i < 15; i++) {
+                    if ((s16)aquot >= 0) m++;
+                    aquot <<= 1;
+                }
+                cpu->cycles_remaining -= 2 * m;
+            }
+        }
+
         if (s_quot < -32768 || s_quot > 32767) {
             cpu->sr &= ~(M68K_SR_Z | M68K_SR_C | M68K_SR_N | M68K_SR_V);
             cpu->sr |= M68K_SR_V | M68K_SR_N;
@@ -420,6 +471,31 @@ void m68k_exec_div(M68kCpu* cpu, u16 opcode) {
     } else {
         u32 quotient = dividend / divisor_raw;
         u32 remainder = dividend % divisor_raw;
+
+        /* DIVU timing per 68000 microcode: 10 on overflow, otherwise a
+         * per-quotient-bit walk of the restoring division. */
+        if ((dividend >> 16) >= divisor_raw) {
+            cpu->cycles_remaining -= 10;
+        } else {
+            int m = 38;
+            u32 d = dividend;
+            u32 hdivisor = divisor_raw << 16;
+            for (int i = 0; i < 15; i++) {
+                if ((s32)d < 0) {
+                    d <<= 1;
+                    d -= hdivisor;
+                } else {
+                    d <<= 1;
+                    if (d >= hdivisor) {
+                        d -= hdivisor;
+                        m += 1;
+                    } else {
+                        m += 2;
+                    }
+                }
+            }
+            cpu->cycles_remaining -= 2 * m;
+        }
 
         if (quotient > 0xFFFF) {
             cpu->sr &= ~(M68K_SR_Z | M68K_SR_C | M68K_SR_N | M68K_SR_V);
@@ -462,10 +538,27 @@ void m68k_exec_cmp(M68kCpu* cpu, u16 opcode) {
 
         int step = (size == SIZE_BYTE) ? 1 : (size == SIZE_WORD) ? 2 : 4;
 
-        u32 src_addr = cpu->a_regs[reg].l;
-        u32 src_val = m68k_read_size(cpu, src_addr, size);
-        cpu->a_regs[reg].l += (reg == 7 && size == SIZE_BYTE) ? 2 : step;
+        /* A faulted CMPM pushes the instruction address plus 4. The
+         * source increment commits one word at a time before each read,
+         * so a faulted long source read leaves the register advanced by
+         * 2; the destination commits only after its read. */
+        cpu->fault_pc = cpu->pc + 2;
+        cpu->fault_pc_valid = true;
+        /* The lead-in cost is spent before the first read. */
+        cpu->cycles_remaining -= 4;
 
+        u32 src_addr = cpu->a_regs[reg].l;
+        u32 src_val;
+        if (size == SIZE_LONG) {
+            cpu->a_regs[reg].l += 2;
+            src_val = m68k_read_size(cpu, src_addr, size);
+            cpu->a_regs[reg].l += 2;
+        } else {
+            cpu->a_regs[reg].l += (reg == 7 && size == SIZE_BYTE) ? 2 : step;
+            src_val = m68k_read_size(cpu, src_addr, size);
+        }
+
+        cpu->cycles_remaining -= (size == SIZE_LONG) ? 8 : 4;
         u32 dest_addr = cpu->a_regs[reg_idx].l;
         u32 dest_val = m68k_read_size(cpu, dest_addr, size);
         cpu->a_regs[reg_idx].l += (reg_idx == 7 && size == SIZE_BYTE) ? 2 : step;
@@ -527,6 +620,9 @@ void m68k_exec_cmpi(M68kCpu* cpu, u16 opcode) {
         src = val;
     }
 
+    /* The immediate fetch cost is spent before EA resolution, so it
+     * survives a faulted operand access. */
+    cpu->cycles_remaining -= (((opcode >> 6) & 0x3) == 2) ? 8 : 4;
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
     u32 dest = ea.value;
 
@@ -768,6 +864,9 @@ void m68k_exec_addi(M68kCpu* cpu, u16 opcode) {
 
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
+    /* The immediate fetch cost is spent before EA resolution, so it
+     * survives a faulted operand access. */
+    cpu->cycles_remaining -= (((opcode >> 6) & 0x3) == 2) ? 8 : 4;
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
     u32 dest = ea.value;
     u32 result = dest + imm;
@@ -810,6 +909,9 @@ void m68k_exec_subi(M68kCpu* cpu, u16 opcode) {
 
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
+    /* The immediate fetch cost is spent before EA resolution, so it
+     * survives a faulted operand access. */
+    cpu->cycles_remaining -= (((opcode >> 6) & 0x3) == 2) ? 8 : 4;
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
     u32 dest = ea.value;
     u32 result = dest - imm;

@@ -9,6 +9,7 @@
 #include <setjmp.h>
 #include <stdalign.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 static_assert(sizeof(uint8_t) == 1, "uint8_t must be exactly 1 byte");
@@ -98,6 +99,12 @@ typedef void (*M68kWrite16Callback)(M68kCpu* cpu, u32 address, u16 value);
 /** @brief Host memory write callback (32-bit). */
 typedef void (*M68kWrite32Callback)(M68kCpu* cpu, u32 address, u32 value);
 
+/** @brief CPU model selection. The 68000 is the default. */
+typedef enum {
+    M68K_MODEL_68000 = 0, /**< Base 68000 profile. */
+    M68K_MODEL_68010 = 1  /**< 68010 profile: MOVEC, MOVES, RTD, and BKPT enabled. */
+} M68kModel;
+
 /** @brief Effective address mode encoding used by internal helpers and opcode decoding. */
 typedef enum {
     ADDR_MODE_DATA_REG_DIRECT,
@@ -158,14 +165,20 @@ typedef struct M68kCpu {
     bool in_address_error;     /**< Address error re-entry guard. */
     bool in_bus_error;         /**< Bus error re-entry guard. */
     u32 fault_address;         /**< Fault address latched for exception frames. */
+    u32 fault_pc;              /**< PC value pushed in group-0 frames when valid. */
     u16 fault_ir;              /**< Fault IR latched for exception frames. */
     u16 fault_ssw;             /**< Fault status word for exception frames. */
     bool fault_program_access; /**< Fault access type marker. */
     bool fault_valid;          /**< Fault information validity flag. */
+    bool fault_pc_valid;       /**< Fault PC validity flag. */
+    u16 fault_bus_word;        /**< Internal bus word for frame IR/SSW when valid. */
+    bool fault_bus_word_valid; /**< Fault bus word validity flag. */
+    bool operand_program_space; /**< PC-relative operand access marker. */
     bool group0_fault;         /**< Group-0 fault latched for the current step. */
     bool fault_trap_active;    /**< Group-0 fault trap active for the current step. */
     jmp_buf fault_trap;        /**< Non-local escape target for group-0 fault aborts. */
 
+    M68kModel model; /**< CPU model profile; gates later-family instructions. */
     u32 vbr; /**< Vector base register (model extension path). */
     u32 sfc; /**< Source function code register (model extension path). */
     u32 dfc; /**< Destination function code register (model extension path). */
@@ -229,6 +242,23 @@ void m68k_set_pc(M68kCpu* cpu, u32 pc);
  * @return Current PC.
  */
 u32 m68k_get_pc(M68kCpu* cpu);
+
+/**
+ * @brief Select the CPU model profile.
+ * @param cpu CPU context.
+ * @param model Model profile; the default after m68k_init is the 68000.
+ *
+ * On the 68000 profile the later-family instructions MOVEC, MOVES, RTD,
+ * and BKPT raise illegal-instruction exceptions, matching real hardware.
+ */
+void m68k_set_model(M68kCpu* cpu, M68kModel model);
+
+/**
+ * @brief Read the selected CPU model profile.
+ * @param cpu CPU context.
+ * @return Current model profile.
+ */
+M68kModel m68k_get_model(M68kCpu* cpu);
 
 /**
  * @brief Set data register value.
@@ -504,5 +534,36 @@ void m68k_get_context(M68kCpu* cpu, void* dst);
  * @param src Source buffer with at least @ref m68k_context_size bytes.
  */
 void m68k_set_context(M68kCpu* cpu, const void* src);
+
+/**
+ * @brief Serialize architectural CPU state into a portable save state.
+ *
+ * @param cpu CPU context.
+ * @param buffer Output buffer, or NULL to query the required size.
+ * @param capacity Size of the output buffer in bytes.
+ * @return Number of bytes written, the required size when buffer is
+ *         NULL, or 0 when the buffer is too small.
+ *
+ * The format is versioned, tagged, and big-endian, so it is stable
+ * across builds, compilers, and host architectures, unlike the raw
+ * m68k_get_context blob. Host bindings (memory, callbacks) and
+ * transient fault latches are not serialized. Serializing in the middle
+ * of exception processing is not supported.
+ */
+size_t m68k_serialize(const M68kCpu* cpu, u8* buffer, size_t capacity);
+
+/**
+ * @brief Restore architectural CPU state from a portable save state.
+ *
+ * @param cpu CPU context; its memory binding and callbacks are kept.
+ * @param buffer Serialized state produced by m68k_serialize.
+ * @param length Length of the serialized state in bytes.
+ * @return true on success; false when the data is malformed, truncated,
+ *         or has an unsupported version.
+ *
+ * Fields with unknown tags are skipped, so states written by newer
+ * library versions restore their known fields.
+ */
+bool m68k_deserialize(M68kCpu* cpu, const u8* buffer, size_t length);
 
 #endif

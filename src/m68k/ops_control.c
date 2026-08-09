@@ -59,11 +59,16 @@ void m68k_exec_bcc(M68kCpu* cpu, u16 opcode) {
 
     if (cond == 1) {
         /* BSR */
+        u32 target = is_word ? (cpu->pc - 2) + disp : cpu->pc + disp;
         m68k_push_32(cpu, cpu->pc);
-        if (is_word)
-            m68k_set_pc(cpu, (cpu->pc - 2) + disp);
-        else
-            m68k_set_pc(cpu, cpu->pc + disp);
+        /* BSR pushes the return address before the target prefetch
+         * faults, and the pushed frame PC is the odd target itself. */
+        if (target & 1) {
+            m68k_raise_odd_target_fault(cpu, target, target);
+            cpu->cycles_remaining -= 18;
+            return;
+        }
+        m68k_set_pc(cpu, target);
         cpu->cycles_remaining -= 18;
     } else if (m68k_check_condition(cpu, cond)) {
         /* Bcc taken */
@@ -90,12 +95,21 @@ void m68k_exec_dbcc(M68kCpu* cpu, u16 opcode) {
 
     u16 val = cpu->d_regs[reg].l & 0xFFFF;
     val--;
-    cpu->d_regs[reg].l = (cpu->d_regs[reg].l & 0xFFFF0000) | val;
 
     if (val != 0xFFFF) {
+        u32 target = (cpu->pc - 2) + displacement;
+        /* A faulted loop branch suppresses the counter writeback and
+         * pushes the instruction address plus 4. */
+        if (target & 1) {
+            cpu->cycles_remaining -= 10;
+            m68k_raise_odd_target_fault(cpu, target, cpu->pc);
+            return;
+        }
+        cpu->d_regs[reg].l = (cpu->d_regs[reg].l & 0xFFFF0000) | val;
         cpu->cycles_remaining -= 10;  // Loop branched
-        m68k_set_pc(cpu, (cpu->pc - 2) + displacement);
+        m68k_set_pc(cpu, target);
     } else {
+        cpu->d_regs[reg].l = (cpu->d_regs[reg].l & 0xFFFF0000) | val;
         cpu->cycles_remaining -= 14;  // Loop expired
     }
 }
@@ -127,6 +141,13 @@ void m68k_exec_jmp(M68kCpu* cpu, u16 opcode) {
     M68kEA ea = m68k_calc_ea_ctl(cpu, mode, reg, true);
 
     if (is_jsr) {
+        /* JSR faults on the odd target before pushing the return
+         * address, and the pushed frame PC is the PC after EA
+         * resolution. */
+        if (ea.address & 1) {
+            m68k_raise_odd_target_fault(cpu, ea.address, cpu->pc);
+            return;
+        }
         m68k_push_32(cpu, cpu->pc);
     }
 
@@ -148,6 +169,25 @@ void m68k_exec_rte(M68kCpu* cpu, u16 opcode) {
     if (!(cpu->sr & M68K_SR_S)) {
         cpu->pc -= 2;
         m68k_exception(cpu, 8);
+        return;
+    }
+
+    /* The 68010 validates the frame format word before committing; a
+     * nonzero format nibble raises a format error with the frame kept
+     * intact. */
+    if (cpu->model >= M68K_MODEL_68010) {
+        u32 sp = cpu->a_regs[7].l;
+        u16 fmt = m68k_read_16(cpu, sp + 6);
+        if ((fmt & 0xF000) != 0) {
+            cpu->pc -= 2;
+            m68k_exception(cpu, 14);
+            return;
+        }
+        u16 new_sr = m68k_read_16(cpu, sp);
+        u32 new_pc = m68k_read_32(cpu, sp + 2);
+        cpu->a_regs[7].l = sp + 8;
+        m68k_set_sr(cpu, new_sr);
+        m68k_set_pc(cpu, new_pc);
         return;
     }
 
@@ -175,6 +215,13 @@ void m68k_exec_chk(M68kCpu* cpu, u16 opcode) {
         return;
     }
 
+    /* The greater-than-bound path costs 38 cycles. The negative path
+     * costs 40, except that the microcode re-checks the raw N flag of
+     * bound minus value without overflow correction and takes the
+     * 38-cycle path when it is set. The dispatch charge is suppressed. */
+    u16 rdiff = (u16)((u16)bound - (u16)src);
+    int trap_cost = (src > bound) ? 38 : ((rdiff & 0x8000) ? 38 : 40);
+    cpu->cycles_remaining -= trap_cost;
     m68k_exception(cpu, 6);
 }
 
@@ -238,6 +285,13 @@ void m68k_exec_movec(M68kCpu* cpu, u16 opcode) {
 
     bool to_ctrl = (opcode & 1) != 0;
 
+    /* An undefined control register raises an illegal instruction
+     * exception on real hardware. */
+    if (ctrl_reg != 0x000 && ctrl_reg != 0x001 && ctrl_reg != 0x800 && ctrl_reg != 0x801) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
     if (to_ctrl) {
         switch (ctrl_reg) {
             case 0x000:
@@ -249,10 +303,8 @@ void m68k_exec_movec(M68kCpu* cpu, u16 opcode) {
             case 0x800:
                 cpu->usp = *gpr;
                 break;
-            case 0x801:
-                cpu->vbr = *gpr;
-                break;
             default:
+                cpu->vbr = *gpr;
                 break;
         }
     } else {
@@ -266,11 +318,8 @@ void m68k_exec_movec(M68kCpu* cpu, u16 opcode) {
             case 0x800:
                 *gpr = cpu->usp;
                 break;
-            case 0x801:
-                *gpr = cpu->vbr;
-                break;
             default:
-                *gpr = 0;
+                *gpr = cpu->vbr;
                 break;
         }
     }

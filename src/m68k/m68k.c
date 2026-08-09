@@ -44,6 +44,7 @@ void m68k_reset(M68kCpu* cpu) {
     cpu->exception_depth = 0;
     cpu->ppc = 0;
     cpu->ir = 0;
+    cpu->vbr = 0; /* Reset clears the vector base on 68010-class parts. */
 
     cpu->a_regs[7].l = m68k_read_32(cpu, 0x00000000);
     cpu->pc = m68k_read_32(cpu, 0x00000004);
@@ -55,6 +56,10 @@ void m68k_set_pc(M68kCpu* cpu, u32 pc) {
 }
 
 u32 m68k_get_pc(M68kCpu* cpu) { return cpu->pc; }
+
+void m68k_set_model(M68kCpu* cpu, M68kModel model) { cpu->model = model; }
+
+M68kModel m68k_get_model(M68kCpu* cpu) { return cpu->model; }
 
 void m68k_set_dr(M68kCpu* cpu, int reg, u32 value) {
     if (reg >= 0 && reg < 8) {
@@ -128,6 +133,8 @@ void m68k_set_write32_callback(M68kCpu* cpu, M68kWrite32Callback callback) {
 
 static inline unsigned int current_fc(const M68kCpu* cpu, bool is_program) {
     bool is_supervisor = (cpu->sr & M68K_SR_S) != 0;
+    /* PC-relative operand reads assert program space on real hardware. */
+    is_program = is_program || cpu->operand_program_space;
     if (is_supervisor) {
         return is_program ? M68K_FC_SUPV_PROG : M68K_FC_SUPV_DATA;
     }
@@ -146,11 +153,35 @@ static inline void capture_access_fault(M68kCpu* cpu, u32 address, bool is_write
     u16 rw = (u16)(is_write ? 0u : AERR_MODE_READ);
 
     cpu->fault_address = address;
-    cpu->fault_ir = cpu->ir;
+    /* The frame IR and the undefined SSW bits reflect the CPU's internal
+     * bus at fault time. That is usually the opcode, but instructions can
+     * latch a different word (for example a prefetch overlapping a
+     * predecrement write) through fault_bus_word. */
+    cpu->fault_ir = cpu->fault_bus_word_valid ? cpu->fault_bus_word : cpu->ir;
     cpu->fault_ssw = (u16)((cpu->fault_ir & 0xFFE0u) | rw | fc);
     cpu->fault_program_access = is_program;
     cpu->fault_valid = true;
     cpu->group0_fault = true;
+}
+
+void m68k_raise_illegal_ea(M68kCpu* cpu) {
+    m68k_exception(cpu, 4);
+    if (cpu->fault_trap_active && cpu->exception_depth == 0) {
+        longjmp(cpu->fault_trap, 1);
+    }
+}
+
+void m68k_raise_odd_target_fault(M68kCpu* cpu, u32 target, u32 fault_pc) {
+    /* The fault address is the raw target, the access is a program-space
+     * read, and the frame IR holds the opcode. Exception processing
+     * costs 50 cycles on top of the instruction's own timing. */
+    cpu->cycles_remaining -= 50;
+    capture_access_fault(cpu, target, false, true);
+    cpu->fault_pc = fault_pc;
+    cpu->fault_pc_valid = true;
+    cpu->in_address_error = true;
+    m68k_exception(cpu, 3);
+    cpu->in_address_error = false;
 }
 
 static inline void abort_faulted_instruction(M68kCpu* cpu) {
@@ -161,39 +192,6 @@ static inline void abort_faulted_instruction(M68kCpu* cpu) {
     if (cpu->fault_trap_active && cpu->group0_fault && cpu->exception_depth == 0) {
         longjmp(cpu->fault_trap, 1);
     }
-}
-
-static const int ea_cycles[12][2] = {
-    {0, 0},   {0, 0},  {4, 8},   {4, 8},  {6, 10},  {8, 12},
-    {10, 14}, {8, 12}, {12, 16}, {8, 12}, {10, 14}, {4, 8},
-};
-
-static int m68k_ea_cycles(int mode, int reg, M68kSize size) {
-    int idx;
-    if (mode <= 6) {
-        idx = mode;
-    } else {
-        switch (reg) {
-            case 0:
-                idx = 7;
-                break;
-            case 1:
-                idx = 8;
-                break;
-            case 2:
-                idx = 9;
-                break;
-            case 3:
-                idx = 10;
-                break;
-            case 4:
-                idx = 11;
-                break;
-            default:
-                return 0;
-        }
-    }
-    return ea_cycles[idx][size == SIZE_LONG ? 1 : 0];
 }
 
 static inline void apply_wait_bus(M68kCpu* cpu, u32 address, M68kSize size, bool is_write) {
@@ -415,8 +413,47 @@ void m68k_write_size(M68kCpu* cpu, u32 address, u32 value, M68kSize size) {
         m68k_write_32(cpu, address, value);
 }
 
+/* PC value pushed in a group-0 frame when the operand access faults,
+ * measured per addressing mode against the SingleStepTests corpus. The
+ * offsets are relative to the prefetch position when EA resolution
+ * starts, so second operands (for example after immediate words) shift
+ * accordingly. */
+static void set_fault_pc(M68kCpu* cpu, int mode, int reg, M68kSize size) {
+    u32 offset;
+    switch (mode) {
+        case 2:
+        case 3:
+        case 5:
+        case 6:
+            offset = 0;
+            break;
+        case 4:
+            /* Word accesses take an extra prefetch advance before the
+             * operand read; long accesses fault on the first word. */
+            offset = (size == SIZE_LONG) ? 0 : 2;
+            break;
+        case 7:
+            if (reg == 1) {
+                offset = 4;
+            } else if (reg == 0) {
+                offset = 2;
+            } else if (reg == 2 || reg == 3) {
+                offset = 0;
+            } else {
+                return;
+            }
+            break;
+        default:
+            return;
+    }
+    cpu->fault_pc = cpu->pc + offset;
+    cpu->fault_pc_valid = true;
+}
+
 static M68kEA m68k_calc_ea_ex(M68kCpu* cpu, int mode, int reg, M68kSize size, bool fetch_value) {
     M68kEA ea = {0};
+
+    set_fault_pc(cpu, mode, reg, size);
 
     switch (mode) {
         case 0:
@@ -437,15 +474,16 @@ static M68kEA m68k_calc_ea_ex(M68kCpu* cpu, int mode, int reg, M68kSize size, bo
             break;
         case 3:
             ea.address = cpu->a_regs[reg].l;
-            if (fetch_value) {
-                bool prev_fault = cpu->group0_fault;
+            /* Byte and word increments commit before the operand bus
+             * cycle and survive an address error; long increments do
+             * not, matching hardware measured through the corpus. A
+             * faulted read longjmps out, so ordering encodes the rule. */
+            if (fetch_value && size == SIZE_LONG) {
                 ea.value = m68k_read_size(cpu, ea.address, size);
-                // On a faulted read, postincrement side effects should not be committed.
-                if (cpu->group0_fault == prev_fault) {
-                    cpu->a_regs[reg].l += (size == SIZE_BYTE && reg == 7) ? 2 : size;
-                }
+                cpu->a_regs[reg].l += size;
             } else {
                 cpu->a_regs[reg].l += (size == SIZE_BYTE && reg == 7) ? 2 : size;
+                if (fetch_value) ea.value = m68k_read_size(cpu, ea.address, size);
             }
             break;
         case 4:
@@ -485,7 +523,11 @@ static M68kEA m68k_calc_ea_ex(M68kCpu* cpu, int mode, int reg, M68kSize size, bo
                 case 2: {
                     s16 disp = (s16)fetch_extension(cpu);
                     ea.address = (cpu->pc - 2) + disp;
-                    if (fetch_value) ea.value = m68k_read_size(cpu, ea.address, size);
+                    if (fetch_value) {
+                        cpu->operand_program_space = true;
+                        ea.value = m68k_read_size(cpu, ea.address, size);
+                        cpu->operand_program_space = false;
+                    }
                 } break;
                 case 3: {
                     u16 ext = fetch_extension(cpu);
@@ -501,9 +543,17 @@ static M68kEA m68k_calc_ea_ex(M68kCpu* cpu, int mode, int reg, M68kSize size, bo
                     }
 
                     ea.address = pc_base + xn_val + disp8;
-                    if (fetch_value) ea.value = m68k_read_size(cpu, ea.address, size);
+                    if (fetch_value) {
+                        cpu->operand_program_space = true;
+                        ea.value = m68k_read_size(cpu, ea.address, size);
+                        cpu->operand_program_space = false;
+                    }
                 } break;
                 default:
+                    /* Mode 7 with register 5-7 is never a valid
+                     * encoding; real hardware takes the illegal
+                     * instruction exception. */
+                    m68k_raise_illegal_ea(cpu);
                     break;
             }
             break;
@@ -527,8 +577,15 @@ static M68kEA m68k_calc_ea_ex(M68kCpu* cpu, int mode, int reg, M68kSize size, bo
 }
 
 M68kEA m68k_calc_ea(M68kCpu* cpu, int mode, int reg, M68kSize size) {
-    cpu->cycles_remaining -= m68k_ea_cycles(mode, reg, size);
-    return m68k_calc_ea_ex(cpu, mode, reg, size, true);
+    /* A long operand faults on its first word, so only the word share
+     * of the EA cost is spent before the read; the remainder is charged
+     * after the read succeeds. */
+    int full = m68k_ea_cycles(mode, reg, size);
+    int pre = (size == SIZE_LONG) ? m68k_ea_cycles(mode, reg, SIZE_WORD) : full;
+    cpu->cycles_remaining -= pre;
+    M68kEA ea = m68k_calc_ea_ex(cpu, mode, reg, size, true);
+    cpu->cycles_remaining -= full - pre;
+    return ea;
 }
 
 M68kEA m68k_calc_ea_addr(M68kCpu* cpu, int mode, int reg, M68kSize size) {
@@ -733,6 +790,12 @@ void m68k_set_sr(M68kCpu* cpu, u16 new_sr) {
 }
 
 void m68k_exception(M68kCpu* cpu, int vector) {
+    /* The illegal opcode callback may claim the instruction: a nonzero
+     * return suppresses the exception and execution continues after the
+     * opcode. Line-A and line-F take their own vectors and bypass this. */
+    if (vector == 4 && cpu->illg_cb && cpu->illg_cb(cpu, cpu->ir) != 0) {
+        return;
+    }
     if (cpu->exception_thrown == 0) {
         cpu->exception_thrown = vector;
     }
@@ -741,6 +804,9 @@ void m68k_exception(M68kCpu* cpu, int vector) {
     u32 old_pc = cpu->pc;
     if (vector == 4 || vector == 8 || vector == 10 || vector == 11) {
         old_pc = cpu->ppc;
+    }
+    if ((vector == 2 || vector == 3) && cpu->fault_pc_valid) {
+        old_pc = cpu->fault_pc;
     }
 
     m68k_set_sr(cpu, (cpu->sr | M68K_SR_S) & ~0x8000);
@@ -758,13 +824,20 @@ void m68k_exception(M68kCpu* cpu, int vector) {
         m68k_push_32(cpu, fault_address);
         m68k_push_16(cpu, ssw);
     } else {
+        /* The 68010 pushes a format 0 frame with a format/vector word. */
+        if (cpu->model >= M68K_MODEL_68010) {
+            m68k_push_16(cpu, (u16)(vector * 4));
+        }
         m68k_push_32(cpu, old_pc);
         m68k_push_16(cpu, old_sr);
     }
     cpu->fault_program_access = false;
     cpu->fault_valid = false;
+    cpu->fault_pc_valid = false;
+    cpu->fault_bus_word_valid = false;
+    cpu->operand_program_space = false;
 
-    u32 vector_addr = m68k_read_32(cpu, vector * 4);
+    u32 vector_addr = m68k_read_32(cpu, cpu->vbr + (u32)vector * 4);
 
     m68k_set_pc(cpu, vector_addr);
     cpu->exception_depth--;
@@ -788,6 +861,12 @@ static bool check_interrupts(M68kCpu* cpu) {
 
     if (take) {
         int vector;
+
+        /* The acknowledge bus cycle drives FC = 7 on real hardware, for
+         * vectored and autovectored responses alike. */
+        if (cpu->fc_cb) {
+            cpu->fc_cb(cpu, M68K_FC_INT_ACK);
+        }
 
         if (cpu->int_ack) {
             int ack = cpu->int_ack(cpu, cpu->irq_level);
@@ -826,6 +905,17 @@ static bool check_interrupts(M68kCpu* cpu) {
  * size: SIZE_BYTE, SIZE_WORD, SIZE_LONG
  * ea_mode: addressing mode of the <ea> operand (0=Dn, 1=An, 2+=memory)
  */
+/* Immediate ALU (ADDI, SUBI, ANDI, ORI, EORI) base cost by size and
+ * destination kind; EA cycles for memory destinations add separately. */
+static int imm_alu_cycles(u16 opcode) {
+    bool is_long = ((opcode >> 6) & 0x3) == 2;
+    bool reg_dest = (opcode & 0x38) == 0;
+    if (reg_dest) {
+        return is_long ? 8 : 4;
+    }
+    return is_long ? 12 : 8;
+}
+
 static int alu_base_cycles(int dir, M68kSize size, int ea_mode, int ea_reg) {
     if (dir == 0) {
         /* <ea> to Dn: B/W = 4, L = 8 if ea is Dn/An/#imm, else 6 */
@@ -834,7 +924,11 @@ static int alu_base_cycles(int dir, M68kSize size, int ea_mode, int ea_reg) {
         }
         return 4;
     } else {
-        /* Dn to <ea> (memory): B/W = 8, L = 12.  EA cycles added separately. */
+        /* Dn to <ea>: register destinations time like the register
+         * direction; memory is B/W = 8, L = 12 plus EA cycles. */
+        if (ea_mode == 0) {
+            return (size == SIZE_LONG) ? 8 : 4;
+        }
         return (size == SIZE_LONG) ? 12 : 8;
     }
 }
@@ -870,16 +964,23 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
     if (setjmp(cpu->fault_trap) != 0) {
         cpu->fault_trap_active = false;
-        cpu->cycles_remaining -= 50;
+        /* Group-0 exception processing costs 50 cycles, plus the 4-cycle
+         * base of the aborted instruction, measured by the corpus. An
+         * abort for an illegal encoding charges the illegal cost. */
+        cpu->cycles_remaining -= cpu->group0_fault ? 54 : 34;
         return;
     }
     cpu->fault_trap_active = true;
 
     cpu->ppc = cpu->pc;
+    /* fault_bus_word_valid and operand_program_space are cleared on both
+     * their success paths and in m68k_exception, so only the fault PC
+     * latch needs a per-instruction reset. */
+    cpu->fault_pc_valid = false;
     u16 opcode = m68k_fetch(cpu);
     if (cpu->group0_fault) {
         cpu->fault_trap_active = false;
-        cpu->cycles_remaining -= 50;
+        cpu->cycles_remaining -= 54;
         return;
     }
     cpu->ir = opcode;
@@ -888,7 +989,24 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
     if ((opcode & 0xF000) == 0x0000) {
         int top4 = (opcode >> 8) & 0xF;
 
+        /* Immediate ALU encodings with size code 3 belong to later
+         * family members and are illegal here. */
+        if (((opcode >> 6) & 0x3) == 3 &&
+            (top4 == 0x0 || top4 == 0x2 || top4 == 0x4 || top4 == 0x6 || top4 == 0xA ||
+             top4 == 0xC)) {
+            m68k_exception(cpu, 4);
+            cycles = 34;
+            goto done;
+        }
+
         if (top4 == 0x0E) {
+            /* A later-family instruction is illegal on the 68000, and
+             * size code 3 is invalid on any model. */
+            if (cpu->model < M68K_MODEL_68010 || ((opcode >> 6) & 0x3) == 3) {
+                m68k_exception(cpu, 4);
+                cycles = 34;
+                goto done;
+            }
             m68k_exec_moves(cpu, opcode);
             cycles = 4;
             goto done;
@@ -896,58 +1014,69 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
         if (top4 == 0x00) {
             m68k_exec_ori(cpu, opcode);
-            cycles = 8;
+            /* The CCR/SR forms take 20 cycles. */
+            cycles = ((opcode & 0xFFBF) == 0x003C) ? 20 : imm_alu_cycles(opcode);
             goto done;
         }
 
         if (top4 == 0x02) {
             m68k_exec_andi(cpu, opcode);
-            cycles = 8;
+            cycles = ((opcode & 0xFFBF) == 0x023C) ? 20 : imm_alu_cycles(opcode);
             goto done;
         }
 
         if (top4 == 0x04) {
             m68k_exec_subi(cpu, opcode);
-            cycles = 8;
+            cycles = imm_alu_cycles(opcode);
             goto done;
         }
 
         if (top4 == 0x06) {
             m68k_exec_addi(cpu, opcode);
-            cycles = 8;
+            cycles = imm_alu_cycles(opcode);
             goto done;
         }
 
         if (top4 == 0x0A) {
             m68k_exec_eori(cpu, opcode);
-            cycles = 8;
+            cycles = ((opcode & 0xFFBF) == 0x0A3C) ? 20 : imm_alu_cycles(opcode);
             goto done;
         }
 
         if (top4 == 0x0C) {
             m68k_exec_cmpi(cpu, opcode);
-            cycles = 8;
+            if (((opcode >> 6) & 0x3) == 2) {
+                cycles = ((opcode & 0x38) == 0) ? 6 : 4;
+            } else {
+                cycles = 4;
+            }
             goto done;
         }
 
         if (top4 == 0x08) {
             int subop = (opcode >> 6) & 0x3;
+            /* Register destinations charge 2 extra cycles when the bit
+             * number (modulo 32) is 16 or higher; the bit number is in
+             * the immediate word, still unfetched at this point. */
+            bool breg = (opcode & 0x38) == 0;
+            int bhi = breg ? (int)((m68k_peek_word(cpu, cpu->pc) & 31) >= 16) : 0;
             switch (subop) {
                 case 0:
                     m68k_exec_btst(cpu, opcode);
-                    cycles = 8;
+                    /* BTST #, Dn is 10; the memory forms are 8 plus EA. */
+                    cycles = breg ? 10 : 8;
                     goto done;
                 case 1:
                     m68k_exec_bchg(cpu, opcode);
-                    cycles = 8;
+                    cycles = breg ? (10 + 2 * bhi) : 12;
                     goto done;
                 case 2:
                     m68k_exec_bclr(cpu, opcode);
-                    cycles = 10;
+                    cycles = breg ? (12 + 2 * bhi) : 12;
                     goto done;
                 case 3:
                     m68k_exec_bset(cpu, opcode);
-                    cycles = 8;
+                    cycles = breg ? (10 + 2 * bhi) : 12;
                     goto done;
             }
         }
@@ -962,22 +1091,30 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             }
 
             int subop = (opcode >> 6) & 0x3;
+            /* Register-destination bit ops charge 2 extra cycles when
+             * the bit number (modulo 32) is 16 or higher. Read the bit
+             * source before the handler can modify it. */
+            int bit_hi = (int)((cpu->d_regs[(opcode >> 9) & 0x7].l & 31) >= 16);
+            bool reg_dest = (opcode & 0x38) == 0;
+            bool imm_dest = (opcode & 0x3F) == 0x3C;
             switch (subop) {
                 case 0:
                     m68k_exec_btst(cpu, opcode);
-                    cycles = 6;
+                    /* BTST Dn, Dn is 6, BTST Dn, #data is 10, and the
+                     * memory forms are 4 plus EA. */
+                    cycles = reg_dest ? 6 : (imm_dest ? 6 : 4);
                     goto done;
                 case 1:
                     m68k_exec_bchg(cpu, opcode);
-                    cycles = 8;
+                    cycles = reg_dest ? (6 + 2 * bit_hi) : 8;
                     goto done;
                 case 2:
                     m68k_exec_bclr(cpu, opcode);
-                    cycles = 8;
+                    cycles = reg_dest ? (8 + 2 * bit_hi) : 8;
                     goto done;
                 case 3:
                     m68k_exec_bset(cpu, opcode);
-                    cycles = 8;
+                    cycles = reg_dest ? (6 + 2 * bit_hi) : 8;
                     goto done;
             }
         }
@@ -991,7 +1128,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
              * for MOVE to -(An), saving 2 cycles vs the generic EA
              * cost charged inside m68k_calc_ea_addr. */
             int dest_mode = (opcode >> 6) & 0x7;
-            cycles = (dest_mode == 4) ? 2 : 4;
+            cycles = (dest_mode == 4) ? (((opcode >> 12) & 0x3) == 2 ? 2 : 0) : 4;
             goto done;
         }
     }
@@ -1033,17 +1170,35 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         }
 
         if (opcode == 0x4E74) {
+        /* A later-family instruction is illegal on the 68000. */
+        if (cpu->model < M68K_MODEL_68010) {
+            m68k_exception(cpu, 4);
+            cycles = 34;
+            goto done;
+        }
             m68k_exec_rtd(cpu, opcode);
             cycles = 16;
             goto done;
         }
         if (opcode == 0x4E7A || opcode == 0x4E7B) {
+        /* A later-family instruction is illegal on the 68000. */
+        if (cpu->model < M68K_MODEL_68010) {
+            m68k_exception(cpu, 4);
+            cycles = 34;
+            goto done;
+        }
             m68k_exec_movec(cpu, opcode);
             cycles = 12;
             goto done;
         }
 
         if ((opcode & 0xFFF8) == 0x4848) {
+        /* A later-family instruction is illegal on the 68000. */
+        if (cpu->model < M68K_MODEL_68010) {
+            m68k_exception(cpu, 4);
+            cycles = 34;
+            goto done;
+        }
             m68k_exec_bkpt(cpu, opcode);
             cycles = 4;
             goto done;
@@ -1063,7 +1218,9 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
         if ((opcode & 0xFFC0) == 0x4E80) {
             m68k_exec_jmp(cpu, opcode);
-            cycles = 8; /* JSR push cost; control-flow EA timing adds the rest */
+            /* JSR push cost; control-flow EA timing adds the rest. A
+             * faulted odd target skips the push and its cost. */
+            cycles = (cpu->exception_thrown == 3) ? 0 : 8;
             goto done;
         }
 
@@ -1075,7 +1232,8 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
         if ((opcode & 0xFFC0) == 0x40C0) {
             m68k_exec_move_sr(cpu, opcode);
-            cycles = 6;
+            /* MOVE from SR: 6 to a register, 8 plus EA to memory. */
+            cycles = ((opcode & 0x38) == 0) ? 6 : 8;
             goto done;
         }
 
@@ -1129,19 +1287,20 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
         if ((opcode & 0xFFF8) == 0x4E58) {
             m68k_exec_unlk(cpu, opcode);
-            cycles = 12;
+            cycles = 8;
             goto done;
         }
 
         if ((opcode & 0xFFC0) == 0x4AC0) {
             m68k_exec_tas(cpu, opcode);
-            cycles = 4;
+            /* TAS: 4 on a register, 10 plus EA on memory. */
+            cycles = ((opcode & 0x38) == 0) ? 4 : 10;
             goto done;
         }
 
         if ((opcode & 0xFFC0) == 0x4800) {
             m68k_exec_nbcd(cpu, opcode);
-            cycles = 8;
+            cycles = ((opcode & 0x38) == 0) ? 6 : 8;
             goto done;
         }
 
@@ -1172,6 +1331,18 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
                                                             : SIZE_BYTE;
                 cycles =
                     (un_mode == 0) ? (un_sz == SIZE_LONG ? 6 : 4) : (un_sz == SIZE_LONG ? 12 : 8);
+            }
+            goto done;
+        }
+
+        if ((opcode & 0xFFC0) == 0x42C0) {
+            /* MOVE from CCR exists on the 68010 only. */
+            if (cpu->model < M68K_MODEL_68010) {
+                m68k_exception(cpu, 4);
+                cycles = 34;
+            } else {
+                m68k_exec_move_sr(cpu, opcode);
+                cycles = ((opcode & 0x38) == 0) ? 4 : 8;
             }
             goto done;
         }
@@ -1244,7 +1415,9 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             } else if (aq_mode == 0) {
                 cycles = 4; /* Dn byte/word: 4 */
             } else {
-                cycles = 8; /* memory: 8 + EA (EA already charged) */
+                /* Memory: 8 plus EA; the long surcharge lives in the EA
+                 * cost, but read-modify-write adds 4 more for long. */
+                cycles = (aq_size == 2) ? 12 : 8;
             }
         }
         goto done;
@@ -1267,11 +1440,11 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         int mode = (opcode >> 3) & 0x7;
         if (opmode == 3 || opmode == 7) {
             m68k_exec_div(cpu, opcode);
-            cycles = (opmode == 7) ? 158 : 140; /* DIVS=158, DIVU=140 */
+            cycles = 0; /* data-dependent, charged in the handler */
             goto done;
         } else if (opmode == 4 && (mode == 0 || mode == 1)) {
             m68k_exec_sbcd(cpu, opcode);
-            cycles = 6;
+            cycles = (mode == 1) ? 18 : 6;
             goto done;
         } else {
             m68k_exec_or(cpu, opcode);
@@ -1295,7 +1468,8 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         if ((opmode >= 4 && opmode <= 6) && (mode == 0 || mode == 1)) {
             m68k_exec_subx(cpu, opcode);
             M68kSize sxsz = (opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG;
-            cycles = (sxsz == SIZE_LONG) ? 8 : 4;
+            cycles = (mode == 1) ? ((sxsz == SIZE_LONG) ? 16 : 8)
+                                 : ((sxsz == SIZE_LONG) ? 8 : 4);
             goto done;
         }
         m68k_exec_sub(cpu, opcode);
@@ -1308,7 +1482,13 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
                                                : (opmode == 5) ? SIZE_WORD
                                                                : SIZE_LONG);
             if (opmode == 3 || opmode == 7) {
-                cycles = (opmode == 7) ? 6 : 8;
+                /* SUBA: word = 8; long = 8 for register or immediate
+                 * sources and 6 for memory sources. */
+                if (opmode == 7) {
+                    cycles = (mode <= 1 || (mode == 7 && (opcode & 0x7) == 4)) ? 8 : 6;
+                } else {
+                    cycles = 8;
+                }
             } else {
                 cycles = alu_base_cycles(sub_dir, sub_sz, mode, opcode & 0x7);
             }
@@ -1325,13 +1505,16 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             m68k_exec_eor(cpu, opcode);
             {
                 M68kSize eor_sz = (opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG;
-                cycles = alu_base_cycles(1, eor_sz, mode, opcode & 0x7); /* EOR is always Dn to <ea> */
+                cycles =
+                    alu_base_cycles(1, eor_sz, mode, opcode & 0x7); /* EOR is always Dn to <ea> */
             }
         } else {
             m68k_exec_cmp(cpu, opcode);
             if (opmode == 3 || opmode == 7) {
                 /* CMPA: always 6 */
                 cycles = 6;
+            } else if (is_cmpm) {
+                cycles = (opmode == 6) ? 8 : 4;
             } else {
                 M68kSize cmp_sz = (opmode == 0) ? SIZE_BYTE : (opmode == 1) ? SIZE_WORD : SIZE_LONG;
                 /* CMP is <ea> to Dn (read only, no writeback) */
@@ -1346,11 +1529,11 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         int mode = (opcode >> 3) & 0x7;
         if (opmode == 3 || opmode == 7) {
             m68k_exec_mul(cpu, opcode);
-            cycles = 70;
+            cycles = 0; /* data-dependent, charged in the handler */
             goto done;
         } else if (opmode == 4 && (mode == 0 || mode == 1)) {
             m68k_exec_abcd(cpu, opcode);
-            cycles = 6;
+            cycles = (mode == 1) ? 18 : 6;
             goto done;
         } else if ((opmode == 5 && ((opcode >> 3) & 0x1F) == 0x08) ||
                    (opmode == 5 && ((opcode >> 3) & 0x1F) == 0x09) ||
@@ -1380,7 +1563,8 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         if ((opmode >= 4 && opmode <= 6) && (mode == 0 || mode == 1)) {
             m68k_exec_addx(cpu, opcode);
             M68kSize axsz = (opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG;
-            cycles = (axsz == SIZE_LONG) ? 8 : 4;
+            cycles = (mode == 1) ? ((axsz == SIZE_LONG) ? 16 : 8)
+                                 : ((axsz == SIZE_LONG) ? 8 : 4);
             goto done;
         }
         m68k_exec_add(cpu, opcode);
@@ -1393,8 +1577,13 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
                                                : (opmode == 5) ? SIZE_WORD
                                                                : SIZE_LONG);
             if (opmode == 3 || opmode == 7) {
-                /* ADDA: word=8, long=6 */
-                cycles = (opmode == 7) ? 6 : 8;
+                /* ADDA: word = 8; long = 8 for register or immediate
+                 * sources and 6 for memory sources. */
+                if (opmode == 7) {
+                    cycles = (mode <= 1 || (mode == 7 && (opcode & 0x7) == 4)) ? 8 : 6;
+                } else {
+                    cycles = 8;
+                }
             } else {
                 cycles = alu_base_cycles(add_dir, add_sz, mode, opcode & 0x7);
             }
@@ -1403,11 +1592,12 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
     }
 
     if ((opcode & 0xF000) == 0xE000) {
-        m68k_exec_shift(cpu, opcode);
         if ((opcode & 0x00C0) == 0x00C0) {
             cycles = 8; /* memory shift: 8 + EA (EA already charged) */
         } else {
-            /* register shift: 6 + 2n where n = shift count */
+            /* Register shift: 6 + 2n where n is the shift count. The
+             * count register is read before execution, since the shift
+             * may target the same register. */
             int sh_count;
             bool sh_ir = ((opcode >> 5) & 0x1) != 0;
             if (sh_ir) {
@@ -1419,6 +1609,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
             int sh_size = (opcode >> 6) & 0x3;
             cycles = (sh_size == 2 ? 8 : 6) + 2 * sh_count;
         }
+        m68k_exec_shift(cpu, opcode);
         goto done;
     }
 
@@ -1434,10 +1625,31 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 done:
     cpu->fault_trap_active = false;
 
+    /* Group-2 exceptions raised during execution replace the normal
+     * instruction cost with the exception processing cost, measured by
+     * the corpus. TRAP and illegal opcodes charge at their dispatch
+     * sites instead. */
+    switch (cpu->exception_thrown) {
+        case 5: /* zero divide */
+            cycles = 38;
+            break;
+        case 6: /* CHK, charged in the handler */
+            cycles = 0;
+            break;
+        case 7: /* TRAPV */
+        case 8: /* privilege violation */
+            cycles = 34;
+            break;
+        default:
+            break;
+    }
+
     if ((cpu->pc & 1) && !cpu->in_address_error) {
-        cpu->in_address_error = true;
-        m68k_exception(cpu, 3);
-        cpu->in_address_error = false;
+        /* A control-flow transfer to an odd address faults on the target
+         * prefetch. Most instructions push the instruction address plus
+         * 2; JSR and BSR raise the fault themselves with their own
+         * pushed-PC values before this check runs. */
+        m68k_raise_odd_target_fault(cpu, cpu->pc, cpu->ppc + 2);
     }
 
     if (check_exceptions && trace_active && !cpu->stopped) {
@@ -1526,4 +1738,201 @@ void m68k_set_context(M68kCpu* cpu, const void* src) {
         cpu->write16_cb = old_write16_cb;
         cpu->write32_cb = old_write32_cb;
     }
+}
+
+/* Portable save states use a versioned, tagged, big-endian format so
+ * blobs survive compiler, ABI, and host-architecture changes. Unknown
+ * tags are skipped on restore for forward compatibility. */
+
+#define M68K_STATE_VERSION 1u
+
+enum {
+    M68K_TAG_DREGS = 1,
+    M68K_TAG_AREGS = 2,
+    M68K_TAG_PC = 3,
+    M68K_TAG_SR = 4,
+    M68K_TAG_USP = 5,
+    M68K_TAG_SSP = 6,
+    M68K_TAG_VBR = 7,
+    M68K_TAG_SFC = 8,
+    M68K_TAG_DFC = 9,
+    M68K_TAG_FLAGS = 10,
+    M68K_TAG_DECODE = 11,
+    M68K_TAG_CYCLES = 12
+};
+
+static void state_put_16(u8* p, u16 v) {
+    p[0] = (u8)(v >> 8);
+    p[1] = (u8)v;
+}
+
+static void state_put_32(u8* p, u32 v) {
+    p[0] = (u8)(v >> 24);
+    p[1] = (u8)(v >> 16);
+    p[2] = (u8)(v >> 8);
+    p[3] = (u8)v;
+}
+
+static u16 state_get_16(const u8* p) { return (u16)((p[0] << 8) | p[1]); }
+
+static u32 state_get_32(const u8* p) {
+    return ((u32)p[0] << 24) | ((u32)p[1] << 16) | ((u32)p[2] << 8) | (u32)p[3];
+}
+
+static u8* state_field(u8* p, u8 tag, u8 len) {
+    p[0] = tag;
+    p[1] = len;
+    return p + 2;
+}
+
+size_t m68k_serialize(const M68kCpu* cpu, u8* buffer, size_t capacity) {
+    /* Header 8, register blocks 2 + 32 each, and the scalar fields. */
+    const size_t need = 8 + (2 + 32) * 2 + (2 + 4) * 6 + (2 + 2) + (2 + 4) + (2 + 6) + (2 + 8);
+
+    if (buffer == NULL) return need;
+    if (capacity < need) return 0;
+
+    u8* p = buffer;
+    p[0] = 'R';
+    p[1] = '6';
+    p[2] = '8';
+    p[3] = 'S';
+    state_put_16(p + 4, M68K_STATE_VERSION);
+    state_put_16(p + 6, 0);
+    p += 8;
+
+    p = state_field(p, M68K_TAG_DREGS, 32);
+    for (int i = 0; i < 8; i++, p += 4) state_put_32(p, cpu->d_regs[i].l);
+    p = state_field(p, M68K_TAG_AREGS, 32);
+    for (int i = 0; i < 8; i++, p += 4) state_put_32(p, cpu->a_regs[i].l);
+
+    p = state_field(p, M68K_TAG_PC, 4);
+    state_put_32(p, cpu->pc);
+    p += 4;
+    p = state_field(p, M68K_TAG_SR, 2);
+    state_put_16(p, cpu->sr);
+    p += 2;
+    p = state_field(p, M68K_TAG_USP, 4);
+    state_put_32(p, cpu->usp);
+    p += 4;
+    p = state_field(p, M68K_TAG_SSP, 4);
+    state_put_32(p, cpu->ssp);
+    p += 4;
+    p = state_field(p, M68K_TAG_VBR, 4);
+    state_put_32(p, cpu->vbr);
+    p += 4;
+    p = state_field(p, M68K_TAG_SFC, 4);
+    state_put_32(p, cpu->sfc);
+    p += 4;
+    p = state_field(p, M68K_TAG_DFC, 4);
+    state_put_32(p, cpu->dfc);
+    p += 4;
+
+    p = state_field(p, M68K_TAG_FLAGS, 4);
+    p[0] = cpu->stopped ? 1 : 0;
+    p[1] = (u8)cpu->irq_level;
+    p[2] = cpu->nmi_pending ? 1 : 0;
+    p[3] = cpu->trace_pending ? 1 : 0;
+    p += 4;
+
+    p = state_field(p, M68K_TAG_DECODE, 6);
+    state_put_16(p, cpu->ir);
+    state_put_32(p + 2, cpu->ppc);
+    p += 6;
+
+    p = state_field(p, M68K_TAG_CYCLES, 8);
+    state_put_32(p, (u32)cpu->target_cycles);
+    state_put_32(p + 4, (u32)cpu->cycles_remaining);
+    p += 8;
+
+    return (size_t)(p - buffer);
+}
+
+bool m68k_deserialize(M68kCpu* cpu, const u8* buffer, size_t length) {
+    if (buffer == NULL || length < 8) return false;
+    if (buffer[0] != 'R' || buffer[1] != '6' || buffer[2] != '8' || buffer[3] != 'S') return false;
+    if (state_get_16(buffer + 4) != M68K_STATE_VERSION) return false;
+
+    const u8* p = buffer + 8;
+    const u8* end = buffer + length;
+
+    while (p < end) {
+        if ((size_t)(end - p) < 2) return false;
+        u8 tag = p[0];
+        u8 len = p[1];
+        p += 2;
+        if ((size_t)(end - p) < len) return false;
+
+        switch (tag) {
+            case M68K_TAG_DREGS:
+                if (len != 32) return false;
+                for (int i = 0; i < 8; i++) cpu->d_regs[i].l = state_get_32(p + i * 4);
+                break;
+            case M68K_TAG_AREGS:
+                if (len != 32) return false;
+                for (int i = 0; i < 8; i++) cpu->a_regs[i].l = state_get_32(p + i * 4);
+                break;
+            case M68K_TAG_PC:
+                if (len != 4) return false;
+                cpu->pc = state_get_32(p);
+                break;
+            case M68K_TAG_SR:
+                if (len != 2) return false;
+                cpu->sr = state_get_16(p);
+                break;
+            case M68K_TAG_USP:
+                if (len != 4) return false;
+                cpu->usp = state_get_32(p);
+                break;
+            case M68K_TAG_SSP:
+                if (len != 4) return false;
+                cpu->ssp = state_get_32(p);
+                break;
+            case M68K_TAG_VBR:
+                if (len != 4) return false;
+                cpu->vbr = state_get_32(p);
+                break;
+            case M68K_TAG_SFC:
+                if (len != 4) return false;
+                cpu->sfc = state_get_32(p);
+                break;
+            case M68K_TAG_DFC:
+                if (len != 4) return false;
+                cpu->dfc = state_get_32(p);
+                break;
+            case M68K_TAG_FLAGS:
+                if (len != 4) return false;
+                cpu->stopped = p[0] != 0;
+                cpu->irq_level = p[1];
+                cpu->nmi_pending = p[2] != 0;
+                cpu->trace_pending = p[3] != 0;
+                break;
+            case M68K_TAG_DECODE:
+                if (len != 6) return false;
+                cpu->ir = state_get_16(p);
+                cpu->ppc = state_get_32(p + 2);
+                break;
+            case M68K_TAG_CYCLES:
+                if (len != 8) return false;
+                cpu->target_cycles = (int)state_get_32(p);
+                cpu->cycles_remaining = (int)state_get_32(p + 4);
+                break;
+            default:
+                break; /* unknown tags are skipped */
+        }
+        p += len;
+    }
+
+    /* Transient fault latches never restore as active. */
+    cpu->exception_thrown = 0;
+    cpu->fault_valid = false;
+    cpu->fault_pc_valid = false;
+    cpu->fault_bus_word_valid = false;
+    cpu->operand_program_space = false;
+    cpu->group0_fault = false;
+    cpu->fault_trap_active = false;
+    cpu->in_address_error = false;
+    cpu->in_bus_error = false;
+
+    return true;
 }

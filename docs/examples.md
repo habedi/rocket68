@@ -248,8 +248,42 @@ bool load_program(M68kCpu* cpu) {
         return false; /* File open failed. */
     }
 
-    if (!m68k_load_bin(cpu, "overlay.bin", 0x00020000)) {
+    u32 overlay_size = 0;
+    if (!m68k_load_bin(cpu, "overlay.bin", 0x00020000, &overlay_size)) {
         return false; /* File open failed. */
+    }
+
+    /* The next free address after the overlay, for example for a heap. */
+    u32 heap_start = 0x00020000 + overlay_size;
+    (void)heap_start;
+
+    return true;
+}
+```
+
+The reported size also supports loading blocks back-to-back and stepping until the end of the loaded code:
+
+```c
+#include "rocket68.h"
+
+bool load_and_run(M68kCpu* cpu) {
+    u32 code_size = 0;
+    if (!m68k_load_bin(cpu, "program.bin", 0x00001000, &code_size)) {
+        return false;
+    }
+
+    /* Place the next block directly after the first one. */
+    u32 data_base = 0x00001000 + code_size;
+    u32 data_size = 0;
+    if (!m68k_load_bin(cpu, "data.bin", data_base, &data_size)) {
+        return false;
+    }
+
+    /* Step until execution leaves the loaded code. */
+    u32 code_end = 0x00001000 + code_size;
+    m68k_set_pc(cpu, 0x00001000);
+    while (m68k_get_pc(cpu) < code_end) {
+        m68k_execute(cpu, 1);
     }
 
     return true;
@@ -258,6 +292,7 @@ bool load_program(M68kCpu* cpu) {
 
 Notes:
 
+- The final `size_out` argument of `m68k_load_bin` may be NULL when the loaded size is not needed.
 - For loader edge-case behavior (malformed records, checksum policy, entry-point handling), see [API Reference](api-reference.md) and [Compatibility Notes](compatibility.md).
 
 ## 9. Disassemble Memory for Debug Output

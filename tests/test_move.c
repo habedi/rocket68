@@ -335,6 +335,7 @@ void test_moves(void) {
     u8 memory[1024];
     memset(memory, 0, sizeof(memory));
     m68k_init(&cpu, memory, sizeof(memory));
+    m68k_set_model(&cpu, M68K_MODEL_68010);
 
     cpu.sr = M68K_SR_S;  // Supervisor
 

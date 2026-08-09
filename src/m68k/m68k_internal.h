@@ -42,6 +42,51 @@ M68kEA m68k_calc_ea(M68kCpu* cpu, int mode, int reg, M68kSize size);
 M68kEA m68k_calc_ea_addr(M68kCpu* cpu, int mode, int reg, M68kSize size);
 M68kEA m68k_calc_ea_ctl(M68kCpu* cpu, int mode, int reg, bool is_jmp);
 M68kEA m68k_calc_ea_addr_nocost(M68kCpu* cpu, int mode, int reg, M68kSize size);
+static const int m68k_ea_cycle_table[12][2] = {
+    {0, 0},   {0, 0},  {4, 8},   {4, 8},  {6, 10},  {8, 12},
+    {10, 14}, {8, 12}, {12, 16}, {8, 12}, {10, 14}, {4, 8},
+};
+
+static inline int m68k_ea_cycles(int mode, int reg, M68kSize size) {
+    int idx;
+    if (mode <= 6) {
+        idx = mode;
+    } else {
+        switch (reg) {
+            case 0:
+                idx = 7;
+                break;
+            case 1:
+                idx = 8;
+                break;
+            case 2:
+                idx = 9;
+                break;
+            case 3:
+                idx = 10;
+                break;
+            case 4:
+                idx = 11;
+                break;
+            default:
+                return 0;
+        }
+    }
+    return m68k_ea_cycle_table[idx][size == SIZE_LONG ? 1 : 0];
+}
+
+/* Reads a word without wait states, faults, or cycle cost. Used to model
+ * internal prefetch latches in fault frames. */
+static inline u16 m68k_peek_word(M68kCpu* cpu, u32 address) {
+    address &= 0x00FFFFFFu;
+    if (cpu->read16_cb) {
+        return cpu->read16_cb(cpu, address);
+    }
+    if (cpu->memory && address + 1 < cpu->memory_size) {
+        return (u16)((cpu->memory[address] << 8) | cpu->memory[address + 1]);
+    }
+    return 0;
+}
 int m68k_control_ea_cycles(int mode, int reg, bool is_jmp);
 int m68k_movem_ea_cycles(int mode, int reg, bool mem_to_reg);
 
@@ -55,6 +100,8 @@ u16 m68k_pop_16(M68kCpu * cpu);
 bool m68k_check_condition(M68kCpu* cpu, int condition);
 
 void m68k_exception(M68kCpu* cpu, int vector);
+void m68k_raise_odd_target_fault(M68kCpu* cpu, u32 target, u32 fault_pc);
+void m68k_raise_illegal_ea(M68kCpu* cpu);
 
 void update_flags_logic(M68kCpu* cpu, u32 result, M68kSize size);
 void update_flags_add(M68kCpu* cpu, u32 src, u32 dest, u32 result, M68kSize size);
