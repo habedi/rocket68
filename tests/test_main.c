@@ -130,6 +130,7 @@ int main(void) {
     test_regression_nmi_is_edge_triggered();
     test_regression_irq_autoclear_without_ack_callback();
     test_regression_movem_cycles();
+    test_regression_exception_latch_is_per_instruction();
 
     test_disasm_buffer_bounds();
     test_disasm_truncates_small_buffers();
