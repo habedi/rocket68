@@ -860,6 +860,11 @@ static bool check_interrupts(M68kCpu* cpu) {
     bool take = (cpu->irq_level == 7) ? cpu->nmi_pending : (cpu->irq_level > current_level);
 
     if (take) {
+        /* The level being serviced is the one sampled at the acknowledge.
+         * cpu->irq_level cannot be used past the callback: a device
+         * normally drops its request there, which must not alter the
+         * vector or the mask. */
+        int serviced_level = cpu->irq_level;
         int vector;
 
         /* The acknowledge bus cycle drives FC = 7 on real hardware, for
@@ -869,21 +874,21 @@ static bool check_interrupts(M68kCpu* cpu) {
         }
 
         if (cpu->int_ack) {
-            int ack = cpu->int_ack(cpu, cpu->irq_level);
+            int ack = cpu->int_ack(cpu, serviced_level);
             if (ack == (int)M68K_INT_ACK_AUTOVECTOR) {
-                vector = 24 + cpu->irq_level;
+                vector = 24 + serviced_level;
             } else if (ack == (int)M68K_INT_ACK_SPURIOUS) {
                 vector = 24;
             } else {
                 vector = ack & 0xFF;
             }
         } else {
-            vector = 24 + cpu->irq_level;
+            vector = 24 + serviced_level;
         }
 
         m68k_exception(cpu, vector);
         cpu->sr &= ~0x0700;
-        cpu->sr |= (cpu->irq_level << 8);
+        cpu->sr |= (serviced_level << 8);
         cpu->nmi_pending = false;
         /* Without an INT ACK callback the request clears automatically.
          * With one installed the line is level-held by the host. */
