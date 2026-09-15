@@ -935,6 +935,7 @@ static int alu_base_cycles(int dir, M68kSize size, int ea_mode, int ea_reg) {
 
 void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
     // These are re-entrancy guards for access helpers, not architectural state.
+    cpu->exception_thrown = 0;
     cpu->in_address_error = false;
     cpu->in_bus_error = false;
     cpu->fault_program_access = false;
@@ -1630,6 +1631,9 @@ done:
      * the corpus. TRAP and illegal opcodes charge at their dispatch
      * sites instead. */
     switch (cpu->exception_thrown) {
+        case 4: /* illegal instruction raised by a handler */
+            cycles = 34;
+            break;
         case 5: /* zero divide */
             cycles = 38;
             break;

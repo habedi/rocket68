@@ -1445,3 +1445,65 @@ void test_regression_movem_cycles(void) {
 
     printf("Regression: MOVEM cycles test passed!\n");
 }
+
+/* The exception latch is cleared before each instruction, so the exception
+ * cycle costs are charged to the instruction that raises them and to no
+ * other. Before this was fixed the latch held the first exception's vector
+ * for the rest of the run: any interrupt disabled the correction for every
+ * later zero divide, CHK, TRAPV and privilege violation, and a zero divide
+ * left every following instruction charged the zero divide's cost. A CPU
+ * built fresh for each case cannot see either half. */
+void test_regression_exception_latch_is_per_instruction(void) {
+    M68kCpu cpu;
+    u8 memory[4096];
+    int cycles;
+
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    cpu.sr = 0x2000;
+    cpu.a_regs[7].l = 0x1000;
+    cpu.ssp = 0x1000;
+
+    m68k_write_32(&cpu, 5 * 4, 0x300);        /* zero divide vector */
+    m68k_write_32(&cpu, (24 + 4) * 4, 0x400); /* level 4 autovector */
+
+    /* A zero divide costs 38 with no exception taken beforehand. */
+    cpu.pc = 0x100;
+    cpu.d_regs[0].l = 0;
+    cpu.d_regs[1].l = 100;
+    m68k_write_16(&cpu, 0x100, 0x82C0); /* DIVU.W D0,D1 */
+    m68k_end_timeslice(&cpu);
+    cycles = m68k_execute(&cpu, 38);
+    assert(cpu.pc == 0x300);
+    assert(cycles == 38);
+
+    /* The instruction after it is charged its own cost, not the divide's. */
+    cpu.pc = 0x200;
+    m68k_write_16(&cpu, 0x200, 0x4E71); /* NOP */
+    m68k_end_timeslice(&cpu);
+    cycles = m68k_execute(&cpu, 4);
+    assert(cpu.pc == 0x202);
+    assert(cycles == 4);
+
+    /* An interrupt leaves no latch behind either: the zero divide after it
+     * still costs 38. */
+    cpu.pc = 0x100;
+    m68k_write_16(&cpu, 0x100, 0x4E71); /* NOP, interrupted before it runs */
+    m68k_set_irq(&cpu, 4);
+    m68k_end_timeslice(&cpu);
+    cycles = m68k_execute(&cpu, 44);
+    assert(cpu.pc == 0x400);
+    assert(cycles == 44);
+
+    cpu.pc = 0x100;
+    cpu.d_regs[0].l = 0;
+    cpu.d_regs[1].l = 100;
+    m68k_write_16(&cpu, 0x100, 0x82C0); /* DIVU.W D0,D1 */
+    m68k_end_timeslice(&cpu);
+    cycles = m68k_execute(&cpu, 38);
+    assert(cpu.pc == 0x300);
+    assert(cycles == 38);
+
+    printf("Regression: Exception latch is per instruction test passed!\n");
+}
