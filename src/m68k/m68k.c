@@ -860,10 +860,6 @@ static bool check_interrupts(M68kCpu* cpu) {
     bool take = (cpu->irq_level == 7) ? cpu->nmi_pending : (cpu->irq_level > current_level);
 
     if (take) {
-        /* The level being serviced is the one sampled at the acknowledge.
-         * cpu->irq_level cannot be used past the callback: a device
-         * normally drops its request there, which must not alter the
-         * vector or the mask. */
         int serviced_level = cpu->irq_level;
         int vector;
 
@@ -1636,7 +1632,7 @@ done:
      * the corpus. TRAP and illegal opcodes charge at their dispatch
      * sites instead. */
     switch (cpu->exception_thrown) {
-        case 4: /* illegal instruction raised by a handler */
+        case 4: /* illegal instruction */
             cycles = 34;
             break;
         case 5: /* zero divide */
