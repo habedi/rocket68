@@ -213,8 +213,8 @@ bool m68k_load_ihex(M68kCpu* cpu, const char* filename) {
                 for (int i = 0; i < count; i++) {
                     u32 address = base + offset + (u32)i;
                     if (!loader_store(cpu, address, parse_byte(&data[i * 2]))) {
-                        fprintf(stderr, "Line %d: Address %06X is outside bound memory\n",
-                                line_num, address & 0x00FFFFFFu);
+                        fprintf(stderr, "Line %d: Address %06X is outside bound memory\n", line_num,
+                                address & 0x00FFFFFFu);
                         break;
                     }
                 }

@@ -80,6 +80,9 @@ Quick examples:
 
 ## Required Validation
 
+For comment-only changes, check descriptions against the implementation. Full tests and benchmarks are not required
+when behavior is unchanged. Run `make docs` when public API documentation or files in `docs/` change.
+
 Run these checks for any non-trivial core/API change:
 
 1. `make test` (this includes JSON tests that can take time to run)
@@ -91,6 +94,24 @@ Recommended for risky or low-level changes:
 1. `make test-asan`
 2. `make test-ubsan`
 3. `make test-memory`
+
+## Zig and Nix Workflow
+
+The project targets Zig 0.17.0. `nix develop` provides that compiler through `zig-overlay`, pins dependencies through
+`flake.lock`, and sets `ZIG` to the compiler executable.
+
+- `make zig-build` builds the native static library.
+- `make zig-test-unit` runs unit tests, without the JSON compatibility suite.
+- `make zig-wasm` builds the WASM artifacts.
+- `make zig-bench` runs the Zig benchmark suite.
+- `ZIG` selects the compiler executable. Outside the Nix shell, it defaults to `~/.local/share/zig/0.17.0/zig` when
+  available, then falls back to `zig` from `PATH`.
+- `ZIG_OPTIMIZE` defaults to `Debug` for native builds and unit tests, and `ReleaseFast` for WASM and benchmarks.
+  Override it on the command line, for example, `make zig-build ZIG_OPTIMIZE=ReleaseFast`.
+
+For build-system changes, validate the affected targets. For flake changes, run `nix flake check --no-build --all-systems`
+and verify the compiler and affected commands inside `nix develop`. Evaluation alone does not verify execution on other
+platforms.
 
 ## First Contribution Flow
 
@@ -111,6 +132,11 @@ Example scopes that are good first tasks:
 
 ## Testing Expectations
 
+- The default JSON suite skips exception-path verification, so a passing result does not validate exception behavior.
+  See the runner comments in [tests/test_json.c](tests/test_json.c) and the strict and cycle-check options in
+  [JSON Compatibility Harness](docs/compatibility.md#json-compatibility-harness).
+- The current WASM build uses fault-handling stubs that trap the module when an instruction raises a group-0 fault.
+  See [src/wasm_compat/setjmp_stubs.c](src/wasm_compat/setjmp_stubs.c). A successful WASM build does not validate fault recovery.
 - No opcode or execution workflow change is complete without tests.
 - Write the test before the change, and confirm it fails for the expected reason first.
 - Unit tests should fully initialize `M68kCpu` and required callbacks/memory behavior.
