@@ -72,8 +72,7 @@ void m68k_exec_move(M68kCpu* cpu, u16 opcode) {
     else if (size == SIZE_LONG && (s32)src_ea.value < 0)
         full_flags |= M68K_SR_N;
     if ((size == SIZE_BYTE && (u8)src_ea.value == 0) ||
-        (size == SIZE_WORD && (u16)src_ea.value == 0) ||
-        (size == SIZE_LONG && src_ea.value == 0)) {
+        (size == SIZE_WORD && (u16)src_ea.value == 0) || (size == SIZE_LONG && src_ea.value == 0)) {
         full_flags |= M68K_SR_Z;
     }
 

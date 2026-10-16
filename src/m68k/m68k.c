@@ -993,9 +993,8 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
         /* Immediate ALU encodings with size code 3 belong to later
          * family members and are illegal here. */
-        if (((opcode >> 6) & 0x3) == 3 &&
-            (top4 == 0x0 || top4 == 0x2 || top4 == 0x4 || top4 == 0x6 || top4 == 0xA ||
-             top4 == 0xC)) {
+        if (((opcode >> 6) & 0x3) == 3 && (top4 == 0x0 || top4 == 0x2 || top4 == 0x4 ||
+                                           top4 == 0x6 || top4 == 0xA || top4 == 0xC)) {
             m68k_exception(cpu, 4);
             cycles = 34;
             goto done;
@@ -1172,35 +1171,35 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         }
 
         if (opcode == 0x4E74) {
-        /* A later-family instruction is illegal on the 68000. */
-        if (cpu->model < M68K_MODEL_68010) {
-            m68k_exception(cpu, 4);
-            cycles = 34;
-            goto done;
-        }
+            /* A later-family instruction is illegal on the 68000. */
+            if (cpu->model < M68K_MODEL_68010) {
+                m68k_exception(cpu, 4);
+                cycles = 34;
+                goto done;
+            }
             m68k_exec_rtd(cpu, opcode);
             cycles = 16;
             goto done;
         }
         if (opcode == 0x4E7A || opcode == 0x4E7B) {
-        /* A later-family instruction is illegal on the 68000. */
-        if (cpu->model < M68K_MODEL_68010) {
-            m68k_exception(cpu, 4);
-            cycles = 34;
-            goto done;
-        }
+            /* A later-family instruction is illegal on the 68000. */
+            if (cpu->model < M68K_MODEL_68010) {
+                m68k_exception(cpu, 4);
+                cycles = 34;
+                goto done;
+            }
             m68k_exec_movec(cpu, opcode);
             cycles = 12;
             goto done;
         }
 
         if ((opcode & 0xFFF8) == 0x4848) {
-        /* A later-family instruction is illegal on the 68000. */
-        if (cpu->model < M68K_MODEL_68010) {
-            m68k_exception(cpu, 4);
-            cycles = 34;
-            goto done;
-        }
+            /* A later-family instruction is illegal on the 68000. */
+            if (cpu->model < M68K_MODEL_68010) {
+                m68k_exception(cpu, 4);
+                cycles = 34;
+                goto done;
+            }
             m68k_exec_bkpt(cpu, opcode);
             cycles = 4;
             goto done;
@@ -1470,8 +1469,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         if ((opmode >= 4 && opmode <= 6) && (mode == 0 || mode == 1)) {
             m68k_exec_subx(cpu, opcode);
             M68kSize sxsz = (opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG;
-            cycles = (mode == 1) ? ((sxsz == SIZE_LONG) ? 16 : 8)
-                                 : ((sxsz == SIZE_LONG) ? 8 : 4);
+            cycles = (mode == 1) ? ((sxsz == SIZE_LONG) ? 16 : 8) : ((sxsz == SIZE_LONG) ? 8 : 4);
             goto done;
         }
         m68k_exec_sub(cpu, opcode);
@@ -1565,8 +1563,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         if ((opmode >= 4 && opmode <= 6) && (mode == 0 || mode == 1)) {
             m68k_exec_addx(cpu, opcode);
             M68kSize axsz = (opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG;
-            cycles = (mode == 1) ? ((axsz == SIZE_LONG) ? 16 : 8)
-                                 : ((axsz == SIZE_LONG) ? 8 : 4);
+            cycles = (mode == 1) ? ((axsz == SIZE_LONG) ? 16 : 8) : ((axsz == SIZE_LONG) ? 8 : 4);
             goto done;
         }
         m68k_exec_add(cpu, opcode);

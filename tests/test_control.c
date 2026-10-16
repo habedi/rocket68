@@ -210,7 +210,7 @@ void test_address_error_frame_pc(void) {
     cpu.a_regs[7].l = 0x1000;
     cpu.ssp = 0x1000;
     cpu.a_regs[5].l = 0x501;
-    m68k_write_32(&cpu, 3 * 4, 0x600); /* address error vector */
+    m68k_write_32(&cpu, 3 * 4, 0x600);  /* address error vector */
     m68k_write_16(&cpu, 0x100, 0x4A6D); /* TST.w (d16, A5) */
     m68k_write_16(&cpu, 0x102, 0x0010); /* d16 = 0x10, EA = 0x511 (odd) */
     cpu.pc = 0x100;
@@ -236,8 +236,8 @@ void test_address_error_frame_pc(void) {
     m68k_step(&cpu);
     assert(cpu.pc == 0x600);
     assert(cpu.a_regs[5].l == 0x503);
-    frame_pc = ((u32)memory[0xFFC] << 24) | ((u32)memory[0xFFD] << 16) |
-               ((u32)memory[0xFFE] << 8) | memory[0xFFF];
+    frame_pc = ((u32)memory[0xFFC] << 24) | ((u32)memory[0xFFD] << 16) | ((u32)memory[0xFFE] << 8) |
+               memory[0xFFF];
     assert(frame_pc == 0x102);
 
     /* TST.w -(A5) with an odd address: the predecrement is committed and
@@ -254,8 +254,8 @@ void test_address_error_frame_pc(void) {
     m68k_step(&cpu);
     assert(cpu.pc == 0x600);
     assert(cpu.a_regs[5].l == 0x501);
-    frame_pc = ((u32)memory[0xFFC] << 24) | ((u32)memory[0xFFD] << 16) |
-               ((u32)memory[0xFFE] << 8) | memory[0xFFF];
+    frame_pc = ((u32)memory[0xFFC] << 24) | ((u32)memory[0xFFD] << 16) | ((u32)memory[0xFFE] << 8) |
+               memory[0xFFF];
     assert(frame_pc == 0x104);
 
     printf("Address error frame PC test passed!\n");
@@ -464,7 +464,7 @@ void test_model_gating(void) {
     cpu.a_regs[7].l = 0x1000;
     cpu.ssp = 0x1000;
     cpu.d_regs[0].l = 0x800;
-    m68k_write_32(&cpu, 4 * 4, 0x600); /* illegal instruction vector */
+    m68k_write_32(&cpu, 4 * 4, 0x600);  /* illegal instruction vector */
     m68k_write_16(&cpu, 0x100, 0x4E7B); /* MOVEC D0, VBR */
     m68k_write_16(&cpu, 0x102, 0x0801);
     cpu.pc = 0x100;
@@ -544,7 +544,7 @@ void test_68010_sr_ccr(void) {
     cpu.a_regs[7].l = 0x2000;
     cpu.usp = 0x2000;
     cpu.ssp = 0x1000;
-    m68k_write_32(&cpu, 8 * 4, 0x600); /* privilege violation vector */
+    m68k_write_32(&cpu, 8 * 4, 0x600);  /* privilege violation vector */
     m68k_write_16(&cpu, 0x100, 0x40C0); /* MOVE SR, D0 */
     cpu.pc = 0x100;
     m68k_step(&cpu);
