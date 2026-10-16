@@ -83,7 +83,7 @@ static inline int bench_guard_exceeded(const char* core,
 }
 
 /* --------------------------------------------------------------------------
- * Workloads — identical programs for both Rocket68 and Musashi.
+ * The workloads use identical programs for Rocket68, Musashi, and Moira.
  * All use register-register or short (An) indirect addressing.
  *
  * Byte layout and displacement calculations are annotated inline.

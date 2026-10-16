@@ -81,10 +81,10 @@ typedef void (*M68kInstrHookCallback)(M68kCpu* cpu, u32 pc);
 typedef void (*M68kPcChangedCallback)(M68kCpu* cpu, u32 new_pc);
 /** @brief Reset callback. */
 typedef void (*M68kResetCallback)(M68kCpu* cpu);
-/** @brief TAS callback. Return non-zero to request TAS read-modify-write behavior override. */
+/** @brief TAS callback. Return nonzero to allow write-back, or zero to block it. */
 typedef int (*M68kTasCallback)(M68kCpu* cpu);
-/** @brief Illegal instruction callback. Return non-zero to signal handled/halt behavior in host
- * policy. */
+/** @brief Illegal instruction callback. Return nonzero to suppress vector 4 and continue execution.
+ * Line-A and line-F exceptions do not invoke this callback. */
 typedef int (*M68kIllgCallback)(M68kCpu* cpu, int opcode);
 /** @brief Host memory read callback (8-bit). */
 typedef u8 (*M68kRead8Callback)(M68kCpu* cpu, u32 address);
@@ -293,9 +293,10 @@ void m68k_set_ar(M68kCpu* cpu, int reg, u32 value);
 u32 m68k_get_ar(M68kCpu* cpu, int reg);
 
 /**
- * @brief Execute one instruction with optional trace/exception processing toggle.
+ * @brief Execute one instruction with optional interrupt and trace checks.
  * @param cpu CPU context.
- * @param check_exceptions If true, perform exception checks for this step.
+ * @param check_exceptions If true, check interrupts and deliver trace exceptions.
+ * Instruction-generated exceptions are processed regardless of this flag.
  */
 void m68k_step_ex(M68kCpu* cpu, bool check_exceptions);
 

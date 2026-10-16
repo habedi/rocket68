@@ -71,16 +71,7 @@ void test_movem(void) {
     // Opcode: 0100 1000 11 100 111 (0x48E7) -> MOVEM.L Reg->Mem PreDec(A7)
     m68k_write_16(&cpu, 0, 0x48E7);
 
-    // Mask: D0, D1, A0.
-    // Reversed for PreDec:
-    // A7...A1 A0 D7...D2 D1 D0
-    // 0...0   1  0...0   1  1
-    // Bits: 15..0
-    // Mask: 0000 0000 1000 0011 -> 0x0083?
-    // Bit 15: D0 (1). Bit 14: D1 (1). Bit 13: D2 (0)... Bit 8: D7.
-    // Bit 7: A0 (1). Bit 6: A1 (0)... Bit 0: A7.
-    // So bits set: 15, 14, 7.
-    // 1100 0000 1000 0000 -> 0xC080.
+    // The predecrement mask uses bits 15, 14, and 7 for D0, D1, and A0: 0xC080.
     m68k_write_16(&cpu, 2, 0xC080);
 
     m68k_step(&cpu);

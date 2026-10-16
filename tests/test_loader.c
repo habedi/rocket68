@@ -331,9 +331,7 @@ void test_disasm(void) {
     m68k_init(&cpu, memory, sizeof(memory));
 
     // Write some opcodes
-    m68k_write_16(&cpu, 0, 0xD040);  // ADD.W D0, D1 ? (ADD 1101 000 001 000 001 ? )
-    // ADD D0, D1: 1101 001 001 000 000 -> D240?
-    // D040 -> 1101 0000 0100 0000. D0, opmode 0(byte), ea mode 2(A0)?
+    m68k_write_16(&cpu, 0, 0xD040);  // ADD.W D0, D0.
 
     m68k_write_16(&cpu, 2, 0x4E75);
 
@@ -371,8 +369,7 @@ void test_disasm_full(void) {
     assert(strstr(buf, "(A0)"));
     assert(strstr(buf, "(A1)+"));
 
-    // 3. BRA $10 (Offset 14 -> +16 = $10 ? No. PC+2+Disp)
-    // PC=8. Next=10. Target=20 ($14). Disp=10 ($A).
+    // 3. BRA $14 from PC 8 with displacement 10: 8 + 2 + 10 = 20.
     m68k_write_16(&cpu, 8, 0x600A);
     m68k_disasm(&cpu, 8, buf, sizeof(buf));
     printf("Disasm BRA: %s\n", buf);

@@ -2,6 +2,11 @@ const std = @import("std");
 const builtin = @import("builtin");
 
 fn rootPathExists(b: *std.Build, rel_path: []const u8) bool {
+    if (comptime @hasField(std.Build, "root")) {
+        b.dependOnDirectoryMetadata(b.path(rel_path));
+        b.root.access(b.graph.io, rel_path, .{}) catch return false;
+        return true;
+    }
     const abs_path = b.pathFromRoot(rel_path);
     // Zig 0.16 removed std.fs.accessAbsolute in favor of the std.Io interface.
     if (comptime @hasDecl(std.fs, "accessAbsolute")) {
@@ -87,7 +92,7 @@ pub fn build(b: *std.Build) void {
     wasm_mod.addIncludePath(b.path("include"));
     wasm_mod.link_libc = true;
 
-    // Include core CPU files only (no `loader.c` and `disasm.c` because they use file I/O)
+    // Include only the CPU core; omit the loader and disassembler utilities.
     const wasm_src_files = &.{
         "src/m68k/m68k.c",
         "src/m68k/ops_arith.c",
@@ -97,7 +102,7 @@ pub fn build(b: *std.Build) void {
         "src/m68k/ops_move.c",
     };
 
-    // Enable setjmp/longjmp via the WASM exception handling proposal
+    // Enable native WASM setjmp/longjmp only on compiler versions that support this path.
     const wasm_c_flags: []const []const u8 = if (wasm_native_sjlj) &.{
         "-std=c11",
         "-Wall",
@@ -168,6 +173,7 @@ pub fn build(b: *std.Build) void {
             "tests/test_arith.c",
             "tests/test_control.c",
             "tests/test_core.c",
+            "tests/test_disasm_bounds.c",
             "tests/test_integration.c",
             "tests/test_loader.c",
             "tests/test_logic.c",

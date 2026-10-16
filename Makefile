@@ -4,6 +4,9 @@
 CC       := gcc # Change to `clang` if needed
 CXX      := g++
 AR       := ar
+ZIG ?= $(shell command -v "$(HOME)/.local/share/zig/0.17.0/zig" || command -v zig)
+ZIG_OPTIMIZE ?= Debug
+ZIG_BUILD_OPTS = -Doptimize=$(ZIG_OPTIMIZE)
 
 # Set BUILD_TYPE=release for an optimized build
 BUILD_TYPE ?= debug
@@ -228,7 +231,7 @@ coverage: $(COVERAGE_TEST_BINARY) ## Generate code coverage report
 	gcov -o $(COVERAGE_TARGET_DIR)/m68k $(wildcard $(SRC_DIR)/m68k/*.c)
 
 .PHONY: bench
-bench: $(BIN_DIR)/benchmark_rocket68 $(BIN_DIR)/benchmark_musashi $(BIN_DIR)/benchmark_moira ## Run benchmarks comparing Rocket68 to Musashi and Moira
+bench: $(BIN_DIR)/benchmark_rocket68 $(BIN_DIR)/benchmark_musashi $(BIN_DIR)/benchmark_moira ## Run benchmarks comparing Rocket 68 to Musashi and Moira
 	@tmp_r=$$(mktemp); tmp_mu=$$(mktemp); tmp_mo=$$(mktemp); \
 	echo "--- Rocket68 Benchmark ---"; \
 	./$(BIN_DIR)/benchmark_rocket68 | tee "$$tmp_r"; \
@@ -239,7 +242,7 @@ bench: $(BIN_DIR)/benchmark_rocket68 $(BIN_DIR)/benchmark_musashi $(BIN_DIR)/ben
 	echo ""; \
 	echo "=== Comparison Summary ==="; \
 	echo ""; \
-	printf "  %-20s  %14s  %14s  %14s\n" "Workload" "Rocket68" "Musashi" "Moira"; \
+	printf "  %-20s  %14s  %14s  %14s\n" "Workload" "Rocket 68" "Musashi" "Moira"; \
 	printf "  %-20s  %14s  %14s  %14s\n" "--------------------" "--------------" "--------------" "--------------"; \
 	awk ' \
 	  /iter\/s/ { split($$0, a, "~"); gsub(/\)/, "", a[2]); gsub(/^[ \t]+/, "", a[2]); rate = a[2]; match($$0, /[0-9]+\.[0-9]+ s/); name = substr($$0, 1, RSTART-1); gsub(/^[ \t]+|[ \t]+$$/, "", name) } \
@@ -275,20 +278,26 @@ $(BIN_DIR)/benchmark_moira: benches/benchmark_moira.cpp external/moira/Moira/Moi
 	@$(CXX) $(MOIRA_BENCH_CXXFLAGS) -Iexternal/moira/Moira benches/benchmark_moira.cpp \
 	external/moira/Moira/Moira.cpp external/moira/Moira/MoiraDebugger.cpp -o $(BIN_DIR)/benchmark_moira
 
+.PHONY: zig-build
+zig-build: ## Build the static library using Zig build system
+	$(ZIG) build $(ZIG_BUILD_OPTS)
+
 .PHONY: zig-test-unit
 zig-test-unit: ## Run unit tests using Zig build system
 	@echo "Running unit tests with zig build..."
-	zig build test-unit
+	$(ZIG) build test-unit $(ZIG_BUILD_OPTS)
 
 .PHONY: zig-wasm
+zig-wasm: ZIG_OPTIMIZE = ReleaseFast
 zig-wasm: ## Build Rocket 68 (excluding loader/dissembler) as a WASM library using Zig build system
 	@echo "Building WASM library with zig build..."
-	zig build wasm -Doptimize=ReleaseFast
+	$(ZIG) build wasm $(ZIG_BUILD_OPTS)
 
 .PHONY: zig-bench
+zig-bench: ZIG_OPTIMIZE = ReleaseFast
 zig-bench: ## Run benchmarks using Zig build system
 	@echo "Running benchmarks with zig build..."
-	zig build bench -Doptimize=ReleaseFast
+	$(ZIG) build bench $(ZIG_BUILD_OPTS)
 
 .PHONY: clean
 clean: ## Remove all build artifacts

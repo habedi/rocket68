@@ -177,9 +177,8 @@ void test_shift_rotate(void) {
     assert((cpu.sr & M68K_SR_C) == 0);
 
     // 2. LSL.B #1, D0
-    // D0 = 0x80. Result = 0. C = 1.
-    // 1110 001 1 00 0 01 000 (0xE308?). d=1(L), sz=0(B).
-    // D0 = 129 (0x81). << 1 = 0x02. C = 1 (0x80 out).
+    // D0 = 0x81. Result = 0x02, and C = 1 because bit 7 shifts out.
+    // 1110 001 1 00 0 01 000 (0xE308). d=1(L), sz=0(B).
     m68k_set_dr(&cpu, 0, 0x81);
     m68k_write_16(&cpu, 2, 0xE308);
     m68k_step(&cpu);

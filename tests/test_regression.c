@@ -828,9 +828,7 @@ void test_regression_movem_predec_writes_initial_an(void) {
     /* MOVEM.L A0,-(A0): should write the INITIAL value of A0, not decremented */
     cpu.a_regs[0].l = 0x200;
 
-    /* 48E0 0100 = MOVEM.L A0,-(A0) — register mask 0x0100 = bit 8 = A0 reversed */
-    /* In predecrement mode the mask is reversed: bit 0=A7 ... bit 7=A0 bit 8=D7 ... bit 15=D0 */
-    /* A0 in reversed mask = bit 7 = 0x0080 */
+    /* 48E0 0080 encodes MOVEM.L A0,-(A0). The reversed mask uses bit 7 for A0. */
     m68k_write_16(&cpu, 0, 0x48E0);
     m68k_write_16(&cpu, 2, 0x0080);
     m68k_step(&cpu);
@@ -1446,13 +1444,6 @@ void test_regression_movem_cycles(void) {
     printf("Regression: MOVEM cycles test passed!\n");
 }
 
-/* The exception latch is cleared before each instruction, so the exception
- * cycle costs are charged to the instruction that raises them and to no
- * other. Before this was fixed the latch held the first exception's vector
- * for the rest of the run: any interrupt disabled the correction for every
- * later zero divide, CHK, TRAPV and privilege violation, and a zero divide
- * left every following instruction charged the zero divide's cost. A CPU
- * built fresh for each case cannot see either half. */
 void test_regression_exception_latch_is_per_instruction(void) {
     M68kCpu cpu;
     u8 memory[4096];
@@ -1468,7 +1459,6 @@ void test_regression_exception_latch_is_per_instruction(void) {
     m68k_write_32(&cpu, 5 * 4, 0x300);        /* zero divide vector */
     m68k_write_32(&cpu, (24 + 4) * 4, 0x400); /* level 4 autovector */
 
-    /* A zero divide costs 38 with no exception taken beforehand. */
     cpu.pc = 0x100;
     cpu.d_regs[0].l = 0;
     cpu.d_regs[1].l = 100;
@@ -1478,7 +1468,6 @@ void test_regression_exception_latch_is_per_instruction(void) {
     assert(cpu.pc == 0x300);
     assert(cycles == 38);
 
-    /* The instruction after it is charged its own cost, not the divide's. */
     cpu.pc = 0x200;
     m68k_write_16(&cpu, 0x200, 0x4E71); /* NOP */
     m68k_end_timeslice(&cpu);
@@ -1486,10 +1475,8 @@ void test_regression_exception_latch_is_per_instruction(void) {
     assert(cpu.pc == 0x202);
     assert(cycles == 4);
 
-    /* An interrupt leaves no latch behind either: the zero divide after it
-     * still costs 38. */
     cpu.pc = 0x100;
-    m68k_write_16(&cpu, 0x100, 0x4E71); /* NOP, interrupted before it runs */
+    m68k_write_16(&cpu, 0x100, 0x4E71); /* NOP */
     m68k_set_irq(&cpu, 4);
     m68k_end_timeslice(&cpu);
     cycles = m68k_execute(&cpu, 44);
