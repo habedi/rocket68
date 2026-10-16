@@ -3,20 +3,26 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    zig-overlay = {
+      url = "github:mitchellh/zig-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs }:
+  outputs = { self, nixpkgs, zig-overlay }:
     let
-      supportedSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
+      supportedSystems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
     in
     {
       devShells = forAllSystems (system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
+          zigCompiler = zig-overlay.packages.${system}."0.17.0";
         in
         {
           default = pkgs.mkShell {
+            ZIG = "${zigCompiler}/bin/zig";
             packages = with pkgs; [
               # C Toolchain & Build
               gcc
@@ -25,11 +31,9 @@
               # Linting, Formatting & Debugging
               clang-tools
               cppcheck
-              valgrind
-              gdb
 
               # Alternative tools you support
-              zig
+              zigCompiler
 
               # Development Utilities
               pre-commit
@@ -38,7 +42,7 @@
               # Documentation
               doxygen
               (python3.withPackages (ps: with ps; [ mkdocs mkdocs-material mkdocstrings-python ]))
-            ];
+            ] ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.valgrind pkgs.gdb ];
           };
         }
       );

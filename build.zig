@@ -2,6 +2,11 @@ const std = @import("std");
 const builtin = @import("builtin");
 
 fn rootPathExists(b: *std.Build, rel_path: []const u8) bool {
+    if (comptime @hasField(std.Build, "root")) {
+        b.dependOnDirectoryMetadata(b.path(rel_path));
+        b.root.access(b.graph.io, rel_path, .{}) catch return false;
+        return true;
+    }
     const abs_path = b.pathFromRoot(rel_path);
     // Zig 0.16 removed std.fs.accessAbsolute in favor of the std.Io interface.
     if (comptime @hasDecl(std.fs, "accessAbsolute")) {
@@ -168,6 +173,7 @@ pub fn build(b: *std.Build) void {
             "tests/test_arith.c",
             "tests/test_control.c",
             "tests/test_core.c",
+            "tests/test_disasm_bounds.c",
             "tests/test_integration.c",
             "tests/test_loader.c",
             "tests/test_logic.c",

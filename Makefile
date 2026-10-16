@@ -4,6 +4,9 @@
 CC       := gcc # Change to `clang` if needed
 CXX      := g++
 AR       := ar
+ZIG ?= $(shell command -v "$(HOME)/.local/share/zig/0.17.0/zig" || command -v zig)
+ZIG_OPTIMIZE ?= Debug
+ZIG_BUILD_OPTS = -Doptimize=$(ZIG_OPTIMIZE)
 
 # Set BUILD_TYPE=release for an optimized build
 BUILD_TYPE ?= debug
@@ -275,20 +278,26 @@ $(BIN_DIR)/benchmark_moira: benches/benchmark_moira.cpp external/moira/Moira/Moi
 	@$(CXX) $(MOIRA_BENCH_CXXFLAGS) -Iexternal/moira/Moira benches/benchmark_moira.cpp \
 	external/moira/Moira/Moira.cpp external/moira/Moira/MoiraDebugger.cpp -o $(BIN_DIR)/benchmark_moira
 
+.PHONY: zig-build
+zig-build: ## Build the static library using Zig build system
+	$(ZIG) build $(ZIG_BUILD_OPTS)
+
 .PHONY: zig-test-unit
 zig-test-unit: ## Run unit tests using Zig build system
 	@echo "Running unit tests with zig build..."
-	zig build test-unit
+	$(ZIG) build test-unit $(ZIG_BUILD_OPTS)
 
 .PHONY: zig-wasm
+zig-wasm: ZIG_OPTIMIZE = ReleaseFast
 zig-wasm: ## Build Rocket 68 (excluding loader/dissembler) as a WASM library using Zig build system
 	@echo "Building WASM library with zig build..."
-	zig build wasm -Doptimize=ReleaseFast
+	$(ZIG) build wasm $(ZIG_BUILD_OPTS)
 
 .PHONY: zig-bench
+zig-bench: ZIG_OPTIMIZE = ReleaseFast
 zig-bench: ## Run benchmarks using Zig build system
 	@echo "Running benchmarks with zig build..."
-	zig build bench -Doptimize=ReleaseFast
+	$(ZIG) build bench $(ZIG_BUILD_OPTS)
 
 .PHONY: clean
 clean: ## Remove all build artifacts
