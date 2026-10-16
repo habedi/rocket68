@@ -231,7 +231,7 @@ coverage: $(COVERAGE_TEST_BINARY) ## Generate code coverage report
 	gcov -o $(COVERAGE_TARGET_DIR)/m68k $(wildcard $(SRC_DIR)/m68k/*.c)
 
 .PHONY: bench
-bench: $(BIN_DIR)/benchmark_rocket68 $(BIN_DIR)/benchmark_musashi $(BIN_DIR)/benchmark_moira ## Run benchmarks comparing Rocket68 to Musashi and Moira
+bench: $(BIN_DIR)/benchmark_rocket68 $(BIN_DIR)/benchmark_musashi $(BIN_DIR)/benchmark_moira ## Run benchmarks comparing Rocket 68 to Musashi and Moira
 	@tmp_r=$$(mktemp); tmp_mu=$$(mktemp); tmp_mo=$$(mktemp); \
 	echo "--- Rocket68 Benchmark ---"; \
 	./$(BIN_DIR)/benchmark_rocket68 | tee "$$tmp_r"; \
@@ -242,7 +242,7 @@ bench: $(BIN_DIR)/benchmark_rocket68 $(BIN_DIR)/benchmark_musashi $(BIN_DIR)/ben
 	echo ""; \
 	echo "=== Comparison Summary ==="; \
 	echo ""; \
-	printf "  %-20s  %14s  %14s  %14s\n" "Workload" "Rocket68" "Musashi" "Moira"; \
+	printf "  %-20s  %14s  %14s  %14s\n" "Workload" "Rocket 68" "Musashi" "Moira"; \
 	printf "  %-20s  %14s  %14s  %14s\n" "--------------------" "--------------" "--------------" "--------------"; \
 	awk ' \
 	  /iter\/s/ { split($$0, a, "~"); gsub(/\)/, "", a[2]); gsub(/^[ \t]+/, "", a[2]); rate = a[2]; match($$0, /[0-9]+\.[0-9]+ s/); name = substr($$0, 1, RSTART-1); gsub(/^[ \t]+|[ \t]+$$/, "", name) } \
