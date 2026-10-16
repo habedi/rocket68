@@ -828,9 +828,7 @@ void test_regression_movem_predec_writes_initial_an(void) {
     /* MOVEM.L A0,-(A0): should write the INITIAL value of A0, not decremented */
     cpu.a_regs[0].l = 0x200;
 
-    /* 48E0 0100 = MOVEM.L A0,-(A0) — register mask 0x0100 = bit 8 = A0 reversed */
-    /* In predecrement mode the mask is reversed: bit 0=A7 ... bit 7=A0 bit 8=D7 ... bit 15=D0 */
-    /* A0 in reversed mask = bit 7 = 0x0080 */
+    /* 48E0 0080 encodes MOVEM.L A0,-(A0). The reversed mask uses bit 7 for A0. */
     m68k_write_16(&cpu, 0, 0x48E0);
     m68k_write_16(&cpu, 2, 0x0080);
     m68k_step(&cpu);

@@ -19,9 +19,9 @@
  * A disassembled line is built from three fixed-size scratch buffers, one for an
  * effective address, one for a mnemonic, and one for an argument list. The longest
  * string any addressing mode can produce is "$FFFFFFFF(PC)" at 13 characters, and the
- * longest mnemonic is "MOVEM.L" at 7, so both buffers carry about 10 characters of
- * slack. `tests/test_disasm_bounds.c` enforces those maxima over the whole opcode
- * space.
+ * longest mnemonic is "MOVEM.L" at 7. Both buffers have room for a terminator and
+ * additional characters. `tests/test_disasm_bounds.c` checks mnemonic and argument
+ * lengths over the whole opcode space with selected extension words.
  */
 #define DISASM_EA_SIZE 24
 #define DISASM_OP_SIZE 32
@@ -36,7 +36,7 @@
 _Static_assert(2 * DISASM_EA_SIZE + sizeof(", ") <= DISASM_ARGS_SIZE,
                "args buffer must hold two effective addresses plus a separator");
 
-/* Side-effect-free instruction peek: no wait states, no faults, no cycles. */
+/* Bypasses CPU wait states, faults, and cycle accounting; host read callbacks still run. */
 static u16 peek_word(M68kCpu* cpu, u32 pc) {
     u32 address = pc & 0x00FFFFFFu;
     if (cpu->read16_cb) {

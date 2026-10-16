@@ -133,6 +133,7 @@ Invalid register indexes are ignored on set and return `0` on get.
 ### `void m68k_step_ex(M68kCpu* cpu, bool check_exceptions);`
 
 Executes one instruction with optional interrupt/trace checks.
+Instruction-generated exceptions are processed even when `check_exceptions` is false.
 
 ### `void m68k_step(M68kCpu* cpu);`
 
@@ -292,7 +293,8 @@ Malformed records, including records with checksum mismatches, are reported to `
 
 Disassembles one instruction at `pc` into `buffer`.
 Returns number of bytes consumed by that instruction.
-Disassembly is side-effect free: it does not charge wait states or cycles, and it does not raise address or bus errors.
+Disassembly bypasses CPU wait states, cycle accounting, and address or bus errors.
+Host memory read callbacks still run and may have their own side effects.
 
 ## Version
 

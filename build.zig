@@ -92,7 +92,7 @@ pub fn build(b: *std.Build) void {
     wasm_mod.addIncludePath(b.path("include"));
     wasm_mod.link_libc = true;
 
-    // Include core CPU files only (no `loader.c` and `disasm.c` because they use file I/O)
+    // Include only the CPU core; omit the loader and disassembler utilities.
     const wasm_src_files = &.{
         "src/m68k/m68k.c",
         "src/m68k/ops_arith.c",
@@ -102,7 +102,7 @@ pub fn build(b: *std.Build) void {
         "src/m68k/ops_move.c",
     };
 
-    // Enable setjmp/longjmp via the WASM exception handling proposal
+    // Enable native WASM setjmp/longjmp only on compiler versions that support this path.
     const wasm_c_flags: []const []const u8 = if (wasm_native_sjlj) &.{
         "-std=c11",
         "-Wall",
