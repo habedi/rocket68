@@ -46,11 +46,21 @@ void m68k_exec_add(M68kCpu* cpu, u16 opcode) {
     }
 
     if (opmode == 3 || opmode == 7) {
+        if (mode == 7 && reg > 4) {
+            m68k_exception(cpu, 4);
+            return;
+        }
         M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
         u32 src = ea.value;
         if (size == SIZE_WORD) src = (s32)(s16)src;
 
         cpu->a_regs[reg_idx].l += src;
+        return;
+    }
+
+    if ((dir_reg_to_ea && (mode < 2 || (mode == 7 && reg > 1))) ||
+        (!dir_reg_to_ea && ((mode == 1 && size == SIZE_BYTE) || (mode == 7 && reg > 4)))) {
+        m68k_exception(cpu, 4);
         return;
     }
 
@@ -123,11 +133,21 @@ void m68k_exec_sub(M68kCpu* cpu, u16 opcode) {
     }
 
     if (opmode == 3 || opmode == 7) {
+        if (mode == 7 && reg > 4) {
+            m68k_exception(cpu, 4);
+            return;
+        }
         M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
         u32 src = ea.value;
         if (size == SIZE_WORD) src = (s32)(s16)src;
 
         cpu->a_regs[reg_idx].l -= src;
+        return;
+    }
+
+    if ((dir_reg_to_ea && (mode < 2 || (mode == 7 && reg > 1))) ||
+        (!dir_reg_to_ea && ((mode == 1 && size == SIZE_BYTE) || (mode == 7 && reg > 4)))) {
+        m68k_exception(cpu, 4);
         return;
     }
 
@@ -176,10 +196,18 @@ void m68k_exec_addq(M68kCpu* cpu, u16 opcode) {
     int reg = opcode & 0x7;
 
     if (mode == 1) {
-        if (size == SIZE_BYTE) return;
+        if (size == SIZE_BYTE) {
+            m68k_exception(cpu, 4);
+            return;
+        }
 
         u32 val = cpu->a_regs[reg].l;
         cpu->a_regs[reg].l = val + data;
+        return;
+    }
+
+    if (mode == 7 && reg > 1) {
+        m68k_exception(cpu, 4);
         return;
     }
 
@@ -217,10 +245,18 @@ void m68k_exec_subq(M68kCpu* cpu, u16 opcode) {
     int reg = opcode & 0x7;
 
     if (mode == 1) {
-        if (size == SIZE_BYTE) return;
+        if (size == SIZE_BYTE) {
+            m68k_exception(cpu, 4);
+            return;
+        }
 
         u32 val = cpu->a_regs[reg].l;
         cpu->a_regs[reg].l = val - data;
+        return;
+    }
+
+    if (mode == 7 && reg > 1) {
+        m68k_exception(cpu, 4);
         return;
     }
 
@@ -377,6 +413,11 @@ void m68k_exec_mul(M68kCpu* cpu, u16 opcode) {
 
     bool is_signed = (opmode == 7);
 
+    if (mode == 1 || (mode == 7 && reg > 4)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
     M68kSize size = SIZE_WORD;
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
 
@@ -416,6 +457,11 @@ void m68k_exec_div(M68kCpu* cpu, u16 opcode) {
     int reg = opcode & 0x7;
 
     bool is_signed = (opmode == 7);
+
+    if (mode == 1 || (mode == 7 && reg > 4)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
 
     M68kSize size = SIZE_WORD;
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
@@ -567,6 +613,12 @@ void m68k_exec_cmp(M68kCpu* cpu, u16 opcode) {
         update_flags_cmp(cpu, src_val, dest_val, result, size);
         return;
     } else {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
+    if ((mode == 1 && size == SIZE_BYTE && opmode != 3 && opmode != 7) || (mode == 7 && reg > 4)) {
+        m68k_exception(cpu, 4);
         return;
     }
 
@@ -609,6 +661,11 @@ void m68k_exec_cmpi(M68kCpu* cpu, u16 opcode) {
     else
         return;
 
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
     u32 src;
     if (size == SIZE_LONG) {
         u32 high = m68k_fetch(cpu);
@@ -648,6 +705,11 @@ void m68k_exec_neg(M68kCpu* cpu, u16 opcode) {
             break;
         default:
             return;
+    }
+
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
     }
 
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
@@ -801,6 +863,11 @@ void m68k_exec_nbcd(M68kCpu* cpu, u16 opcode) {
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
 
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_BYTE);
     u32 dest = ea.value & 0xFF;
     u32 x = (cpu->sr & M68K_SR_X) ? 1 : 0;
@@ -853,6 +920,13 @@ void m68k_exec_addi(M68kCpu* cpu, u16 opcode) {
             return;
     }
 
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
     u32 imm;
     if (size == SIZE_BYTE) {
         imm = m68k_fetch(cpu) & 0xFF;
@@ -862,8 +936,6 @@ void m68k_exec_addi(M68kCpu* cpu, u16 opcode) {
         imm = ((u32)m68k_fetch(cpu) << 16) | m68k_fetch(cpu);
     }
 
-    int mode = (opcode >> 3) & 0x7;
-    int reg = opcode & 0x7;
     /* The immediate fetch cost is spent before EA resolution, so it
      * survives a faulted operand access. */
     cpu->cycles_remaining -= (((opcode >> 6) & 0x3) == 2) ? 8 : 4;
@@ -898,6 +970,13 @@ void m68k_exec_subi(M68kCpu* cpu, u16 opcode) {
             return;
     }
 
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
     u32 imm;
     if (size == SIZE_BYTE) {
         imm = m68k_fetch(cpu) & 0xFF;
@@ -907,8 +986,6 @@ void m68k_exec_subi(M68kCpu* cpu, u16 opcode) {
         imm = ((u32)m68k_fetch(cpu) << 16) | m68k_fetch(cpu);
     }
 
-    int mode = (opcode >> 3) & 0x7;
-    int reg = opcode & 0x7;
     /* The immediate fetch cost is spent before EA resolution, so it
      * survives a faulted operand access. */
     cpu->cycles_remaining -= (((opcode >> 6) & 0x3) == 2) ? 8 : 4;
@@ -945,6 +1022,10 @@ void m68k_exec_negx(M68kCpu* cpu, u16 opcode) {
 
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
     u32 src = ea.value;
     u32 x = (cpu->sr & M68K_SR_X) ? 1 : 0;
@@ -983,11 +1064,4 @@ void m68k_exec_negx(M68kCpu* cpu, u16 opcode) {
         cpu->sr |= M68K_SR_C;
         cpu->sr |= M68K_SR_X;
     }
-}
-
-void m68k_exec_extb(M68kCpu* cpu, u16 opcode) {
-    int reg = opcode & 0x7;
-    s8 byte_val = (s8)(cpu->d_regs[reg].l & 0xFF);
-    cpu->d_regs[reg].l = (u32)(s32)byte_val;
-    update_flags_logic(cpu, cpu->d_regs[reg].l, SIZE_LONG);
 }

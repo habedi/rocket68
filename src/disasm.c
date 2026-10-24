@@ -619,7 +619,9 @@ int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size) {
             len += ea_bytes;
         }
 
-        else if ((opcode & 0xF1C0) == 0x41C0) {
+        else if ((opcode & 0xF1C0) == 0x41C0 &&
+                 (((opcode >> 3) & 7) == 2 ||
+                  (((opcode >> 3) & 7) >= 5 && !(((opcode >> 3) & 7) == 7 && (opcode & 7) > 3)))) {
             snprintf(op, DISASM_OP_SIZE, "LEA");
             int reg = (opcode >> 9) & 7;
             char ea_buf[DISASM_EA_SIZE];
@@ -684,8 +686,6 @@ int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size) {
             int ea_bytes = disasm_ea(cpu, pc + 2, (opcode >> 3) & 7, opcode & 7, size, ea_buf);
             snprintf(args, DISASM_ARGS_SIZE, "%s", ea_buf);
             len += ea_bytes;
-        } else {
-            snprintf(op, DISASM_OP_SIZE, "MISC");
         }
     }
 

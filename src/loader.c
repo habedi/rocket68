@@ -16,6 +16,13 @@ static int hex_val(char c) {
     return 0;
 }
 
+static bool is_valid_hex(const char* ptr, size_t digits) {
+    for (size_t i = 0; i < digits; i++) {
+        if (!isxdigit((unsigned char)ptr[i])) return false;
+    }
+    return true;
+}
+
 static u8 parse_byte(const char* ptr) { return (hex_val(ptr[0]) << 4) | hex_val(ptr[1]); }
 
 /* Loading is a host-side operation: write directly into bound flat memory
@@ -51,10 +58,18 @@ bool m68k_load_srec(M68kCpu* cpu, const char* filename) {
         if (line[0] != 'S') continue;
 
         char type = line[1];
+        if (!is_valid_hex(&line[2], 2)) {
+            fprintf(stderr, "Line %d: Invalid hex character in count\n", line_num);
+            continue;
+        }
         int count = parse_byte(&line[2]);
 
         if ((int)len < 4 + count * 2) {
             fprintf(stderr, "Line %d: Line too short for count %d\n", line_num, count);
+            continue;
+        }
+        if (!is_valid_hex(&line[2], (size_t)(count + 1) * 2)) {
+            fprintf(stderr, "Line %d: Invalid hex character in record\n", line_num);
             continue;
         }
 
@@ -98,6 +113,11 @@ bool m68k_load_srec(M68kCpu* cpu, const char* filename) {
             default:
                 fprintf(stderr, "Line %d: Unknown S-Type S%c\n", line_num, type);
                 continue;
+        }
+
+        if (count < addr_len + 1) {
+            fprintf(stderr, "Line %d: Count %d too small for S%c record\n", line_num, count, type);
+            continue;
         }
 
         for (int i = 0; i < addr_len; i++) {
@@ -187,6 +207,10 @@ bool m68k_load_ihex(M68kCpu* cpu, const char* filename) {
             fprintf(stderr, "Line %d: Record too short\n", line_num);
             continue;
         }
+        if (!is_valid_hex(&line[1], 8)) {
+            fprintf(stderr, "Line %d: Invalid hex character in header\n", line_num);
+            continue;
+        }
 
         int count = parse_byte(&line[1]);
         u32 offset = ((u32)parse_byte(&line[3]) << 8) | parse_byte(&line[5]);
@@ -194,6 +218,10 @@ bool m68k_load_ihex(M68kCpu* cpu, const char* filename) {
 
         if ((int)len < 11 + count * 2) {
             fprintf(stderr, "Line %d: Record too short for count %d\n", line_num, count);
+            continue;
+        }
+        if (!is_valid_hex(&line[1], (size_t)(count + 5) * 2)) {
+            fprintf(stderr, "Line %d: Invalid hex character in record\n", line_num);
             continue;
         }
 

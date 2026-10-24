@@ -101,6 +101,8 @@ bool m68k_check_condition(M68kCpu* cpu, int condition);
 
 void m68k_exception(M68kCpu* cpu, int vector);
 void m68k_raise_odd_target_fault(M68kCpu* cpu, u32 target, u32 fault_pc);
+void m68k_raise_bus_target_fault(M68kCpu* cpu, u32 target, u32 fault_pc);
+bool m68k_is_unmapped_target(M68kCpu* cpu, u32 target);
 void m68k_raise_illegal_ea(M68kCpu* cpu);
 
 void update_flags_logic(M68kCpu* cpu, u32 result, M68kSize size);
@@ -123,7 +125,6 @@ void m68k_exec_cmpi(M68kCpu* cpu, u16 opcode);
 void m68k_exec_neg(M68kCpu* cpu, u16 opcode);
 void m68k_exec_negx(M68kCpu* cpu, u16 opcode);
 void m68k_exec_ext(M68kCpu* cpu, u16 opcode);
-void m68k_exec_extb(M68kCpu* cpu, u16 opcode);
 void m68k_exec_abcd(M68kCpu* cpu, u16 opcode);
 void m68k_exec_sbcd(M68kCpu* cpu, u16 opcode);
 void m68k_exec_nbcd(M68kCpu* cpu, u16 opcode);

@@ -120,5 +120,12 @@ void test_regression_movem_cycles(void);
 void test_regression_exception_latch_is_per_instruction(void);
 void test_disasm_buffer_bounds(void);
 void test_disasm_truncates_small_buffers(void);
+void test_regression_moves_mem_to_reg_and_validation(void);
+void test_regression_extb_is_illegal_on_68000(void);
+void test_regression_illegal_ea_modes_trap(void);
+void test_regression_target_bus_error_on_control_flow(void);
+void test_regression_group0_fault_suppresses_trace(void);
+void test_regression_save_state_preserves_model(void);
+void test_regression_loader_validates_hex_and_count(void);
 
 #endif

@@ -26,9 +26,10 @@ void m68k_exec_move(M68kCpu* cpu, u16 opcode) {
     int src_mode = (opcode >> 3) & 0x7;
     int src_reg = opcode & 0x7;
 
-    /* PC-relative, immediate, and reserved destinations are invalid
+    /* PC-relative, immediate, and reserved destinations, as well as
+     * MOVEA.B (byte destination to an address register), are invalid
      * encodings and trap before any state changes. */
-    if (dest_mode == 7 && dest_reg > 1) {
+    if ((dest_mode == 7 && dest_reg > 1) || (dest_mode == 1 && size == SIZE_BYTE)) {
         m68k_exception(cpu, 4);
         return;
     }
@@ -230,6 +231,15 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
 
+    bool invalid_ea =
+        (mode < 2) || (mode == 7 && reg == 4) || (mode == 7 && reg > 4) ||
+        (dir_mem_to_reg && mode == 4) ||
+        (!dir_mem_to_reg && (mode == 3 || (mode == 7 && (reg == 2 || reg == 3))));
+    if (invalid_ea) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
     u16 mask = m68k_fetch(cpu);
 
     M68kSize size = size_long ? SIZE_LONG : SIZE_WORD;
@@ -237,11 +247,6 @@ void m68k_exec_movem(M68kCpu* cpu, u16 opcode) {
 
     u32 addr = 0;
     M68kEA ea;
-
-    if (dir_mem_to_reg && mode == 4) {
-        m68k_exception(cpu, 4);
-        return;
-    }
 
     if ((mode == 4 && !dir_mem_to_reg) || mode == 3) {
         /* The postincrement writeback commits only after the transfer
@@ -366,28 +371,35 @@ void m68k_exec_swap(M68kCpu* cpu, u16 opcode) {
 }
 
 void m68k_exec_move_sr(M68kCpu* cpu, u16 opcode) {
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+
     if ((opcode & 0xFFC0) == 0x46C0) {
+        if (mode == 1 || (mode == 7 && reg > 4)) {
+            m68k_exception(cpu, 4);
+            return;
+        }
         if (!(cpu->sr & M68K_SR_S)) {
             cpu->pc -= 2;
             m68k_exception(cpu, 8);
             return;
         }
-        int mode = (opcode >> 3) & 0x7;
-        int reg = opcode & 0x7;
         M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_WORD);
         m68k_set_sr(cpu, ea.value);
         return;
     }
 
     if ((opcode & 0xFFC0) == 0x40C0) {
+        if (mode == 1 || (mode == 7 && reg > 1)) {
+            m68k_exception(cpu, 4);
+            return;
+        }
         /* MOVE from SR is privileged on the 68010. */
         if (cpu->model >= M68K_MODEL_68010 && !(cpu->sr & M68K_SR_S)) {
             cpu->pc -= 2;
             m68k_exception(cpu, 8);
             return;
         }
-        int mode = (opcode >> 3) & 0x7;
-        int reg = opcode & 0x7;
         M68kEA ea = m68k_calc_ea_addr(cpu, mode, reg, SIZE_WORD);
 
         if (ea.is_reg && !ea.is_addr) {
@@ -403,8 +415,10 @@ void m68k_exec_move_sr(M68kCpu* cpu, u16 opcode) {
 
     if ((opcode & 0xFFC0) == 0x42C0) {
         /* MOVE from CCR exists on the 68010 only. */
-        int mode = (opcode >> 3) & 0x7;
-        int reg = opcode & 0x7;
+        if (mode == 1 || (mode == 7 && reg > 1)) {
+            m68k_exception(cpu, 4);
+            return;
+        }
         M68kEA ea = m68k_calc_ea_addr(cpu, mode, reg, SIZE_WORD);
         u16 ccr = cpu->sr & 0x00FF;
         if (ea.is_reg && !ea.is_addr) {
@@ -470,12 +484,24 @@ void m68k_exec_move_usp(M68kCpu* cpu, u16 opcode) {
 void m68k_exec_move_ccr(M68kCpu* cpu, u16 opcode) {
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
+    if (mode == 1 || (mode == 7 && reg > 4)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_WORD);
     u16 data = ea.value & 0x1F;
     cpu->sr = (cpu->sr & 0xFF00) | data;
 }
 
 void m68k_exec_moves(M68kCpu* cpu, u16 opcode) {
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+    /* Only memory alterable EAs are valid for MOVES. */
+    if (mode < 2 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
     if (!(cpu->sr & M68K_SR_S)) {
         cpu->pc -= 2;
         m68k_exception(cpu, 8);
@@ -499,12 +525,14 @@ void m68k_exec_moves(M68kCpu* cpu, u16 opcode) {
     }
 
     u16 ext = m68k_fetch(cpu);
+    if ((ext & 0x07FF) != 0) {
+        m68k_exception(cpu, 4);
+        return;
+    }
     bool is_addr = (ext >> 15) & 1;
     int reg_num = (ext >> 12) & 0x7;
     bool to_ea = (ext >> 11) & 1;
 
-    int mode = (opcode >> 3) & 0x7;
-    int reg = opcode & 0x7;
     M68kEA ea =
         to_ea ? m68k_calc_ea_addr(cpu, mode, reg, size) : m68k_calc_ea(cpu, mode, reg, size);
 
@@ -512,8 +540,12 @@ void m68k_exec_moves(M68kCpu* cpu, u16 opcode) {
         u32 val = is_addr ? cpu->a_regs[reg_num].l : cpu->d_regs[reg_num].l;
         m68k_write_size(cpu, ea.address, val, size);
     } else {
-        u32 val = m68k_read_size(cpu, ea.address, size);
+        u32 val = ea.value;
         if (is_addr) {
+            if (size == SIZE_BYTE)
+                val = (u32)(s32)(s8)(val & 0xFF);
+            else if (size == SIZE_WORD)
+                val = (u32)(s32)(s16)(val & 0xFFFF);
             cpu->a_regs[reg_num].l = val;
         } else {
             u32 mask = (size == SIZE_BYTE) ? 0xFF : (size == SIZE_WORD) ? 0xFFFF : 0xFFFFFFFF;

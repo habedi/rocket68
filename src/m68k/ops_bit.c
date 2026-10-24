@@ -15,17 +15,19 @@ static u32 get_bit_mask(int bit_num, bool is_register) {
 void m68k_exec_btst(M68kCpu* cpu, u16 opcode) {
     bool is_dynamic = (opcode & 0x0100) != 0;
     int bit_num;
-    int mode, reg;
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+
+    if (mode == 1 || (mode == 7 && (reg > 4 || (!is_dynamic && reg == 4)))) {
+        m68k_exception(cpu, 4);
+        return;
+    }
 
     if (is_dynamic) {
         int dn = (opcode >> 9) & 0x7;
         bit_num = cpu->d_regs[dn].l;
-        mode = (opcode >> 3) & 0x7;
-        reg = opcode & 0x7;
     } else {
         bit_num = m68k_fetch(cpu) & 0xFF;
-        mode = (opcode >> 3) & 0x7;
-        reg = opcode & 0x7;
     }
 
     bool is_register = (mode == 0);
@@ -48,17 +50,19 @@ void m68k_exec_btst(M68kCpu* cpu, u16 opcode) {
 void m68k_exec_bset(M68kCpu* cpu, u16 opcode) {
     bool is_dynamic = (opcode & 0x0100) != 0;
     int bit_num;
-    int mode, reg;
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
 
     if (is_dynamic) {
         int dn = (opcode >> 9) & 0x7;
         bit_num = cpu->d_regs[dn].l;
-        mode = (opcode >> 3) & 0x7;
-        reg = opcode & 0x7;
     } else {
         bit_num = m68k_fetch(cpu) & 0xFF;
-        mode = (opcode >> 3) & 0x7;
-        reg = opcode & 0x7;
     }
 
     bool is_register = (mode == 0);
@@ -86,17 +90,19 @@ void m68k_exec_bset(M68kCpu* cpu, u16 opcode) {
 void m68k_exec_bclr(M68kCpu* cpu, u16 opcode) {
     bool is_dynamic = (opcode & 0x0100) != 0;
     int bit_num;
-    int mode, reg;
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
 
     if (is_dynamic) {
         int dn = (opcode >> 9) & 0x7;
         bit_num = cpu->d_regs[dn].l;
-        mode = (opcode >> 3) & 0x7;
-        reg = opcode & 0x7;
     } else {
         bit_num = m68k_fetch(cpu) & 0xFF;
-        mode = (opcode >> 3) & 0x7;
-        reg = opcode & 0x7;
     }
 
     bool is_register = (mode == 0);
@@ -123,17 +129,19 @@ void m68k_exec_bclr(M68kCpu* cpu, u16 opcode) {
 void m68k_exec_bchg(M68kCpu* cpu, u16 opcode) {
     bool is_dynamic = (opcode & 0x0100) != 0;
     int bit_num;
-    int mode, reg;
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
 
     if (is_dynamic) {
         int dn = (opcode >> 9) & 0x7;
         bit_num = cpu->d_regs[dn].l;
-        mode = (opcode >> 3) & 0x7;
-        reg = opcode & 0x7;
     } else {
         bit_num = m68k_fetch(cpu) & 0xFF;
-        mode = (opcode >> 3) & 0x7;
-        reg = opcode & 0x7;
     }
 
     bool is_register = (mode == 0);
