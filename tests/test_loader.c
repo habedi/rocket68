@@ -26,6 +26,12 @@ void test_load_srec(void) {
     // S1 Data: Addr 0x1000, Data 12 34 56 78 (4 bytes). Count = 2 (Addr) + 4 (Data) + 1 (Check) = 7
     // Checksum: 0xFF - ((07 + 10 + 00 + 12 + 34 + 56 + 78) & 0xFF) = 0xD4
     fprintf(f, "S107100012345678D4\n");
+    // S2 Data (24-bit addr 0x002000, 1 byte 0x9A): Count = 3 + 1 + 1 = 5
+    // Checksum: 0xFF - ((05 + 00 + 20 + 00 + 9A) & 0xFF) = 0x40
+    fprintf(f, "S2050020009A40\n");
+    // S3 Data (32-bit addr 0x00003000, 1 byte 0xBC): Count = 4 + 1 + 1 = 6
+    // Checksum: 0xFF - ((06 + 00 + 00 + 30 + 00 + BC) & 0xFF) = 0x0D
+    fprintf(f, "S30600003000BC0D\n");
     // S9 Termination: Entry 0x1000
     // Count = 2 (Addr) + 1 (Check) = 3
     fprintf(f, "S9031000EC\n");
@@ -39,9 +45,26 @@ void test_load_srec(void) {
     assert(memory[0x1001] == 0x34);
     assert(memory[0x1002] == 0x56);
     assert(memory[0x1003] == 0x78);
+    assert(memory[0x2000] == 0x9A);
+    assert(memory[0x3000] == 0xBC);
 
     // Check Entry Point
     assert(cpu.pc == 0x1000);
+
+    /* Also test S7 (32-bit entry) and S8 (24-bit entry) termination records */
+    f = fopen(filename, "w");
+    assert(f != NULL);
+    fprintf(f, "S70500002000DA\n");
+    fclose(f);
+    assert(m68k_load_srec(&cpu, filename));
+    assert(cpu.pc == 0x2000);
+
+    f = fopen(filename, "w");
+    assert(f != NULL);
+    fprintf(f, "S804003000CB\n");
+    fclose(f);
+    assert(m68k_load_srec(&cpu, filename));
+    assert(cpu.pc == 0x3000);
 
     // Cleanup
     remove(filename);
@@ -300,10 +323,30 @@ void test_load_ihex(void) {
     fprintf(f, ":02200000ABCD66\n");
     /* A corrupted checksum is reported and the record skipped. */
     fprintf(f, ":02300000ABCD00\n");
-    /* Start linear address 0x00001000 sets PC. Checksum EB. */
+    /* Start linear address 0x00001000 sets PC. Checksum E7. */
     fprintf(f, ":0400000500001000E7\n");
+    /* Extended segment address 0x0300 (base = 0x3000) and 1 byte 0x5A at offset 0x0010. */
+    fprintf(f, ":020000020300F9\n");
+    fprintf(f, ":010010005A95\n");
+    /* Start segment address CS=0x0100, IP=0x0000 -> PC = 0x1000. */
+    fprintf(f, ":0400000301000000F8\n");
+    /* Out-of-bounds data address (base 0x00010000 -> 0x10000 >= 65536). */
+    fprintf(f, ":020000040001F9\n");
+    fprintf(f, ":01000000AA55\n");
+    /* Malformed/unsupported records that must be reported and skipped. */
+    fprintf(f, "missing_colon\n");
+    fprintf(f, ":01\n");
+    fprintf(f, ":0Z000000FF\n");
+    fprintf(f, ":040000001122\n");
+    fprintf(f, ":0100000200FD\n");
+    fprintf(f, ":0100000400FB\n");
+    fprintf(f, ":0100000300FC\n");
+    fprintf(f, ":0100000500FA\n");
+    fprintf(f, ":00000006FA\n");
     /* End of file. */
     fprintf(f, ":00000001FF\n");
+    /* Trailing record after EOF to cover post-EOF loop exit. */
+    fprintf(f, ":01000000AA55\n");
     fclose(f);
 
     bool success = m68k_load_ihex(&cpu, filename);
@@ -317,7 +360,17 @@ void test_load_ihex(void) {
     assert(memory[0x2000] == 0xAB);
     assert(memory[0x2001] == 0xCD);
     assert(memory[0x3000] == 0x00);
+    assert(memory[0x3010] == 0x5A);
     assert(cpu.pc == 0x1000);
+
+    /* File without an EOF record reaches normal end-of-file return. */
+    f = fopen(filename, "w");
+    assert(f != NULL);
+    fprintf(f, ":010200007786\n");
+    fclose(f);
+    assert(m68k_load_ihex(&cpu, filename));
+    remove(filename);
+    assert(memory[0x200] == 0x77);
 
     /* An open failure returns false. */
     assert(!m68k_load_ihex(&cpu, "no_such_file.hex"));
@@ -422,6 +475,16 @@ void test_disasm_supervisor_ops(void) {
     assert(strstr(buf, "MOVEC"));
     assert(strstr(buf, "SFC"));
     assert(strstr(buf, "A2"));
+
+    /* MOVEC DFC, D1 and MOVEC USP, A0 */
+    m68k_write_16(&cpu, 0, 0x4E7A);
+    m68k_write_16(&cpu, 2, 0x1001);
+    m68k_disasm(&cpu, 0, buf, sizeof(buf));
+    assert(strstr(buf, "DFC"));
+    m68k_write_16(&cpu, 0, 0x4E7A);
+    m68k_write_16(&cpu, 2, 0x8800);
+    m68k_disasm(&cpu, 0, buf, sizeof(buf));
+    assert(strstr(buf, "USP"));
 
     /* RTD #8 */
     m68k_write_16(&cpu, 0, 0x4E74);

@@ -32,6 +32,32 @@ void test_arithmetic(void) {
     m68k_step(&cpu);
     assert(m68k_get_dr(&cpu, 1) == 10);
 
+    /* ADD.W (A0), D0; ADD.B/W/L D0, (A0); SUB.B/L (A0), D0; SUB.B/W/L D0, (A0) */
+    cpu.a_regs[0].l = 0x200;
+    m68k_write_32(&cpu, 0x200, 0x01020304);
+    cpu.d_regs[0].l = 0x00010002;
+    m68k_write_16(&cpu, 4, 0xD050);  /* ADD.W (A0), D0 */
+    m68k_write_16(&cpu, 6, 0xD110);  /* ADD.B D0, (A0) */
+    m68k_write_16(&cpu, 8, 0xD150);  /* ADD.W D0, (A0) */
+    m68k_write_16(&cpu, 10, 0xD190); /* ADD.L D0, (A0) */
+    m68k_write_16(&cpu, 12, 0x9010); /* SUB.B (A0), D0 */
+    m68k_write_16(&cpu, 14, 0x9090); /* SUB.L (A0), D0 */
+    m68k_write_16(&cpu, 16, 0x9110); /* SUB.B D0, (A0) */
+    m68k_write_16(&cpu, 18, 0x9150); /* SUB.W D0, (A0) */
+    m68k_write_16(&cpu, 20, 0x9190); /* SUB.L D0, (A0) */
+    for (int i = 0; i < 9; i++) m68k_step(&cpu);
+
+    /* ADDQ.W #1, A0; ADDQ.W #1, (A0); SUBQ.B/W/L #1, D0; SUBQ.B #1, (A0) */
+    cpu.a_regs[0].l = 0x200;
+    m68k_write_16(&cpu, 22, 0x5248); /* ADDQ.W #1, A0 */
+    m68k_write_16(&cpu, 24, 0x5450); /* ADDQ.W #2, (A0) */
+    m68k_write_16(&cpu, 26, 0x5300); /* SUBQ.B #1, D0 */
+    m68k_write_16(&cpu, 28, 0x5340); /* SUBQ.W #1, D0 */
+    m68k_write_16(&cpu, 30, 0x5380); /* SUBQ.L #1, D0 */
+    m68k_write_16(&cpu, 32, 0x5310); /* SUBQ.B #1, (A0) */
+    for (int i = 0; i < 6; i++) m68k_step(&cpu);
+    assert(cpu.a_regs[0].l == 0x201);
+
     printf("Arithmetic instruction test passed!\n");
 }
 
@@ -86,6 +112,14 @@ void test_adda_suba(void) {
     m68k_step(&cpu);  // SUBA
     assert(cpu.a_regs[0].l == 0x1000);
 
+    /* ADDA.W D0, A0 (0xD0C0) and SUBA.L D0, A0 (0x91C0) */
+    m68k_write_16(&cpu, 4, 0xD0C0);
+    m68k_write_16(&cpu, 6, 0x91C0);
+    m68k_step(&cpu);
+    assert(cpu.a_regs[0].l == 0x1010);
+    m68k_step(&cpu);
+    assert(cpu.a_regs[0].l == 0x1000);
+
     printf("ADDA/SUBA instruction test passed!\n");
 }
 
@@ -116,6 +150,24 @@ void test_addx_subx(void) {
     m68k_write_16(&cpu, 2, 0x9380);
     m68k_step(&cpu);
     assert(cpu.d_regs[1].l == 2);
+
+    /* Predecrement ADDX/SUBX across byte, word, and long sizes. */
+    cpu.a_regs[0].l = 0x210;
+    cpu.a_regs[1].l = 0x220;
+    m68k_write_32(&cpu, 0x208, 0x11223344);
+    m68k_write_32(&cpu, 0x20C, 0x01020304);
+    m68k_write_32(&cpu, 0x218, 0x22334455);
+    m68k_write_32(&cpu, 0x21C, 0x05060708);
+    m68k_write_16(&cpu, 4, 0xD308);  /* ADDX.B -(A0), -(A1) */
+    m68k_write_16(&cpu, 6, 0xD348);  /* ADDX.W -(A0), -(A1) */
+    m68k_write_16(&cpu, 8, 0xD388);  /* ADDX.L -(A0), -(A1) */
+    m68k_write_16(&cpu, 10, 0x9308); /* SUBX.B -(A0), -(A1) */
+    m68k_write_16(&cpu, 12, 0x9348); /* SUBX.W -(A0), -(A1) */
+    m68k_write_16(&cpu, 14, 0x9388); /* SUBX.L -(A0), -(A1) */
+    for (int i = 0; i < 3; i++) m68k_step(&cpu);
+    cpu.a_regs[0].l = 0x210;
+    cpu.a_regs[1].l = 0x220;
+    for (int i = 0; i < 3; i++) m68k_step(&cpu);
 
     printf("ADDX/SUBX instruction test passed!\n");
 }
@@ -231,6 +283,20 @@ void test_immediate_alu(void) {
     m68k_write_16(&cpu, 24, 0x0010);
     m68k_step(&cpu);
     assert((cpu.sr & 0xFF) == 0x10);  // Only X remains
+
+    /* ADDI.B/W (A0) and SUBI.B/L (A0) */
+    cpu.a_regs[0].l = 0x200;
+    m68k_write_32(&cpu, 0x200, 0x00001000);
+    m68k_write_16(&cpu, 26, 0x0610); /* ADDI.B #5, (A0) */
+    m68k_write_16(&cpu, 28, 0x0005);
+    m68k_write_16(&cpu, 30, 0x0650); /* ADDI.W #$100, (A0) */
+    m68k_write_16(&cpu, 32, 0x0100);
+    m68k_write_16(&cpu, 34, 0x0410); /* SUBI.B #2, (A0) */
+    m68k_write_16(&cpu, 36, 0x0002);
+    m68k_write_16(&cpu, 38, 0x0490); /* SUBI.L #$10, (A0) */
+    m68k_write_32(&cpu, 40, 0x00000010);
+    for (int i = 0; i < 4; i++) m68k_step(&cpu);
+    assert(m68k_read_32(&cpu, 0x200) == 0x04000FF0);
 
     printf("Immediate ALU test passed!\n");
 }

@@ -45,6 +45,27 @@ void test_logic(void) {
     m68k_step(&cpu);
     assert(m68k_get_dr(&cpu, 1) == (u32)(~0x12345678));
 
+    /* AND/OR/EOR across remaining sizes and Dn -> <ea> memory paths */
+    cpu.a_regs[0].l = 0x200;
+    m68k_write_32(&cpu, 0x200, 0xAABBCCDD);
+    cpu.d_regs[0].l = 0x0F0F0F0F;
+    m68k_write_16(&cpu, 6, 0xC050);  /* AND.W (A0), D0 */
+    m68k_write_16(&cpu, 8, 0xC090);  /* AND.L (A0), D0 */
+    m68k_write_16(&cpu, 10, 0xC110); /* AND.B D0, (A0) */
+    m68k_write_16(&cpu, 12, 0xC150); /* AND.W D0, (A0) */
+    m68k_write_16(&cpu, 14, 0xC190); /* AND.L D0, (A0) */
+    m68k_write_16(&cpu, 16, 0x8010); /* OR.B (A0), D0 */
+    m68k_write_16(&cpu, 18, 0x8090); /* OR.L (A0), D0 */
+    m68k_write_16(&cpu, 20, 0x8110); /* OR.B D0, (A0) */
+    m68k_write_16(&cpu, 22, 0x8150); /* OR.W D0, (A0) */
+    m68k_write_16(&cpu, 24, 0x8190); /* OR.L D0, (A0) */
+    m68k_write_16(&cpu, 26, 0xB101); /* EOR.B D0, D1 */
+    m68k_write_16(&cpu, 28, 0xB141); /* EOR.W D0, D1 */
+    m68k_write_16(&cpu, 30, 0xB110); /* EOR.B D0, (A0) */
+    m68k_write_16(&cpu, 32, 0xB150); /* EOR.W D0, (A0) */
+    m68k_write_16(&cpu, 34, 0xB190); /* EOR.L D0, (A0) */
+    for (int i = 0; i < 15; i++) m68k_step(&cpu);
+
     printf("Logic instruction test passed!\n");
 }
 
@@ -101,6 +122,29 @@ void test_data_manipulation(void) {
     // Result packed: Remainder | Quotient. 0 | 20.
     assert((cpu.d_regs[1].l & 0xFFFF) == 20);
     assert((cpu.d_regs[1].l >> 16) == 0);
+
+    /* MULS.W D0, D1 (0xC3C0) and DIVS.W D0, D1 (0x83C0) */
+    cpu.d_regs[0].l = 0xFFFF; /* -1 */
+    cpu.d_regs[1].l = 20;
+    m68k_write_16(&cpu, 12, 0xC3C0);
+    m68k_step(&cpu);
+    assert((s32)cpu.d_regs[1].l == -20);
+
+    cpu.d_regs[0].l = 5;
+    m68k_write_16(&cpu, 14, 0x83C0);
+    m68k_step(&cpu);
+    assert((s16)(cpu.d_regs[1].l & 0xFFFF) == -4);
+
+    /* EXT.L D0 (0x48C0), NEG.W (A0) (0x4450), NEG.L (A0) (0x4490), NOT.B (A0) (0x4610) */
+    cpu.d_regs[0].l = 0x8000;
+    cpu.a_regs[0].l = 0x200;
+    m68k_write_32(&cpu, 0x200, 0x00010002);
+    m68k_write_16(&cpu, 16, 0x48C0);
+    m68k_write_16(&cpu, 18, 0x4450);
+    m68k_write_16(&cpu, 20, 0x4490);
+    m68k_write_16(&cpu, 22, 0x4610);
+    for (int i = 0; i < 4; i++) m68k_step(&cpu);
+    assert(cpu.d_regs[0].l == 0xFFFF8000u);
 
     printf("Data Manipulation test passed!\n");
 }
@@ -159,6 +203,25 @@ void test_bit_manipulation(void) {
     m68k_step(&cpu);
     assert(cpu.d_regs[0].l == 0x10);
 
+    /* Dynamic and memory variants of BTST, BSET, BCLR, and BCHG */
+    cpu.a_regs[0].l = 0x200;
+    memory[0x200] = 0x05;
+    cpu.d_regs[1].l = 2;
+    m68k_write_16(&cpu, 18, 0x0300); /* BTST D1, D0 */
+    m68k_write_16(&cpu, 20, 0x0310); /* BTST D1, (A0) */
+    m68k_write_16(&cpu, 22, 0x03C0); /* BSET D1, D0 */
+    m68k_write_16(&cpu, 24, 0x03D0); /* BSET D1, (A0) */
+    m68k_write_16(&cpu, 26, 0x0380); /* BCLR D1, D0 */
+    m68k_write_16(&cpu, 28, 0x0390); /* BCLR D1, (A0) */
+    m68k_write_16(&cpu, 30, 0x0840); /* BCHG #2, D0 */
+    m68k_write_16(&cpu, 32, 0x0002);
+    m68k_write_16(&cpu, 34, 0x0850); /* BCHG #2, (A0) */
+    m68k_write_16(&cpu, 36, 0x0002);
+    m68k_write_16(&cpu, 38, 0x0850); /* BCHG #2, (A0) again to toggle both states */
+    m68k_write_16(&cpu, 40, 0x0002);
+    for (int i = 0; i < 9; i++) m68k_step(&cpu);
+    assert(memory[0x200] == 0x01);
+
     printf("Bit manipulation test passed!\n");
 }
 
@@ -202,6 +265,28 @@ void test_shift_rotate(void) {
     m68k_step(&cpu);
     assert(cpu.d_regs[0].l == 1);
     assert((cpu.sr & M68K_SR_C) != 0);
+
+    /* ROXL/ROXR/ROR/ASL across sizes and memory shift/rotate variants */
+    cpu.a_regs[0].l = 0x200;
+    m68k_write_16(&cpu, 0x200, 0x8001);
+    m68k_write_16(&cpu, 8, 0xE310);  /* ROXL.B #1, D0 */
+    m68k_write_16(&cpu, 10, 0xE250); /* ROXR.W #1, D0 */
+    m68k_write_16(&cpu, 12, 0xE290); /* ROXR.L #1, D0 */
+    m68k_write_16(&cpu, 14, 0xE390); /* ROXL.L #1, D0 */
+    m68k_write_16(&cpu, 16, 0xE218); /* ROR.B #1, D0 */
+    m68k_write_16(&cpu, 18, 0xE258); /* ROR.W #1, D0 */
+    m68k_write_16(&cpu, 20, 0xE298); /* ROR.L #1, D0 */
+    m68k_write_16(&cpu, 22, 0xE300); /* ASL.B #1, D0 */
+    m68k_write_16(&cpu, 24, 0xE380); /* ASL.L #1, D0 */
+    m68k_write_16(&cpu, 26, 0xE0D0); /* ASR.W (A0) */
+    m68k_write_16(&cpu, 28, 0xE1D0); /* ASL.W (A0) */
+    m68k_write_16(&cpu, 30, 0xE2D0); /* LSR.W (A0) */
+    m68k_write_16(&cpu, 32, 0xE3D0); /* LSL.W (A0) */
+    m68k_write_16(&cpu, 34, 0xE4D0); /* ROXR.W (A0) */
+    m68k_write_16(&cpu, 36, 0xE5D0); /* ROXL.W (A0) */
+    m68k_write_16(&cpu, 38, 0xE6D0); /* ROR.W (A0) */
+    m68k_write_16(&cpu, 40, 0xE7D0); /* ROL.W (A0) */
+    for (int i = 0; i < 17; i++) m68k_step(&cpu);
 
     printf("Shift/Rotate test passed!\n");
 }
@@ -377,6 +462,25 @@ void test_andi_ori_eori(void) {
     m68k_write_16(&cpu, 12, 0x0055);
     m68k_step(&cpu);
     assert((cpu.d_regs[1].l & 0xFF) == 0xFF);
+
+    /* Remaining ANDI/ORI/EORI sizes and memory writes, plus ANDI/ORI to SR */
+    m68k_write_32(&cpu, 0x100, 0x12345678);
+    m68k_write_16(&cpu, 14, 0x0250); /* ANDI.W #$0F0F, (A0) */
+    m68k_write_16(&cpu, 16, 0x0F0F);
+    m68k_write_16(&cpu, 18, 0x0090); /* ORI.L #$F0000000, (A0) */
+    m68k_write_32(&cpu, 20, 0xF0000000u);
+    m68k_write_16(&cpu, 24, 0x0A50); /* EORI.W #$FFFF, (A0) */
+    m68k_write_16(&cpu, 26, 0xFFFF);
+    m68k_write_16(&cpu, 28, 0x0A90); /* EORI.L #$FFFFFFFF, (A0) */
+    m68k_write_32(&cpu, 30, 0xFFFFFFFFu);
+    for (int i = 0; i < 4; i++) m68k_step(&cpu);
+    cpu.sr = 0x271F;
+    m68k_write_16(&cpu, 34, 0x027C); /* ANDI #$2703, SR */
+    m68k_write_16(&cpu, 36, 0x2703);
+    m68k_write_16(&cpu, 38, 0x007C); /* ORI #$0010, SR */
+    m68k_write_16(&cpu, 40, 0x0010);
+    for (int i = 0; i < 2; i++) m68k_step(&cpu);
+    assert(cpu.sr == 0x2713);
 
     printf("ANDI/ORI/EORI test passed!\n");
 }
