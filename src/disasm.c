@@ -368,8 +368,7 @@ int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size) {
             u16 mv_ext = peek_word(cpu, pc + 2);
             len += 2;
             char gpr[4];
-            snprintf(gpr, sizeof(gpr), "%c%d", (mv_ext & 0x8000) ? 'A' : 'D',
-                     (mv_ext >> 12) & 7);
+            snprintf(gpr, sizeof(gpr), "%c%d", (mv_ext & 0x8000) ? 'A' : 'D', (mv_ext >> 12) & 7);
             char ea_buf[DISASM_EA_SIZE];
             int ea_bytes = disasm_ea(cpu, pc + 4, (opcode >> 3) & 7, opcode & 7, size, ea_buf);
             if (mv_ext & 0x0800) {
@@ -463,15 +462,24 @@ int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size) {
             u16 mc_ext = peek_word(cpu, pc + 2);
             len += 2;
             char gpr[4];
-            snprintf(gpr, sizeof(gpr), "%c%d", (mc_ext & 0x8000) ? 'A' : 'D',
-                     (mc_ext >> 12) & 7);
+            snprintf(gpr, sizeof(gpr), "%c%d", (mc_ext & 0x8000) ? 'A' : 'D', (mc_ext >> 12) & 7);
             const char* ctrl;
             switch (mc_ext & 0xFFF) {
-                case 0x000: ctrl = "SFC"; break;
-                case 0x001: ctrl = "DFC"; break;
-                case 0x800: ctrl = "USP"; break;
-                case 0x801: ctrl = "VBR"; break;
-                default: ctrl = "???"; break;
+                case 0x000:
+                    ctrl = "SFC";
+                    break;
+                case 0x001:
+                    ctrl = "DFC";
+                    break;
+                case 0x800:
+                    ctrl = "USP";
+                    break;
+                case 0x801:
+                    ctrl = "VBR";
+                    break;
+                default:
+                    ctrl = "???";
+                    break;
             }
             if (opcode & 1) {
                 snprintf(args, DISASM_ARGS_SIZE, "%s, %s", gpr, ctrl);
@@ -484,7 +492,6 @@ int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size) {
             snprintf(op, DISASM_OP_SIZE, "TRAP");
             snprintf(args, DISASM_ARGS_SIZE, "#%d", opcode & 0xF);
         }
-
 
         else if ((opcode & 0xFFF8) == 0x4E50) {
             snprintf(op, DISASM_OP_SIZE, "LINK");
@@ -612,7 +619,9 @@ int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size) {
             len += ea_bytes;
         }
 
-        else if ((opcode & 0xF1C0) == 0x41C0) {
+        else if ((opcode & 0xF1C0) == 0x41C0 &&
+                 (((opcode >> 3) & 7) == 2 ||
+                  (((opcode >> 3) & 7) >= 5 && !(((opcode >> 3) & 7) == 7 && (opcode & 7) > 3)))) {
             snprintf(op, DISASM_OP_SIZE, "LEA");
             int reg = (opcode >> 9) & 7;
             char ea_buf[DISASM_EA_SIZE];
@@ -677,8 +686,6 @@ int m68k_disasm(M68kCpu* cpu, u32 pc, char* buffer, int buf_size) {
             int ea_bytes = disasm_ea(cpu, pc + 2, (opcode >> 3) & 7, opcode & 7, size, ea_buf);
             snprintf(args, DISASM_ARGS_SIZE, "%s", ea_buf);
             len += ea_bytes;
-        } else {
-            snprintf(op, DISASM_OP_SIZE, "MISC");
         }
     }
 

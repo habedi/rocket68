@@ -1494,3 +1494,251 @@ void test_regression_exception_latch_is_per_instruction(void) {
 
     printf("Regression: Exception latch is per instruction test passed!\n");
 }
+
+void test_regression_moves_mem_to_reg_and_validation(void) {
+    M68kCpu cpu;
+    u8 memory[65536];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    m68k_set_model(&cpu, M68K_MODEL_68010);
+
+    m68k_write_32(&cpu, 0x00, 0x8000);
+    m68k_write_32(&cpu, 0x04, 0x1000);
+    m68k_write_32(&cpu, 4 * 4, 0x3000); /* illegal instruction handler */
+    m68k_reset(&cpu);
+
+    /* MOVES.W (A0),A1 must read the memory operand once and sign-extend
+     * the loaded word into A1. */
+    m68k_write_16(&cpu, 0x1000, 0x0E50);
+    m68k_write_16(&cpu, 0x1002, 0x9000); /* A1, from EA */
+    m68k_write_16(&cpu, 0x2000, 0x8001);
+    cpu.a_regs[0].l = 0x2000;
+    cpu.a_regs[1].l = 0;
+
+    watched_bus_address = 0x2000;
+    watched_bus_hits = 0;
+    m68k_set_wait_bus_callback(&cpu, regression_wait_bus_watch);
+    m68k_step(&cpu);
+    m68k_set_wait_bus_callback(&cpu, NULL);
+
+    assert(watched_bus_hits == 1);
+    assert(cpu.a_regs[1].l == 0xFFFF8001u);
+
+    /* MOVES with a non-memory alterable EA (mode 0) must trap on vector 4. */
+    cpu.pc = 0x1004;
+    m68k_write_16(&cpu, 0x1004, 0x0E40); /* mode 0 */
+    m68k_write_16(&cpu, 0x1006, 0x1000);
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x3000);
+
+    /* MOVES with non-zero reserved bits in the extension word must trap
+     * before modifying (An)+. */
+    cpu.pc = 0x1008;
+    cpu.a_regs[0].l = 0x2000;
+    m68k_write_16(&cpu, 0x1008, 0x0E58); /* MOVES.W (A0)+ */
+    m68k_write_16(&cpu, 0x100A, 0x1001); /* low bit non-zero */
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x3000);
+    assert(cpu.a_regs[0].l == 0x2000);
+
+    printf("Regression: MOVES mem-to-reg and validation test passed!\n");
+}
+
+void test_regression_extb_is_illegal_on_68000(void) {
+    M68kCpu cpu;
+    u8 memory[65536];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    m68k_write_32(&cpu, 0x00, 0x8000);
+    m68k_write_32(&cpu, 0x04, 0x1000);
+    m68k_write_32(&cpu, 4 * 4, 0x3000);
+    m68k_reset(&cpu);
+
+    /* 0x49C0 (EXTB.L D0 on 68020+) is illegal on 68000 and 68010. */
+    cpu.d_regs[0].l = 0x00000080;
+    m68k_write_16(&cpu, 0x1000, 0x49C0);
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x3000);
+    assert(cpu.d_regs[0].l == 0x00000080);
+
+    char buf[64];
+    m68k_disasm(&cpu, 0x1000, buf, sizeof(buf));
+    assert(strstr(buf, "???") != NULL);
+
+    printf("Regression: EXTB.L is illegal on 68000 test passed!\n");
+}
+
+void test_regression_illegal_ea_modes_trap(void) {
+    M68kCpu cpu;
+    u8 memory[65536];
+    /* Encodings that use invalid addressing modes on the 68000:
+     * - 0x4EC0: JMP D0 (control only)
+     * - 0x4ED8: JMP (A0)+ (control only)
+     * - 0x43C0: LEA D0, A1 (control only)
+     * - 0x4840 is SWAP, 0x4848 is BKPT, 0x4858: PEA (A0)+ (control only)
+     * - 0x4898: MOVEM.W D0, (A0)+ (reg-to-mem with postinc is invalid)
+     * - 0x48BA: MOVEM.W D0, d16(PC) (reg-to-mem with PC-rel is invalid)
+     * - 0x5208: ADDQ.B #1, A0 (byte to An is invalid)
+     * - 0x5308: SUBQ.B #1, A0 (byte to An is invalid)
+     * - 0x1040: MOVEA.B D0, A0 (byte to An is invalid)
+     * - 0x4408: NEG.B A0 (data alterable only)
+     * - 0x4608: NOT.B A0 (data alterable only)
+     * - 0x4008: NEGX.B A0 (data alterable only)
+     * - 0x4808: NBCD A0 (data alterable only)
+     * - 0x50C8 is DBT, 0x50FA: ST d16(PC) (data alterable only)
+     * - 0x0808: BTST #n, A0 (An is invalid for BTST)
+     * - 0x08C8: BSET #n, A0 (data alterable only)
+     * - 0x0648: ADDI.W #n, A0 (data alterable only)
+     * - 0x0248: ANDI.W #n, A0 (data alterable only)
+     */
+    static const u16 invalid_opcodes[] = {
+        0x4EC0, 0x4ED8, 0x43C0, 0x4858, 0x4898, 0x48BA, 0x5208, 0x5308, 0x1040,
+        0x4408, 0x4608, 0x4008, 0x4808, 0x50FA, 0x0808, 0x08C8, 0x0648, 0x0248,
+    };
+
+    for (size_t i = 0; i < sizeof(invalid_opcodes) / sizeof(invalid_opcodes[0]); i++) {
+        memset(memory, 0, sizeof(memory));
+        m68k_init(&cpu, memory, sizeof(memory));
+        m68k_write_32(&cpu, 0x00, 0x8000);
+        m68k_write_32(&cpu, 0x04, 0x1000);
+        m68k_write_32(&cpu, 4 * 4, 0x3000);
+        m68k_reset(&cpu);
+
+        m68k_write_16(&cpu, 0x1000, invalid_opcodes[i]);
+        m68k_write_16(&cpu, 0x1002, 0x0001);
+        cpu.a_regs[0].l = 0x2000;
+        m68k_step(&cpu);
+
+        assert(cpu.exception_thrown == 4);
+        assert(cpu.pc == 0x3000);
+        assert(cpu.a_regs[0].l == 0x2000);
+    }
+
+    printf("Regression: illegal EA modes trap test passed!\n");
+}
+
+void test_regression_target_bus_error_on_control_flow(void) {
+    M68kCpu cpu;
+    u8 memory[65536];
+
+    /* JMP (A0) to 0xFFFF0000 (outside 64 KB bound memory) must raise a
+     * Bus Error (vector 2) during the JMP step itself. */
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    m68k_write_32(&cpu, 0x00, 0x8000);
+    m68k_write_32(&cpu, 0x04, 0x0100);
+    m68k_write_32(&cpu, 2 * 4, 0x0400); /* bus error handler */
+    m68k_write_16(&cpu, 0x0100, 0x2078); /* MOVE.L ($0108).W, A0 */
+    m68k_write_16(&cpu, 0x0102, 0x0108);
+    m68k_write_16(&cpu, 0x0104, 0x4ED0); /* JMP (A0) */
+    m68k_write_32(&cpu, 0x0108, 0xFFFF0000u);
+    m68k_reset(&cpu);
+
+    m68k_step(&cpu);
+    assert(cpu.a_regs[0].l == 0xFFFF0000u);
+    assert(cpu.pc == 0x0104);
+
+    m68k_step(&cpu);
+    assert(cpu.exception_thrown == 2);
+    assert(cpu.pc == 0x0400);
+    assert(cpu.a_regs[7].l == 0x8000 - 14);
+    assert(m68k_read_32(&cpu, cpu.a_regs[7].l + 2) == 0xFFFF0000u);
+
+    /* JSR (A0) to an out-of-bounds even address must fault before
+     * pushing the return address. */
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+    m68k_write_32(&cpu, 0x00, 0x8000);
+    m68k_write_32(&cpu, 0x04, 0x0100);
+    m68k_write_32(&cpu, 2 * 4, 0x0400);
+    m68k_write_16(&cpu, 0x0100, 0x4E90); /* JSR (A0) */
+    m68k_reset(&cpu);
+    cpu.a_regs[0].l = 0x00020000u;
+
+    m68k_step(&cpu);
+    assert(cpu.exception_thrown == 2);
+    assert(cpu.pc == 0x0400);
+    assert(cpu.a_regs[7].l == 0x8000 - 14);
+
+    printf("Regression: target bus error on control flow test passed!\n");
+}
+
+void test_regression_group0_fault_suppresses_trace(void) {
+    M68kCpu cpu;
+    u8 memory[65536];
+    memset(memory, 0, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    m68k_write_32(&cpu, 0x00, 0x8000);
+    m68k_write_32(&cpu, 0x04, 0x0100);
+    m68k_write_32(&cpu, 3 * 4, 0x0400); /* address error handler */
+    m68k_write_32(&cpu, 9 * 4, 0x0500); /* trace handler */
+    m68k_write_16(&cpu, 0x0100, 0x4ED0); /* JMP (A0) */
+    m68k_reset(&cpu);
+
+    cpu.sr |= 0x8000; /* enable trace */
+    cpu.a_regs[0].l = 0x0201; /* odd target */
+    m68k_step(&cpu);
+
+    /* Address error must take vector 3 and not be overwritten by trace (vector 9). */
+    assert(cpu.exception_thrown == 3);
+    assert(cpu.pc == 0x0400);
+    assert(cpu.a_regs[7].l == 0x8000 - 14);
+
+    printf("Regression: group-0 fault suppresses trace test passed!\n");
+}
+
+void test_regression_save_state_preserves_model(void) {
+    M68kCpu cpu1;
+    M68kCpu cpu2;
+    u8 memory1[4096];
+    u8 memory2[4096];
+    memset(memory1, 0, sizeof(memory1));
+    memset(memory2, 0, sizeof(memory2));
+    m68k_init(&cpu1, memory1, sizeof(memory1));
+    m68k_init(&cpu2, memory2, sizeof(memory2));
+
+    m68k_set_model(&cpu1, M68K_MODEL_68010);
+    u8 blob[512];
+    size_t len = m68k_serialize(&cpu1, blob, sizeof(blob));
+    assert(len > 0);
+    assert(m68k_deserialize(&cpu2, blob, len));
+    assert(m68k_get_model(&cpu2) == M68K_MODEL_68010);
+
+    printf("Regression: save state preserves model test passed!\n");
+}
+
+void test_regression_loader_validates_hex_and_count(void) {
+    M68kCpu cpu;
+    u8 memory[1024];
+    memset(memory, 0x55, sizeof(memory));
+    m68k_init(&cpu, memory, sizeof(memory));
+
+    const char* srec_file = "test_invalid_hex.srec";
+    FILE* f = fopen(srec_file, "w");
+    assert(f != NULL);
+    /* S3 record with count=2 (smaller than 4-byte address + 1-byte checksum). */
+    fprintf(f, "S3020000FD\n");
+    /* S1 record with non-hex digits 'ZZ' that would otherwise parse as 0x00. */
+    fprintf(f, "S1040010ZZEF\n");
+    fclose(f);
+
+    assert(m68k_load_srec(&cpu, srec_file));
+    remove(srec_file);
+    assert(memory[0x10] == 0x55);
+
+    const char* ihex_file = "test_invalid_hex.hex";
+    f = fopen(ihex_file, "w");
+    assert(f != NULL);
+    /* Intel HEX record with non-hex digits 'ZZ'. */
+    fprintf(f, ":01002000ZZDF\n");
+    fprintf(f, ":00000001FF\n");
+    fclose(f);
+
+    assert(m68k_load_ihex(&cpu, ihex_file));
+    remove(ihex_file);
+    assert(memory[0x20] == 0x55);
+
+    printf("Regression: loader validates hex and count test passed!\n");
+}

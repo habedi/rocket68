@@ -68,14 +68,22 @@ void m68k_exec_bcc(M68kCpu* cpu, u16 opcode) {
             cpu->cycles_remaining -= 18;
             return;
         }
+        if (m68k_is_unmapped_target(cpu, target)) {
+            m68k_raise_bus_target_fault(cpu, target, target);
+            cpu->cycles_remaining -= 18;
+            return;
+        }
         m68k_set_pc(cpu, target);
         cpu->cycles_remaining -= 18;
     } else if (m68k_check_condition(cpu, cond)) {
         /* Bcc taken */
-        if (is_word)
-            m68k_set_pc(cpu, (cpu->pc - 2) + disp);
-        else
-            m68k_set_pc(cpu, cpu->pc + disp);
+        u32 target = is_word ? (cpu->pc - 2) + disp : cpu->pc + disp;
+        if (m68k_is_unmapped_target(cpu, target) && !(target & 1)) {
+            m68k_raise_bus_target_fault(cpu, target, cpu->ppc + 2);
+            cpu->cycles_remaining -= 10;
+            return;
+        }
+        m68k_set_pc(cpu, target);
         cpu->cycles_remaining -= 10;
     } else {
         /* Bcc not taken */
@@ -105,6 +113,11 @@ void m68k_exec_dbcc(M68kCpu* cpu, u16 opcode) {
             m68k_raise_odd_target_fault(cpu, target, cpu->pc);
             return;
         }
+        if (m68k_is_unmapped_target(cpu, target)) {
+            cpu->cycles_remaining -= 10;
+            m68k_raise_bus_target_fault(cpu, target, cpu->pc);
+            return;
+        }
         cpu->d_regs[reg].l = (cpu->d_regs[reg].l & 0xFFFF0000) | val;
         cpu->cycles_remaining -= 10;  // Loop branched
         m68k_set_pc(cpu, target);
@@ -118,6 +131,11 @@ void m68k_exec_scc(M68kCpu* cpu, u16 opcode) {
     int condition = (opcode >> 8) & 0xF;
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
+
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
 
     bool result = m68k_check_condition(cpu, condition);
     u8 val = result ? 0xFF : 0x00;
@@ -141,14 +159,21 @@ void m68k_exec_jmp(M68kCpu* cpu, u16 opcode) {
     M68kEA ea = m68k_calc_ea_ctl(cpu, mode, reg, true);
 
     if (is_jsr) {
-        /* JSR faults on the odd target before pushing the return
+        /* JSR faults on the target prefetch before pushing the return
          * address, and the pushed frame PC is the PC after EA
          * resolution. */
         if (ea.address & 1) {
             m68k_raise_odd_target_fault(cpu, ea.address, cpu->pc);
             return;
         }
+        if (m68k_is_unmapped_target(cpu, ea.address)) {
+            m68k_raise_bus_target_fault(cpu, ea.address, cpu->pc);
+            return;
+        }
         m68k_push_32(cpu, cpu->pc);
+    } else if (!(ea.address & 1) && m68k_is_unmapped_target(cpu, ea.address)) {
+        m68k_raise_bus_target_fault(cpu, ea.address, cpu->ppc + 2);
+        return;
     }
 
     m68k_set_pc(cpu, ea.address);
@@ -201,6 +226,11 @@ void m68k_exec_chk(M68kCpu* cpu, u16 opcode) {
     int reg_idx = (opcode >> 9) & 0x7;
     int mode = (opcode >> 3) & 0x7;
     int reg = opcode & 0x7;
+
+    if (mode == 1 || (mode == 7 && reg > 4)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
 
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, SIZE_WORD);
     s16 src = (s16)(cpu->d_regs[reg_idx].l & 0xFFFF);

@@ -106,6 +106,22 @@ void test_movem(void) {
     assert(cpu.a_regs[0].l == 3);
     assert(cpu.a_regs[7].l == 100);
 
+    /* Non-predecrement MOVEM.W D0/D1, (A0) and PC-relative MOVEM.W d16(PC), D0 */
+    cpu.a_regs[0].l = 0x200;
+    cpu.d_regs[0].l = 0x1111;
+    cpu.d_regs[1].l = 0x2222;
+    m68k_write_16(&cpu, 8, 0x4890); /* MOVEM.W D0/D1, (A0) */
+    m68k_write_16(&cpu, 10, 0x0003);
+    m68k_step(&cpu);
+    assert(m68k_read_16(&cpu, 0x200) == 0x1111);
+    assert(m68k_read_16(&cpu, 0x202) == 0x2222);
+
+    m68k_write_16(&cpu, 12, 0x4CBA); /* MOVEM.W d16(PC), D0 */
+    m68k_write_16(&cpu, 14, 0x0001);
+    m68k_write_16(&cpu, 16, (u16)(0x200 - 16));
+    m68k_step(&cpu);
+    assert(cpu.d_regs[0].l == 0x00001111);
+
     printf("MOVEM instruction test passed!\n");
 }
 
@@ -131,6 +147,16 @@ void test_movep(void) {
     m68k_write_16(&cpu, 6, 0x0000);
     m68k_step(&cpu);
     assert((cpu.d_regs[1].l & 0xFFFF) == 0xABCD);
+
+    /* MOVEP.L D0, (0,A0) (opmode 7: 0x01C8) and MOVEP.L (0,A0), D1 (opmode 5: 0x0348) */
+    cpu.d_regs[0].l = 0x12345678;
+    m68k_write_16(&cpu, 8, 0x01C8);
+    m68k_write_16(&cpu, 10, 0x0010);
+    m68k_write_16(&cpu, 12, 0x0348);
+    m68k_write_16(&cpu, 14, 0x0010);
+    m68k_step(&cpu);
+    m68k_step(&cpu);
+    assert(cpu.d_regs[1].l == 0x12345678);
 
     printf("MOVEP test passed!\n");
 }
@@ -269,6 +295,17 @@ void test_move_sr(void) {
     m68k_step(&cpu);
     assert((cpu.d_regs[0].l & 0xFFFF) == 0x201F);
 
+    /* MOVE SR, (A0) and MOVE CCR, (A0) on 68010 */
+    cpu.a_regs[0].l = 0x200;
+    m68k_write_16(&cpu, 2, 0x40D0); /* MOVE SR, (A0) */
+    m68k_step(&cpu);
+    assert(m68k_read_16(&cpu, 0x200) == 0x201F);
+
+    m68k_set_model(&cpu, M68K_MODEL_68010);
+    m68k_write_16(&cpu, 4, 0x42D0); /* MOVE CCR, (A0) */
+    m68k_step(&cpu);
+    assert(m68k_read_16(&cpu, 0x200) == 0x001F);
+
     printf("MOVE to/from SR test passed!\n");
 }
 
@@ -348,10 +385,25 @@ void test_moves(void) {
     m68k_step(&cpu);
     assert((cpu.d_regs[1].l & 0xFFFF) == 0x1234);
 
+    /* MOVES.B and MOVES.L (both directions, including byte to An sign-extension) */
+    cpu.d_regs[0].l = 0x85;
+    m68k_write_16(&cpu, 8, 0x0E10); /* MOVES.B D0, (A0) */
+    m68k_write_16(&cpu, 10, 0x0800);
+    m68k_write_16(&cpu, 12, 0x0E10); /* MOVES.B (A0), A1 */
+    m68k_write_16(&cpu, 14, 0x9000);
+    cpu.a_regs[2].l = 0xAABBCCDDu;
+    m68k_write_16(&cpu, 16, 0x0E90); /* MOVES.L A2, (A0) */
+    m68k_write_16(&cpu, 18, 0xA800);
+    m68k_write_16(&cpu, 20, 0x0E90); /* MOVES.L (A0), D2 */
+    m68k_write_16(&cpu, 22, 0x2000);
+    for (int i = 0; i < 4; i++) m68k_step(&cpu);
+    assert(cpu.a_regs[1].l == 0xFFFFFF85u);
+    assert(cpu.d_regs[2].l == 0xAABBCCDDu);
+
     // Privilege test
     cpu.sr = 0;
-    m68k_write_16(&cpu, 8, 0x0E50);
-    m68k_write_16(&cpu, 10, 0x1000);
+    m68k_write_16(&cpu, 24, 0x0E50);
+    m68k_write_16(&cpu, 26, 0x1000);
     m68k_write_32(&cpu, 0x20, 0x200);  // Vector 8
     cpu.a_regs[7].l = 0x400;
     m68k_step(&cpu);

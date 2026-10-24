@@ -184,6 +184,22 @@ void m68k_raise_odd_target_fault(M68kCpu* cpu, u32 target, u32 fault_pc) {
     cpu->in_address_error = false;
 }
 
+bool m68k_is_unmapped_target(M68kCpu* cpu, u32 target) {
+    if (cpu->read16_cb != NULL) return false;
+    u32 fetch_addr = mask_address_24(target);
+    return !is_valid_address(cpu, fetch_addr) || !is_valid_address(cpu, fetch_addr + 1);
+}
+
+void m68k_raise_bus_target_fault(M68kCpu* cpu, u32 target, u32 fault_pc) {
+    cpu->cycles_remaining -= 50;
+    capture_access_fault(cpu, target, false, true);
+    cpu->fault_pc = fault_pc;
+    cpu->fault_pc_valid = true;
+    cpu->in_bus_error = true;
+    m68k_exception(cpu, 2);
+    cpu->in_bus_error = false;
+}
+
 static inline void abort_faulted_instruction(M68kCpu* cpu) {
     /* Only faults raised during instruction execution abort the instruction.
      * A fault inside exception processing must not unwind the outer
@@ -636,6 +652,13 @@ int m68k_control_ea_cycles(int mode, int reg, bool is_jmp) {
 }
 
 M68kEA m68k_calc_ea_ctl(M68kCpu* cpu, int mode, int reg, bool is_jmp) {
+    /* Control addressing modes are (An), d16(An), d8(An,Xn), (xxx).W,
+     * (xxx).L, d16(PC), and d8(PC,Xn). Any other mode traps as an
+     * illegal instruction. */
+    if (mode < 2 || mode == 3 || mode == 4 || (mode == 7 && reg > 3)) {
+        m68k_raise_illegal_ea(cpu);
+        return (M68kEA){0};
+    }
     cpu->cycles_remaining -= m68k_control_ea_cycles(mode, reg, is_jmp);
     return m68k_calc_ea_ex(cpu, mode, reg, SIZE_LONG, false);
 }
@@ -993,9 +1016,8 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
 
         /* Immediate ALU encodings with size code 3 belong to later
          * family members and are illegal here. */
-        if (((opcode >> 6) & 0x3) == 3 &&
-            (top4 == 0x0 || top4 == 0x2 || top4 == 0x4 || top4 == 0x6 || top4 == 0xA ||
-             top4 == 0xC)) {
+        if (((opcode >> 6) & 0x3) == 3 && (top4 == 0x0 || top4 == 0x2 || top4 == 0x4 ||
+                                           top4 == 0x6 || top4 == 0xA || top4 == 0xC)) {
             m68k_exception(cpu, 4);
             cycles = 34;
             goto done;
@@ -1172,35 +1194,35 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         }
 
         if (opcode == 0x4E74) {
-        /* A later-family instruction is illegal on the 68000. */
-        if (cpu->model < M68K_MODEL_68010) {
-            m68k_exception(cpu, 4);
-            cycles = 34;
-            goto done;
-        }
+            /* A later-family instruction is illegal on the 68000. */
+            if (cpu->model < M68K_MODEL_68010) {
+                m68k_exception(cpu, 4);
+                cycles = 34;
+                goto done;
+            }
             m68k_exec_rtd(cpu, opcode);
             cycles = 16;
             goto done;
         }
         if (opcode == 0x4E7A || opcode == 0x4E7B) {
-        /* A later-family instruction is illegal on the 68000. */
-        if (cpu->model < M68K_MODEL_68010) {
-            m68k_exception(cpu, 4);
-            cycles = 34;
-            goto done;
-        }
+            /* A later-family instruction is illegal on the 68000. */
+            if (cpu->model < M68K_MODEL_68010) {
+                m68k_exception(cpu, 4);
+                cycles = 34;
+                goto done;
+            }
             m68k_exec_movec(cpu, opcode);
             cycles = 12;
             goto done;
         }
 
         if ((opcode & 0xFFF8) == 0x4848) {
-        /* A later-family instruction is illegal on the 68000. */
-        if (cpu->model < M68K_MODEL_68010) {
-            m68k_exception(cpu, 4);
-            cycles = 34;
-            goto done;
-        }
+            /* A later-family instruction is illegal on the 68000. */
+            if (cpu->model < M68K_MODEL_68010) {
+                m68k_exception(cpu, 4);
+                cycles = 34;
+                goto done;
+            }
             m68k_exec_bkpt(cpu, opcode);
             cycles = 4;
             goto done;
@@ -1221,8 +1243,8 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         if ((opcode & 0xFFC0) == 0x4E80) {
             m68k_exec_jmp(cpu, opcode);
             /* JSR push cost; control-flow EA timing adds the rest. A
-             * faulted odd target skips the push and its cost. */
-            cycles = (cpu->exception_thrown == 3) ? 0 : 8;
+             * faulted target skips the push and its cost. */
+            cycles = (cpu->exception_thrown == 2 || cpu->exception_thrown == 3) ? 0 : 8;
             goto done;
         }
 
@@ -1260,12 +1282,6 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         if ((opcode & 0xF1C0) == 0x41C0) {
             m68k_exec_lea(cpu, opcode);
             cycles = 0; /* LEA timing is entirely EA-mode dependent */
-            goto done;
-        }
-
-        if ((opcode & 0xFFF8) == 0x49C0) {
-            m68k_exec_extb(cpu, opcode);
-            cycles = 4;
             goto done;
         }
 
@@ -1470,8 +1486,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         if ((opmode >= 4 && opmode <= 6) && (mode == 0 || mode == 1)) {
             m68k_exec_subx(cpu, opcode);
             M68kSize sxsz = (opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG;
-            cycles = (mode == 1) ? ((sxsz == SIZE_LONG) ? 16 : 8)
-                                 : ((sxsz == SIZE_LONG) ? 8 : 4);
+            cycles = (mode == 1) ? ((sxsz == SIZE_LONG) ? 16 : 8) : ((sxsz == SIZE_LONG) ? 8 : 4);
             goto done;
         }
         m68k_exec_sub(cpu, opcode);
@@ -1565,8 +1580,7 @@ void m68k_step_ex(M68kCpu* cpu, bool check_exceptions) {
         if ((opmode >= 4 && opmode <= 6) && (mode == 0 || mode == 1)) {
             m68k_exec_addx(cpu, opcode);
             M68kSize axsz = (opmode == 4) ? SIZE_BYTE : (opmode == 5) ? SIZE_WORD : SIZE_LONG;
-            cycles = (mode == 1) ? ((axsz == SIZE_LONG) ? 16 : 8)
-                                 : ((axsz == SIZE_LONG) ? 8 : 4);
+            cycles = (mode == 1) ? ((axsz == SIZE_LONG) ? 16 : 8) : ((axsz == SIZE_LONG) ? 8 : 4);
             goto done;
         }
         m68k_exec_add(cpu, opcode);
@@ -1657,7 +1671,7 @@ done:
         m68k_raise_odd_target_fault(cpu, cpu->pc, cpu->ppc + 2);
     }
 
-    if (check_exceptions && trace_active && !cpu->stopped) {
+    if (!cpu->group0_fault && check_exceptions && trace_active && !cpu->stopped) {
         m68k_exception(cpu, 9);
     }
     cpu->cycles_remaining -= cycles;
@@ -1763,7 +1777,8 @@ enum {
     M68K_TAG_DFC = 9,
     M68K_TAG_FLAGS = 10,
     M68K_TAG_DECODE = 11,
-    M68K_TAG_CYCLES = 12
+    M68K_TAG_CYCLES = 12,
+    M68K_TAG_MODEL = 13
 };
 
 static void state_put_16(u8* p, u16 v) {
@@ -1792,7 +1807,8 @@ static u8* state_field(u8* p, u8 tag, u8 len) {
 
 size_t m68k_serialize(const M68kCpu* cpu, u8* buffer, size_t capacity) {
     /* Header 8, register blocks 2 + 32 each, and the scalar fields. */
-    const size_t need = 8 + (2 + 32) * 2 + (2 + 4) * 6 + (2 + 2) + (2 + 4) + (2 + 6) + (2 + 8);
+    const size_t need =
+        8 + (2 + 32) * 2 + (2 + 4) * 6 + (2 + 2) + (2 + 4) + (2 + 6) + (2 + 8) + (2 + 4);
 
     if (buffer == NULL) return need;
     if (capacity < need) return 0;
@@ -1849,6 +1865,10 @@ size_t m68k_serialize(const M68kCpu* cpu, u8* buffer, size_t capacity) {
     state_put_32(p, (u32)cpu->target_cycles);
     state_put_32(p + 4, (u32)cpu->cycles_remaining);
     p += 8;
+
+    p = state_field(p, M68K_TAG_MODEL, 4);
+    state_put_32(p, (u32)cpu->model);
+    p += 4;
 
     return (size_t)(p - buffer);
 }
@@ -1922,6 +1942,13 @@ bool m68k_deserialize(M68kCpu* cpu, const u8* buffer, size_t length) {
                 cpu->target_cycles = (int)state_get_32(p);
                 cpu->cycles_remaining = (int)state_get_32(p + 4);
                 break;
+            case M68K_TAG_MODEL: {
+                if (len != 4) return false;
+                u32 model = state_get_32(p);
+                if (model > (u32)M68K_MODEL_68010) return false;
+                cpu->model = (M68kModel)model;
+                break;
+            }
             default:
                 break; /* unknown tags are skipped */
         }

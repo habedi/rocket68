@@ -39,6 +39,12 @@ void m68k_exec_and(M68kCpu* cpu, u16 opcode) {
             return;
     }
 
+    if ((dir_reg_to_ea && (mode < 2 || (mode == 7 && reg > 1))) ||
+        (!dir_reg_to_ea && (mode == 1 || (mode == 7 && reg > 4)))) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
     u32 src, dest, result;
 
@@ -104,6 +110,12 @@ void m68k_exec_or(M68kCpu* cpu, u16 opcode) {
             return;
     }
 
+    if ((dir_reg_to_ea && (mode < 2 || (mode == 7 && reg > 1))) ||
+        (!dir_reg_to_ea && (mode == 1 || (mode == 7 && reg > 4)))) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
     u32 src, dest, result;
 
@@ -152,6 +164,11 @@ void m68k_exec_eor(M68kCpu* cpu, u16 opcode) {
             return;
     }
 
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
     u32 src, dest, result;
 
@@ -187,6 +204,11 @@ void m68k_exec_not(M68kCpu* cpu, u16 opcode) {
             break;
         default:
             return;
+    }
+
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
     }
 
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
@@ -259,6 +281,11 @@ void m68k_exec_tst(M68kCpu* cpu, u16 opcode) {
         size = SIZE_LONG;
     else
         return;
+
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
 
     M68kEA ea = m68k_calc_ea(cpu, mode, reg, size);
     u32 result = ea.value;
@@ -473,6 +500,13 @@ void m68k_exec_andi(M68kCpu* cpu, u16 opcode) {
             return;
     }
 
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
     u32 imm;
     if (size == SIZE_BYTE)
         imm = m68k_fetch(cpu) & 0xFF;
@@ -481,8 +515,6 @@ void m68k_exec_andi(M68kCpu* cpu, u16 opcode) {
     else
         imm = ((u32)m68k_fetch(cpu) << 16) | m68k_fetch(cpu);
 
-    int mode = (opcode >> 3) & 0x7;
-    int reg = opcode & 0x7;
     /* The immediate fetch cost is spent before EA resolution, so it
      * survives a faulted operand access. */
     cpu->cycles_remaining -= (((opcode >> 6) & 0x3) == 2) ? 8 : 4;
@@ -534,6 +566,13 @@ void m68k_exec_ori(M68kCpu* cpu, u16 opcode) {
             return;
     }
 
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
     u32 imm;
     if (size == SIZE_BYTE)
         imm = m68k_fetch(cpu) & 0xFF;
@@ -542,8 +581,6 @@ void m68k_exec_ori(M68kCpu* cpu, u16 opcode) {
     else
         imm = ((u32)m68k_fetch(cpu) << 16) | m68k_fetch(cpu);
 
-    int mode = (opcode >> 3) & 0x7;
-    int reg = opcode & 0x7;
     /* The immediate fetch cost is spent before EA resolution, so it
      * survives a faulted operand access. */
     cpu->cycles_remaining -= (((opcode >> 6) & 0x3) == 2) ? 8 : 4;
@@ -595,6 +632,13 @@ void m68k_exec_eori(M68kCpu* cpu, u16 opcode) {
             return;
     }
 
+    int mode = (opcode >> 3) & 0x7;
+    int reg = opcode & 0x7;
+    if (mode == 1 || (mode == 7 && reg > 1)) {
+        m68k_exception(cpu, 4);
+        return;
+    }
+
     u32 imm;
     if (size == SIZE_BYTE)
         imm = m68k_fetch(cpu) & 0xFF;
@@ -603,8 +647,6 @@ void m68k_exec_eori(M68kCpu* cpu, u16 opcode) {
     else
         imm = ((u32)m68k_fetch(cpu) << 16) | m68k_fetch(cpu);
 
-    int mode = (opcode >> 3) & 0x7;
-    int reg = opcode & 0x7;
     /* The immediate fetch cost is spent before EA resolution, so it
      * survives a faulted operand access. */
     cpu->cycles_remaining -= (((opcode >> 6) & 0x3) == 2) ? 8 : 4;

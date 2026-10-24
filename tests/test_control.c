@@ -103,6 +103,25 @@ void test_dbcc_scc(void) {
     assert(cpu.pc == 12);
     assert((cpu.d_regs[0].l & 0xFFFF) == 0xFFFF);
 
+    /* Exercise all 16 condition codes via Scc (both Dn and memory) and DBcc true path */
+    cpu.a_regs[0].l = 0x200;
+    for (int cond = 0; cond < 16; cond++) {
+        cpu.pc = 0x100;
+        cpu.sr = (cond & 1) ? (M68K_SR_C | M68K_SR_Z | M68K_SR_V | M68K_SR_N) : 0;
+        m68k_write_16(&cpu, 0x100, (u16)(0x50C0 | (cond << 8))); /* Scc D0 */
+        m68k_write_16(&cpu, 0x102, (u16)(0x50D0 | (cond << 8))); /* Scc (A0) */
+        m68k_step(&cpu);
+        m68k_step(&cpu);
+    }
+    /* DBcc when condition is true (DBT D0, disp -> 0x50C8) */
+    cpu.pc = 0x100;
+    cpu.d_regs[0].l = 5;
+    m68k_write_16(&cpu, 0x100, 0x50C8);
+    m68k_write_16(&cpu, 0x102, 0xFFFC);
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x104);
+    assert(cpu.d_regs[0].l == 5);
+
     printf("Loop (DBcc/Scc) test passed!\n");
 }
 
@@ -120,6 +139,14 @@ void test_misc_control(void) {
     m68k_step(&cpu);
 
     assert(cpu.pc == 0x400);
+
+    /* CHK negative operand trap (val < 0 sets N=1 and takes vector 6) */
+    cpu.d_regs[0].l = 50;
+    cpu.d_regs[1].l = 0xFFFF; /* -1 */
+    cpu.pc = 0;
+    m68k_step(&cpu);
+    assert(cpu.pc == 0x400);
+    assert((cpu.sr & M68K_SR_N) != 0);
 
     printf("Misc Control (CHK) test passed!\n");
 }
@@ -210,7 +237,7 @@ void test_address_error_frame_pc(void) {
     cpu.a_regs[7].l = 0x1000;
     cpu.ssp = 0x1000;
     cpu.a_regs[5].l = 0x501;
-    m68k_write_32(&cpu, 3 * 4, 0x600); /* address error vector */
+    m68k_write_32(&cpu, 3 * 4, 0x600);  /* address error vector */
     m68k_write_16(&cpu, 0x100, 0x4A6D); /* TST.w (d16, A5) */
     m68k_write_16(&cpu, 0x102, 0x0010); /* d16 = 0x10, EA = 0x511 (odd) */
     cpu.pc = 0x100;
@@ -236,8 +263,8 @@ void test_address_error_frame_pc(void) {
     m68k_step(&cpu);
     assert(cpu.pc == 0x600);
     assert(cpu.a_regs[5].l == 0x503);
-    frame_pc = ((u32)memory[0xFFC] << 24) | ((u32)memory[0xFFD] << 16) |
-               ((u32)memory[0xFFE] << 8) | memory[0xFFF];
+    frame_pc = ((u32)memory[0xFFC] << 24) | ((u32)memory[0xFFD] << 16) | ((u32)memory[0xFFE] << 8) |
+               memory[0xFFF];
     assert(frame_pc == 0x102);
 
     /* TST.w -(A5) with an odd address: the predecrement is committed and
@@ -254,8 +281,8 @@ void test_address_error_frame_pc(void) {
     m68k_step(&cpu);
     assert(cpu.pc == 0x600);
     assert(cpu.a_regs[5].l == 0x501);
-    frame_pc = ((u32)memory[0xFFC] << 24) | ((u32)memory[0xFFD] << 16) |
-               ((u32)memory[0xFFE] << 8) | memory[0xFFF];
+    frame_pc = ((u32)memory[0xFFC] << 24) | ((u32)memory[0xFFD] << 16) | ((u32)memory[0xFFE] << 8) |
+               memory[0xFFF];
     assert(frame_pc == 0x104);
 
     printf("Address error frame PC test passed!\n");
@@ -464,7 +491,7 @@ void test_model_gating(void) {
     cpu.a_regs[7].l = 0x1000;
     cpu.ssp = 0x1000;
     cpu.d_regs[0].l = 0x800;
-    m68k_write_32(&cpu, 4 * 4, 0x600); /* illegal instruction vector */
+    m68k_write_32(&cpu, 4 * 4, 0x600);  /* illegal instruction vector */
     m68k_write_16(&cpu, 0x100, 0x4E7B); /* MOVEC D0, VBR */
     m68k_write_16(&cpu, 0x102, 0x0801);
     cpu.pc = 0x100;
@@ -544,7 +571,7 @@ void test_68010_sr_ccr(void) {
     cpu.a_regs[7].l = 0x2000;
     cpu.usp = 0x2000;
     cpu.ssp = 0x1000;
-    m68k_write_32(&cpu, 8 * 4, 0x600); /* privilege violation vector */
+    m68k_write_32(&cpu, 8 * 4, 0x600);  /* privilege violation vector */
     m68k_write_16(&cpu, 0x100, 0x40C0); /* MOVE SR, D0 */
     cpu.pc = 0x100;
     m68k_step(&cpu);
@@ -719,10 +746,27 @@ void test_movec(void) {
     m68k_step(&cpu);
     assert(cpu.a_regs[1].l == 0x456);
 
+    /* MOVEC to DFC, MOVEC to/from USP, and MOVEC from SFC */
+    cpu.d_regs[0].l = 0x00000005;
+    m68k_write_16(&cpu, 16, 0x4E7B);
+    m68k_write_16(&cpu, 18, 0x0001); /* D0 -> DFC */
+    cpu.d_regs[1].l = 0x00003456;
+    m68k_write_16(&cpu, 20, 0x4E7B);
+    m68k_write_16(&cpu, 22, 0x1800); /* D1 -> USP */
+    m68k_write_16(&cpu, 24, 0x4E7A);
+    m68k_write_16(&cpu, 26, 0x2000); /* SFC -> D2 */
+    m68k_write_16(&cpu, 28, 0x4E7A);
+    m68k_write_16(&cpu, 30, 0x3800); /* USP -> D3 */
+    for (int i = 0; i < 4; i++) m68k_step(&cpu);
+    assert(cpu.dfc == 5);
+    assert(cpu.usp == 0x3456);
+    assert(cpu.d_regs[2].l == 0x123);
+    assert(cpu.d_regs[3].l == 0x3456);
+
     // Privilege test (User mode)
     cpu.sr = 0;
-    m68k_write_16(&cpu, 16, 0x4E7A);
-    m68k_write_16(&cpu, 18, 0x1801);
+    m68k_write_16(&cpu, 32, 0x4E7A);
+    m68k_write_16(&cpu, 34, 0x1801);
     // Privilege violation vector (8) is fetched relative to VBR (0x800 here).
     m68k_write_32(&cpu, 0x820, 0x100);
     cpu.a_regs[7].l = 0x400;

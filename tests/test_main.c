@@ -135,6 +135,14 @@ int main(void) {
     test_disasm_buffer_bounds();
     test_disasm_truncates_small_buffers();
 
+    test_regression_moves_mem_to_reg_and_validation();
+    test_regression_extb_is_illegal_on_68000();
+    test_regression_illegal_ea_modes_trap();
+    test_regression_target_bus_error_on_control_flow();
+    test_regression_group0_fault_suppresses_trace();
+    test_regression_save_state_preserves_model();
+    test_regression_loader_validates_hex_and_count();
+
     extern void run_loader_tests();
     run_loader_tests();
 

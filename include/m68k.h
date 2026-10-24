@@ -154,34 +154,34 @@ typedef struct M68kCpu {
     u8* memory;      /**< Bound flat memory pointer. */
     u32 memory_size; /**< Size of bound memory in bytes. */
 
-    int irq_level;             /**< Asserted interrupt level (0-7). */
-    bool nmi_pending;          /**< Level 7 edge latched and not yet serviced. */
-    u32 usp;                   /**< User stack pointer. */
-    u32 ssp;                   /**< Supervisor stack pointer shadow. */
-    bool stopped;              /**< STOP state latch. */
-    bool trace_pending;        /**< Trace pending latch. */
-    int exception_thrown;      /**< Exception state marker. */
-    int exception_depth;       /**< Nesting depth of active exception processing. */
-    bool in_address_error;     /**< Address error re-entry guard. */
-    bool in_bus_error;         /**< Bus error re-entry guard. */
-    u32 fault_address;         /**< Fault address latched for exception frames. */
-    u32 fault_pc;              /**< PC value pushed in group-0 frames when valid. */
-    u16 fault_ir;              /**< Fault IR latched for exception frames. */
-    u16 fault_ssw;             /**< Fault status word for exception frames. */
-    bool fault_program_access; /**< Fault access type marker. */
-    bool fault_valid;          /**< Fault information validity flag. */
-    bool fault_pc_valid;       /**< Fault PC validity flag. */
-    u16 fault_bus_word;        /**< Internal bus word for frame IR/SSW when valid. */
-    bool fault_bus_word_valid; /**< Fault bus word validity flag. */
+    int irq_level;              /**< Asserted interrupt level (0-7). */
+    bool nmi_pending;           /**< Level 7 edge latched and not yet serviced. */
+    u32 usp;                    /**< User stack pointer. */
+    u32 ssp;                    /**< Supervisor stack pointer shadow. */
+    bool stopped;               /**< STOP state latch. */
+    bool trace_pending;         /**< Trace pending latch. */
+    int exception_thrown;       /**< Exception state marker. */
+    int exception_depth;        /**< Nesting depth of active exception processing. */
+    bool in_address_error;      /**< Address error re-entry guard. */
+    bool in_bus_error;          /**< Bus error re-entry guard. */
+    u32 fault_address;          /**< Fault address latched for exception frames. */
+    u32 fault_pc;               /**< PC value pushed in group-0 frames when valid. */
+    u16 fault_ir;               /**< Fault IR latched for exception frames. */
+    u16 fault_ssw;              /**< Fault status word for exception frames. */
+    bool fault_program_access;  /**< Fault access type marker. */
+    bool fault_valid;           /**< Fault information validity flag. */
+    bool fault_pc_valid;        /**< Fault PC validity flag. */
+    u16 fault_bus_word;         /**< Internal bus word for frame IR/SSW when valid. */
+    bool fault_bus_word_valid;  /**< Fault bus word validity flag. */
     bool operand_program_space; /**< PC-relative operand access marker. */
-    bool group0_fault;         /**< Group-0 fault latched for the current step. */
-    bool fault_trap_active;    /**< Group-0 fault trap active for the current step. */
-    jmp_buf fault_trap;        /**< Non-local escape target for group-0 fault aborts. */
+    bool group0_fault;          /**< Group-0 fault latched for the current step. */
+    bool fault_trap_active;     /**< Group-0 fault trap active for the current step. */
+    jmp_buf fault_trap;         /**< Non-local escape target for group-0 fault aborts. */
 
     M68kModel model; /**< CPU model profile; gates later-family instructions. */
-    u32 vbr; /**< Vector base register (model extension path). */
-    u32 sfc; /**< Source function code register (model extension path). */
-    u32 dfc; /**< Destination function code register (model extension path). */
+    u32 vbr;         /**< Vector base register (model extension path). */
+    u32 sfc;         /**< Source function code register (model extension path). */
+    u32 dfc;         /**< Destination function code register (model extension path). */
 
     int target_cycles;    /**< Timeslice target cycles accumulator. */
     int cycles_remaining; /**< Remaining cycles in current timeslice. */
