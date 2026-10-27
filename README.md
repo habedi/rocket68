@@ -32,8 +32,8 @@ hard to integrate them into other projects.
 Rocket 68 focuses on correctness first: instruction behavior, exception handling, and cycle timing closely follow real hardware so projects
 can rely on predictable and accurate CPU behavior.
 
-Rocket 68 is designed to be used a portable library.
-All state lives inside a single `M68kCpu` instance, with no shared global state.
+Rocket 68 is designed to be used as a portable library.
+All states live inside a single `M68kCpu` instance, with no shared global state.
 This makes it relatively straightforward to run multiple CPUs or integrate the core into larger systems.
 Additionally, the codebase uses modern C11 with a small and explicit API that makes the project easy to use and extend.
 
@@ -54,6 +54,10 @@ See [ROADMAP.md](ROADMAP.md) for the list of implemented and planned features.
 ---
 
 ### Quickstart
+
+> [!TIP]
+> If you have [Nix](https://nixos.org/download.html),
+> you can use `nix develop` to create an environment with all dependencies installed and ready to use.
 
 1. Clone the repository
 
