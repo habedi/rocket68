@@ -24,22 +24,14 @@
           default = pkgs.mkShell {
             ZIG = "${zigCompiler}/bin/zig";
             packages = with pkgs; [
-              # C Toolchain & Build
               gcc
+              git
               gnumake
-
-              # Linting, Formatting & Debugging
               clang-tools
               cppcheck
-
-              # Alternative tools you support
               zigCompiler
-
-              # Development Utilities
               pre-commit
               uv
-
-              # Documentation
               doxygen
               (python3.withPackages (ps: with ps; [ mkdocs mkdocs-material mkdocstrings-python ]))
             ] ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.valgrind pkgs.gdb ];
