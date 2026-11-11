@@ -4,7 +4,7 @@
 CC       := gcc # Change to `clang` if needed
 CXX      := g++
 AR       := ar
-ZIG ?= $(shell command -v "$(HOME)/.local/share/zig/0.17.0/zig" || command -v zig)
+ZIG ?= $(shell command -v "$(HOME)/.local/share/zig/0.17.1/zig" || command -v zig)
 ZIG_OPTIMIZE ?= Debug
 ZIG_BUILD_OPTS = -Doptimize=$(ZIG_OPTIMIZE)
 
