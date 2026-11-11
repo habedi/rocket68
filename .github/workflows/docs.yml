@@ -21,6 +21,10 @@ jobs:
   build-docs:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        shell: nix develop --command bash -e {0}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,17 +32,13 @@ jobs:
           submodules: recursive
           lfs: true
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y make doxygen python3-pip
-          pip3 install uv
-          uv sync
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate documentation
-        run: |
-          source .venv/bin/activate
-          make docs
+        run: make docs
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

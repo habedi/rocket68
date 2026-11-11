@@ -29,6 +29,10 @@ jobs:
   benchmarks:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        shell: nix develop --command bash -e {0}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -36,11 +40,10 @@ jobs:
           submodules: recursive
           lfs: true
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y make
-          make install-deps
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run benchmarks
         run: |
