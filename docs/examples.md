@@ -317,3 +317,30 @@ void dump_disasm(M68kCpu* cpu, u32 pc, int count) {
 ```
 
 For disassembly return semantics, see [API Reference](api-reference.md).
+
+
+### Reporting a Callback Bus Error
+
+This word-write callback reports unmapped accesses to the CPU.
+The core checks alignment before calling it and processes the bus error after it returns.
+
+```c
+#include "rocket68.h"
+
+static void checked_write16(M68kCpu* cpu, u32 address, u16 value) {
+    if (address >= cpu->memory_size || cpu->memory_size - address < 2) {
+        m68k_raise_bus_error(cpu);
+        return;
+    }
+    cpu->memory[address] = (u8)(value >> 8);
+    cpu->memory[address + 1] = (u8)value;
+}
+
+void attach_checked_write16(M68kCpu* cpu) {
+    m68k_set_write16_callback(cpu, checked_write16);
+}
+```
+
+For a read callback, it reports the error and returns zero immediately.
+Do not continue with additional bus accesses after a failure report.
+See the [API reference](api-reference.md#void-m68k_raise_bus_errorm68kcpu-cpu) for fault-handling limits.

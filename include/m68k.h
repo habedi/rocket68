@@ -163,6 +163,7 @@ typedef struct M68kCpu {
     int exception_thrown;       /**< Exception state marker. */
     int exception_depth;        /**< Nesting depth of active exception processing. */
     bool in_address_error;      /**< Address error re-entry guard. */
+    u8 memory_callback_state;   /**< Internal callback state: idle, active, or fault reported. */
     bool in_bus_error;          /**< Bus error re-entry guard. */
     u32 fault_address;          /**< Fault address latched for exception frames. */
     u32 fault_pc;               /**< PC value pushed in group-0 frames when valid. */
@@ -509,6 +510,19 @@ void m68k_set_write16_callback(M68kCpu* cpu, M68kWrite16Callback callback);
  * @param callback Callback function pointer or NULL.
  */
 void m68k_set_write32_callback(M68kCpu* cpu, M68kWrite32Callback callback);
+
+/**
+ * @brief Report a bus error from the current host memory callback.
+ * @param cpu CPU context supplied to the callback.
+ *
+ * Return immediately after this call (read callbacks may return any value).
+ * The core processes vector 2 after the callback returns, using the current
+ * access address and direction. This function does not unwind the callback.
+ * Calls outside a CPU memory access, including disassembly and internal peeks,
+ * have no effect. Callbacks must not reenter execution or memory access helpers
+ * on the same CPU. Earlier bus side effects are not rolled back.
+ */
+void m68k_raise_bus_error(M68kCpu* cpu);
 
 /**
  * @brief Get serialized context size.

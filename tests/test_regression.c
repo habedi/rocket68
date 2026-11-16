@@ -1742,3 +1742,122 @@ void test_regression_loader_validates_hex_and_count(void) {
 
     printf("Regression: loader validates hex and count test passed!\n");
 }
+
+/* The marker proves that reporting a fault returns to the host callback. */
+static void callback_bus_fault(M68kCpu* cpu) {
+    m68k_raise_bus_error(cpu);
+    cpu->memory[0x300]++;
+}
+
+static u8 fault_read8(M68kCpu* cpu, u32 address) {
+    if (address >= cpu->memory_size) {
+        callback_bus_fault(cpu);
+        return 0xFF;
+    }
+    return cpu->memory[address];
+}
+static u16 fault_read16(M68kCpu* cpu, u32 address) {
+    if (address + 1 >= cpu->memory_size) {
+        callback_bus_fault(cpu);
+        return 0xFFFF;
+    }
+    return (u16)((cpu->memory[address] << 8) | cpu->memory[address + 1]);
+}
+static u32 fault_read32(M68kCpu* cpu, u32 address) {
+    if (address + 3 >= cpu->memory_size) {
+        callback_bus_fault(cpu);
+        return 0xFFFFFFFF;
+    }
+    return ((u32)fault_read16(cpu, address) << 16) | fault_read16(cpu, address + 2);
+}
+static void fault_write8(M68kCpu* cpu, u32 address, u8 value) {
+    if (address >= cpu->memory_size) {
+        callback_bus_fault(cpu);
+        return;
+    }
+    cpu->memory[address] = value;
+}
+static void fault_write16(M68kCpu* cpu, u32 address, u16 value) {
+    if (address + 1 >= cpu->memory_size) {
+        callback_bus_fault(cpu);
+        return;
+    }
+    cpu->memory[address] = (u8)(value >> 8);
+    cpu->memory[address + 1] = (u8)value;
+}
+static void fault_write32(M68kCpu* cpu, u32 address, u32 value) {
+    if (address + 3 >= cpu->memory_size) {
+        callback_bus_fault(cpu);
+        return;
+    }
+    fault_write16(cpu, address, (u16)(value >> 16));
+    fault_write16(cpu, address + 2, (u16)value);
+}
+
+void test_regression_callback_bus_error(void) {
+    /* MOVE.B/W/L (A0),D0, MOVE.B/W/L D0,(A0), and an opcode fetch. */
+    const u16 opcodes[] = {0x1010, 0x3010, 0x2010, 0x1080, 0x3080, 0x2080, 0};
+    for (unsigned i = 0; i < sizeof(opcodes) / sizeof(opcodes[0]); i++) {
+        M68kCpu flat, host;
+        u8 flat_mem[4096] = {0}, host_mem[4096];
+        m68k_init(&flat, flat_mem, sizeof(flat_mem));
+        flat.sr = 0x2700;
+        flat.pc = i == 6 ? 0xFFFF1000u : 0x100;
+        flat.a_regs[0].l = 0xFFFF1000u;
+        flat.a_regs[7].l = 0x800;
+        flat.d_regs[0].l = 0x12345678;
+        m68k_write_32(&flat, 8, 0x400);
+        m68k_write_16(&flat, 0x100, opcodes[i]);
+        memcpy(host_mem, flat_mem, sizeof(host_mem));
+        m68k_init(&host, host_mem, sizeof(host_mem));
+        m68k_set_context(&host, &flat);
+        m68k_set_read8_callback(&host, fault_read8);
+        m68k_set_read16_callback(&host, fault_read16);
+        m68k_set_read32_callback(&host, fault_read32);
+        m68k_set_write8_callback(&host, fault_write8);
+        m68k_set_write16_callback(&host, fault_write16);
+        m68k_set_write32_callback(&host, fault_write32);
+        m68k_step(&host);
+        assert(host_mem[0x300] == 1);
+        assert(flat.exception_thrown == 0);
+        m68k_step(&flat);
+        assert(host.exception_thrown == 2);
+        assert(host.pc == 0x400);
+        assert(host.a_regs[7].l == 0x800 - 14);
+        assert(host.d_regs[0].l == 0x12345678);
+        assert(host.sr == flat.sr);
+        assert(host.cycles_remaining == flat.cycles_remaining);
+        assert(memcmp(host_mem + 0x800 - 14, flat_mem + 0x800 - 14, 14) == 0);
+        host_mem[0x300] = 0;
+        assert(memcmp(host_mem, flat_mem, sizeof(host_mem)) == 0);
+        /* A successful subsequent access must not inherit the fault. */
+        assert(m68k_read_16(&host, 0x100) == opcodes[i]);
+    }
+    /* Recursive reports during bus-error stacking follow the existing guard. */
+    M68kCpu cpu;
+    u8 memory[4096] = {0};
+    m68k_init(&cpu, memory, sizeof(memory));
+    cpu.sr = 0x2700;
+    cpu.a_regs[7].l = 0x2000;
+    m68k_write_32(&cpu, 8, 0x400);
+    m68k_set_write16_callback(&cpu, fault_write16);
+    m68k_set_write32_callback(&cpu, fault_write32);
+    m68k_set_read8_callback(&cpu, fault_read8);
+    m68k_raise_bus_error(&cpu); /* Outside a callback, this is a no-op. */
+    assert(m68k_read_8(&cpu, 0) == 0);
+    assert(cpu.exception_thrown == 0);
+    m68k_set_read16_callback(&cpu, fault_read16);
+    char line[128];
+    m68k_disasm(&cpu, 0x3000, line, sizeof(line));
+    assert(cpu.exception_thrown == 0);
+    assert(cpu.memory_callback_state == 0);
+    memory[0x300] = 0;
+    assert(m68k_read_8(&cpu, 0x3000) == 0);
+    assert(cpu.exception_thrown == 2);
+    assert(cpu.pc == 0x400);
+    assert(cpu.exception_depth == 0);
+    assert(!cpu.in_bus_error);
+    assert(cpu.memory_callback_state == 0);
+    assert(memory[0x300] == 6);
+    printf("Regression: callback bus error test passed!\n");
+}

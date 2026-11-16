@@ -128,4 +128,6 @@ void test_regression_group0_fault_suppresses_trace(void);
 void test_regression_save_state_preserves_model(void);
 void test_regression_loader_validates_hex_and_count(void);
 
+void test_regression_callback_bus_error(void);
+
 #endif

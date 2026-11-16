@@ -230,6 +230,22 @@ Line-A and line-F opcodes take vectors 10 and 11 without invoking this callback.
 Use these to route memory access to a host bus implementation (for mapped IO/peripherals or custom memory models).
 Pass `NULL` to disable a callback and fall back to default flat-memory behavior for that access width.
 
+### `void m68k_raise_bus_error(M68kCpu* cpu);`
+
+Reports a failed memory access.
+Call it from a memory read or write callback, then return immediately.
+For reads, return zero; the core ignores this value.
+After the callback returns, the core raises a bus error (vector 2) and stops the current instruction.
+Note that earlier memory or register changes are not undone.
+
+Calls outside a CPU memory access, including disassembly and internal peeks, do nothing.
+Do not call CPU execution or memory access functions on the same CPU from inside a callback.
+Direct memory calls made outside instruction execution return normally after handling the error; failed reads return zero.
+
+Current limits include: no CPU halt on a second bus fault, no callback target fetch during JMP, and no separate faults for the two halves of a 32-bit access.
+Faults report the access's starting address.
+WASM builds using the current fault stubs still trap when an instruction fails.
+
 ## Context Save/Restore
 
 ### `unsigned int m68k_context_size(void);`

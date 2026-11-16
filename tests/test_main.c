@@ -103,6 +103,7 @@ int main(void) {
     test_regression_divs_overflow_n_flag();
     test_regression_chk_only_modifies_n();
     test_regression_write_oob_triggers_bus_error();
+    test_regression_callback_bus_error();
     test_regression_dbcc_cycle_count();
     test_regression_bcc_not_taken_cycles();
     test_regression_bsr_cycles();
