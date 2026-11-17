@@ -7,6 +7,8 @@
 
 #include "m68k_internal.h"
 
+enum { MEMORY_CALLBACK_IDLE, MEMORY_CALLBACK_ACTIVE, MEMORY_CALLBACK_FAILED };
+
 void m68k_init(M68kCpu* cpu, u8* memory, u32 memory_size) {
     memset(cpu, 0, sizeof(M68kCpu));
     cpu->memory = memory;
@@ -21,6 +23,7 @@ void m68k_init(M68kCpu* cpu, u8* memory, u32 memory_size) {
     cpu->fault_valid = false;
     cpu->group0_fault = false;
     cpu->fault_trap_active = false;
+    cpu->memory_callback_state = MEMORY_CALLBACK_IDLE;
 }
 
 void m68k_reset(M68kCpu* cpu) {
@@ -42,6 +45,7 @@ void m68k_reset(M68kCpu* cpu) {
     cpu->group0_fault = false;
     cpu->fault_trap_active = false;
     cpu->exception_depth = 0;
+    cpu->memory_callback_state = MEMORY_CALLBACK_IDLE;
     cpu->ppc = 0;
     cpu->ir = 0;
     cpu->vbr = 0; /* Reset clears the vector base on 68010-class parts. */
@@ -210,6 +214,26 @@ static inline void abort_faulted_instruction(M68kCpu* cpu) {
     }
 }
 
+void m68k_raise_bus_error(M68kCpu* cpu) {
+    if (cpu->memory_callback_state == MEMORY_CALLBACK_ACTIVE) {
+        cpu->memory_callback_state = MEMORY_CALLBACK_FAILED;
+    }
+}
+
+static inline bool finish_memory_callback(M68kCpu* cpu, u32 address, bool is_write,
+                                          bool is_program) {
+    bool failed = cpu->memory_callback_state == MEMORY_CALLBACK_FAILED;
+    cpu->memory_callback_state = MEMORY_CALLBACK_IDLE;
+    if (failed && !cpu->in_bus_error) {
+        capture_access_fault(cpu, address, is_write, is_program);
+        cpu->in_bus_error = true;
+        m68k_exception(cpu, 2);
+        cpu->in_bus_error = false;
+        abort_faulted_instruction(cpu);
+    }
+    return failed;
+}
+
 static inline void apply_wait_bus(M68kCpu* cpu, u32 address, M68kSize size, bool is_write) {
     if (cpu->wait_bus) {
         int wait = cpu->wait_bus(cpu, address, size, is_write);
@@ -223,7 +247,9 @@ u8 m68k_read_8(M68kCpu* cpu, u32 address) {
     apply_wait_bus(cpu, address, SIZE_BYTE, false);
     set_fc(cpu, false);
     if (cpu->read8_cb) {
-        return cpu->read8_cb(cpu, address);
+        cpu->memory_callback_state = MEMORY_CALLBACK_ACTIVE;
+        u8 value = cpu->read8_cb(cpu, address);
+        return finish_memory_callback(cpu, raw_address, false, false) ? 0 : value;
     }
     if (is_valid_address(cpu, address)) {
         return cpu->memory[address];
@@ -252,7 +278,9 @@ u16 m68k_read_16(M68kCpu* cpu, u32 address) {
         return 0;
     }
     if (cpu->read16_cb) {
-        return cpu->read16_cb(cpu, address);
+        cpu->memory_callback_state = MEMORY_CALLBACK_ACTIVE;
+        u16 value = cpu->read16_cb(cpu, address);
+        return finish_memory_callback(cpu, raw_address, false, false) ? 0 : value;
     }
     if (is_valid_address(cpu, address) && is_valid_address(cpu, address + 1)) {
         return (u16)((cpu->memory[address] << 8) | cpu->memory[address + 1]);
@@ -281,7 +309,9 @@ u32 m68k_read_32(M68kCpu* cpu, u32 address) {
         return 0;
     }
     if (cpu->read32_cb) {
-        return cpu->read32_cb(cpu, address);
+        cpu->memory_callback_state = MEMORY_CALLBACK_ACTIVE;
+        u32 value = cpu->read32_cb(cpu, address);
+        return finish_memory_callback(cpu, raw_address, false, false) ? 0 : value;
     }
     if (is_valid_address(cpu, address) && is_valid_address(cpu, address + 3)) {
         return ((u32)cpu->memory[address] << 24) | ((u32)cpu->memory[address + 1] << 16) |
@@ -303,7 +333,9 @@ void m68k_write_8(M68kCpu* cpu, u32 address, u8 value) {
     apply_wait_bus(cpu, address, SIZE_BYTE, true);
     set_fc(cpu, false);
     if (cpu->write8_cb) {
+        cpu->memory_callback_state = MEMORY_CALLBACK_ACTIVE;
         cpu->write8_cb(cpu, address, value);
+        finish_memory_callback(cpu, raw_address, true, false);
         return;
     }
     if (address < cpu->memory_size) {
@@ -331,7 +363,9 @@ void m68k_write_16(M68kCpu* cpu, u32 address, u16 value) {
         return;
     }
     if (cpu->write16_cb) {
+        cpu->memory_callback_state = MEMORY_CALLBACK_ACTIVE;
         cpu->write16_cb(cpu, address, value);
+        finish_memory_callback(cpu, raw_address, true, false);
         return;
     }
     if (is_valid_address(cpu, address) && is_valid_address(cpu, address + 1)) {
@@ -360,7 +394,9 @@ void m68k_write_32(M68kCpu* cpu, u32 address, u32 value) {
         return;
     }
     if (cpu->write32_cb) {
+        cpu->memory_callback_state = MEMORY_CALLBACK_ACTIVE;
         cpu->write32_cb(cpu, address, value);
+        finish_memory_callback(cpu, raw_address, true, false);
         return;
     }
     if (is_valid_address(cpu, address) && is_valid_address(cpu, address + 3)) {
@@ -393,7 +429,9 @@ u16 m68k_fetch(M68kCpu* cpu) {
         return 0;
     }
     if (cpu->read16_cb) {
+        cpu->memory_callback_state = MEMORY_CALLBACK_ACTIVE;
         opcode = cpu->read16_cb(cpu, fetch_addr);
+        if (finish_memory_callback(cpu, raw_fetch_addr, false, true)) return 0;
     } else {
         if (is_valid_address(cpu, fetch_addr) && is_valid_address(cpu, fetch_addr + 1)) {
             opcode = (u16)((cpu->memory[fetch_addr] << 8) | cpu->memory[fetch_addr + 1]);
@@ -1738,6 +1776,7 @@ void m68k_set_context(M68kCpu* cpu, const void* src) {
 
         memcpy(cpu, src, sizeof(M68kCpu));
 
+        cpu->memory_callback_state = MEMORY_CALLBACK_IDLE;
         cpu->memory = old_memory;
         cpu->memory_size = old_memory_size;
         memcpy(cpu->fault_trap, old_fault_trap, sizeof(jmp_buf));
@@ -1956,6 +1995,7 @@ bool m68k_deserialize(M68kCpu* cpu, const u8* buffer, size_t length) {
     }
 
     /* Transient fault latches never restore as active. */
+    cpu->memory_callback_state = MEMORY_CALLBACK_IDLE;
     cpu->exception_thrown = 0;
     cpu->fault_valid = false;
     cpu->fault_pc_valid = false;
